@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Calendar, Info } from 'lucide-react';
+import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Minus, Calendar, Info } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -20,6 +20,7 @@ export default function ScheduleGrid({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [darEntities, setDarEntities] = useState({});
+  const [darCount, setDarCount] = useState(5); // Default to 5 DARs
   const [editingDar, setEditingDar] = useState(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -29,7 +30,8 @@ export default function ScheduleGrid({
   // State for editing assignment cells (New Incoming, Cross-Training)
   const [editingCell, setEditingCell] = useState(null); // { employeeId, field }
 
-  const darColumns = ['DAR 1', 'DAR 2', 'DAR 3', 'DAR 4', 'DAR 5', 'DAR 6'];
+  // Generate DAR columns dynamically based on count
+  const darColumns = Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`);
 
   // Modern THR-inspired color palette for employee names
   const employeeColors = [
@@ -54,6 +56,7 @@ export default function ScheduleGrid({
       setStartDate(schedule.startDate || '');
       setEndDate(schedule.endDate || '');
       setDarEntities(schedule.darEntities || {});
+      setDarCount(schedule.darCount || 5); // Load darCount from schedule
     } else {
       loadDefaultDarConfig();
     }
@@ -63,7 +66,9 @@ export default function ScheduleGrid({
     try {
       const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
       if (configDoc.exists()) {
-        setDarEntities(configDoc.data().config || {});
+        const data = configDoc.data();
+        setDarEntities(data.config || {});
+        setDarCount(data.darCount || 5); // Load darCount from settings
       }
     } catch (error) {
       console.error('Error loading DAR config:', error);
@@ -192,6 +197,13 @@ export default function ScheduleGrid({
     setHasChanges(true);
   }
 
+  function handleDarCountChange(newCount) {
+    // Limit between 3 and 8 DARs
+    const count = Math.max(3, Math.min(8, newCount));
+    setDarCount(count);
+    setHasChanges(true);
+  }
+
   function handleSave() {
     if (onSave) {
       onSave({
@@ -199,7 +211,8 @@ export default function ScheduleGrid({
         startDate,
         endDate,
         assignments,
-        darEntities
+        darEntities,
+        darCount
       });
       setHasChanges(false);
     }
@@ -313,6 +326,37 @@ export default function ScheduleGrid({
                 <Settings className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Config</span>
               </button>
+              
+              {/* DAR Count Controls */}
+              <div className="flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full px-2 py-1">
+                <span className="text-xs text-slate-600 dark:text-slate-300 mr-1 hidden sm:inline">DARs:</span>
+                <button
+                  onClick={() => handleDarCountChange(darCount - 1)}
+                  disabled={darCount <= 3}
+                  className={`p-1 rounded-full transition-colors ${
+                    darCount <= 3 
+                      ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed' 
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600'
+                  }`}
+                  aria-label="Remove DAR column"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="w-5 text-center text-sm font-semibold text-slate-900 dark:text-slate-100">{darCount}</span>
+                <button
+                  onClick={() => handleDarCountChange(darCount + 1)}
+                  disabled={darCount >= 8}
+                  className={`p-1 rounded-full transition-colors ${
+                    darCount >= 8 
+                      ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed' 
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600'
+                  }`}
+                  aria-label="Add DAR column"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              
               <button 
                 onClick={exportToExcel} 
                 className="btn-pill bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1.5" 

@@ -28,20 +28,49 @@ export default function UserView() {
 
       try {
         const schedulesRef = collection(db, 'schedules');
-        const publishedQuery = query(
-          schedulesRef,
-          where('status', '==', 'published'),
-          orderBy('createdAt', 'desc'),
-          limit(1)
-        );
+        let snapshot = null;
+        
+        // Try the optimized query first (requires composite index)
+        try {
+          const publishedQuery = query(
+            schedulesRef,
+            where('status', '==', 'published'),
+            orderBy('createdAt', 'desc'),
+            limit(1)
+          );
 
-        const timeoutPromise = new Promise((_, reject) => {
-          timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
-        });
+          const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
+          });
 
-        let snapshot = await Promise.race([getDocs(publishedQuery), timeoutPromise]);
+          snapshot = await Promise.race([getDocs(publishedQuery), timeoutPromise]);
+          if (timeoutId) clearTimeout(timeoutId);
+        } catch (indexError) {
+          // If the composite index query fails, fall back to simpler query
+          console.warn('Composite index query failed, using fallback:', indexError.message);
+          if (timeoutId) clearTimeout(timeoutId);
+          
+          // Fallback: get all schedules and filter in memory
+          const fallbackTimeout = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
+          });
 
-        if (timeoutId) clearTimeout(timeoutId);
+          const fallbackQuery = query(
+            schedulesRef,
+            orderBy('createdAt', 'desc')
+          );
+
+          const allSnapshots = await Promise.race([getDocs(fallbackQuery), fallbackTimeout]);
+          if (timeoutId) clearTimeout(timeoutId);
+          
+          // Find the most recent published schedule
+          const publishedDocs = allSnapshots.docs.filter(doc => doc.data().status === 'published');
+          if (publishedDocs.length > 0) {
+            snapshot = { empty: false, docs: [publishedDocs[0]] };
+          } else {
+            snapshot = { empty: true, docs: [] };
+          }
+        }
 
         // Fallback for schedules created before "status" was added
         if (snapshot.empty) {
