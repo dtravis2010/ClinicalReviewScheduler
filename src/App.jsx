@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SupervisorDashboard from './pages/SupervisorDashboard';
 import UserView from './pages/UserView';
@@ -17,10 +18,11 @@ function AppContent() {
     <Router basename="/ClinicalReviewScheduler">
       <div className="min-h-screen bg-gray-50">
         <Routes>
-          <Route path="/" element={<Navigate to="/schedule" replace />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/supervisor" element={<SupervisorDashboard />} />
           <Route path="/schedule" element={<UserView />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>

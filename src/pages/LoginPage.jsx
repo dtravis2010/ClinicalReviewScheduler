@@ -53,7 +53,7 @@ export default function LoginPage() {
                 autoFocus
               />
               <p className="text-xs text-gray-500 mt-2">
-                Default password: 1234
+                Default password: 123456
               </p>
             </div>
 

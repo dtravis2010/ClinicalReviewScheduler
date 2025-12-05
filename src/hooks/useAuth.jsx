@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
 
   // Simple supervisor login - hardcoded for now
   // Email: supervisor@clinical.com
-  // Password: 1234
+  // Password: 123456
   async function loginAsSupervisor(password) {
     if (!isFirebaseConfigured) {
       throw new Error(firebaseConfigError);
