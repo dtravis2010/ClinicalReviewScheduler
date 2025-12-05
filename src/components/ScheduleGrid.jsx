@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown } from 'lucide-react';
+import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Calendar } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -25,10 +25,20 @@ export default function ScheduleGrid({
 
   const darColumns = ['DAR 1', 'DAR 2', 'DAR 3', 'DAR 4', 'DAR 5', 'DAR 6'];
 
+  // Modern THR-inspired color palette for employee names
   const employeeColors = [
-    'text-blue-600', 'text-pink-600', 'text-green-600', 'text-purple-600',
-    'text-orange-600', 'text-cyan-600', 'text-red-600', 'text-indigo-600',
-    'text-teal-600', 'text-fuchsia-600', 'text-lime-600', 'text-rose-600',
+    'text-thr-blue-600 dark:text-thr-blue-400', 
+    'text-thr-green-600 dark:text-thr-green-400', 
+    'text-purple-600 dark:text-purple-400',
+    'text-orange-600 dark:text-orange-400', 
+    'text-pink-600 dark:text-pink-400', 
+    'text-cyan-600 dark:text-cyan-400',
+    'text-rose-600 dark:text-rose-400', 
+    'text-indigo-600 dark:text-indigo-400',
+    'text-teal-600 dark:text-teal-400', 
+    'text-fuchsia-600 dark:text-fuchsia-400', 
+    'text-lime-600 dark:text-lime-400',
+    'text-amber-600 dark:text-amber-400',
   ];
 
   useEffect(() => {
@@ -241,89 +251,122 @@ export default function ScheduleGrid({
   const activeEmployees = employees.filter(e => !e.archived);
 
   return (
-    <div className="space-y-0 h-screen flex flex-col">
-      {/* Header Section */}
-      <div className="bg-white dark:bg-gray-800 px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-        <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-3">
+    <div className="space-y-0 h-screen flex flex-col animate-fade-in-up">
+      {/* Header Section - Modern THR styling */}
+      <div className="bg-white dark:bg-slate-800 px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-soft">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Schedule Builder</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 hidden sm:block">Click any cell to assign or modify</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 sm:hidden">Tap to assign</p>
+            <h1 className="text-h3 text-slate-900 dark:text-slate-100">Schedule Builder</h1>
+            <p className="text-caption text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">Click any cell to assign or modify</p>
+            <p className="text-caption text-slate-500 dark:text-slate-400 mt-1 sm:hidden">Tap to assign</p>
           </div>
 
           {!readOnly && (
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {onCreateNewSchedule && (
                 <button
-                  className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-800 touch-manipulation"
+                  className="btn-pill bg-thr-green-500 hover:bg-thr-green-600 text-white flex items-center gap-1.5"
                   aria-label="Create new schedule"
                   onClick={onCreateNewSchedule}
                 >
-                  <span className="text-base" aria-hidden="true">+</span> <span className="hidden sm:inline">New Schedule</span><span className="sm:hidden">New</span>
+                  <Plus className="w-4 h-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">New Schedule</span>
+                  <span className="sm:hidden">New</span>
                 </button>
               )}
-              <button onClick={() => setShowHistoryModal(true)} className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-800 touch-manipulation" aria-label="Show history">
-                <History className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Show History</span><span className="sm:hidden">History</span>
+              <button 
+                onClick={() => setShowHistoryModal(true)} 
+                className="btn-pill bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 flex items-center gap-1.5" 
+                aria-label="Show history"
+              >
+                <History className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">History</span>
               </button>
-              <button className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-800 touch-manipulation" aria-label="Configuration">
-                <Settings className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Config</span>
+              <button 
+                className="btn-pill bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white flex items-center gap-1.5" 
+                aria-label="Configuration"
+              >
+                <Settings className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Config</span>
               </button>
-              <button onClick={exportToExcel} className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800 touch-manipulation" aria-label="Export to Excel">
-                <FileDown className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Export</span>
+              <button 
+                onClick={exportToExcel} 
+                className="btn-pill bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1.5" 
+                aria-label="Export to Excel"
+              >
+                <FileDown className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Export</span>
               </button>
-              <button className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-800 touch-manipulation hidden sm:flex" aria-label="View published schedules">
-                <Eye className="w-3.5 h-3.5" aria-hidden="true" /> Published
+              <button 
+                className="btn-pill bg-thr-green-500 hover:bg-thr-green-600 text-white hidden sm:flex items-center gap-1.5" 
+                aria-label="View published schedules"
+              >
+                <Eye className="w-4 h-4" aria-hidden="true" />
+                Published
               </button>
-              <button className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:focus:ring-offset-gray-800 touch-manipulation hidden sm:flex" aria-label="Unpublish schedule">
-                <Upload className="w-3.5 h-3.5" aria-hidden="true" /> Unpublish (Draft)
+              <button 
+                className="btn-pill bg-orange-500 hover:bg-orange-600 text-white hidden sm:flex items-center gap-1.5" 
+                aria-label="Unpublish schedule"
+              >
+                <Upload className="w-4 h-4" aria-hidden="true" />
+                Draft
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Date Header - Green Banner */}
-      <div className="bg-emerald-600 dark:bg-emerald-700 px-3 sm:px-4 py-3 text-white flex-shrink-0">
+      {/* Date Header - THR Blue Gradient Banner */}
+      <div className="header-gradient px-4 sm:px-6 py-4 text-white flex-shrink-0">
         <div className="flex items-center justify-between">
-          <button className="p-2 min-h-[44px] min-w-[44px] sm:p-1.5 sm:min-h-0 sm:min-w-0 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-lg transition-colors focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 touch-manipulation" aria-label="Previous schedule">
+          <button 
+            className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50" 
+            aria-label="Previous schedule"
+          >
             <ChevronLeft className="w-5 h-5" aria-hidden="true" />
           </button>
 
-          <div className="text-center flex-1 px-2">
-            <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1 flex-wrap">
-              <div className="flex items-center gap-1 sm:gap-2 bg-emerald-700 dark:bg-emerald-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
-                <span className="text-base" aria-hidden="true">✓</span>
-                <span className="font-semibold text-xs sm:text-sm truncate max-w-[200px] sm:max-w-none">
-                  {scheduleName || 'DEC'} <span className="hidden sm:inline">({formatDateRange() || '2025-12-03 to 2025-12-16'})</span>
+          <div className="text-center flex-1 px-4">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20">
+                <div className="w-2 h-2 rounded-full bg-thr-green-400 animate-pulse-subtle" />
+                <span className="font-semibold text-sm sm:text-base">
+                  {scheduleName || 'Schedule'}
                 </span>
               </div>
-              <span className="px-2 py-0.5 bg-emerald-700 dark:bg-emerald-800 rounded-full text-xs font-semibold">LIVE</span>
+              <span className="px-3 py-1 bg-thr-green-500 rounded-full text-xs font-bold uppercase tracking-wider shadow-soft">
+                LIVE
+              </span>
             </div>
-            <p className="text-emerald-100 dark:text-emerald-200 text-xs sm:hidden">{formatDateRange() || '2025-12-03 to 2025-12-16'}</p>
-            <p className="text-emerald-100 dark:text-emerald-200 text-xs hidden sm:block">{formatDateRange() || '2025-12-03 to 2025-12-16'}</p>
+            <p className="text-white/80 text-sm mt-2">
+              {formatDateRange() || 'Select date range'}
+            </p>
           </div>
 
-          <button className="p-2 min-h-[44px] min-w-[44px] sm:p-1.5 sm:min-h-0 sm:min-w-0 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-lg transition-colors focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 touch-manipulation" aria-label="Next schedule">
+          <button 
+            className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50" 
+            aria-label="Next schedule"
+          >
             <ChevronRight className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      {/* Schedule Table - Fills remaining space */}
-      <div className="bg-white dark:bg-gray-900 flex-1 overflow-hidden">
-        <div className="h-full flex flex-col">
+      {/* Schedule Table - Modern styling with rounded corners and shadows */}
+      <div className="bg-slate-50 dark:bg-slate-900 flex-1 overflow-hidden p-4">
+        <div className="h-full flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-card overflow-hidden border border-slate-100 dark:border-slate-700">
           <table className="w-full border-collapse table-fixed flex-1" role="grid" aria-label="Schedule assignments">
             <thead className="sticky top-0 z-20">
-              <tr className="bg-teal-600 dark:bg-teal-700 text-white">
-                <th scope="col" className="sticky left-0 bg-teal-600 dark:bg-teal-700 px-2 py-1.5 text-left text-[10px] font-bold uppercase z-30 w-28">
-                  TEAM MEMBER
+              <tr className="bg-gradient-to-r from-thr-blue-500 to-thr-blue-600 dark:from-thr-blue-600 dark:to-thr-blue-700 text-white">
+                <th scope="col" className="sticky left-0 bg-thr-blue-500 dark:bg-thr-blue-600 px-3 py-3 text-left text-xs font-bold uppercase tracking-wider z-30 w-32">
+                  Team Member
                 </th>
                 {darColumns.map((dar, idx) => (
-                  <th key={idx} scope="col" className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-20 relative">
-                    <div className="mb-0.5 text-[9px]">{dar}</div>
-                    <div className="text-[8px] font-normal opacity-90">
+                  <th key={idx} scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-24 relative">
+                    <div className="mb-1 text-xs">{dar}</div>
+                    <div className="text-[10px] font-normal opacity-80">
                       {editingDar === idx && !readOnly ? (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-white dark:border-gray-700 rounded shadow-lg p-2 z-50 max-h-48 overflow-y-auto min-w-[200px]" role="dialog" aria-label="Select entities for DAR">
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for DAR">
                           <div className="space-y-1">
                             {getAvailableEntitiesForDar(idx).map(entity => {
                               const currentList = darEntities[idx] || [];
@@ -331,22 +374,22 @@ export default function ScheduleGrid({
                               const isSelected = currentArray.includes(entity.name);
 
                               return (
-                                <label key={entity.id} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-1.5 rounded text-gray-900 dark:text-gray-100">
+                                <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
                                   <input
                                     type="checkbox"
                                     checked={isSelected}
                                     onChange={() => handleDarEntityToggle(idx, entity.name)}
-                                    className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 rounded focus:ring-teal-500 dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
                                     aria-label={`Assign ${entity.name} to ${dar}`}
                                   />
-                                  <span className="text-xs">{entity.name}</span>
+                                  <span className="text-sm">{entity.name}</span>
                                 </label>
                               );
                             })}
                           </div>
                           <button
                             onClick={() => setEditingDar(null)}
-                            className="mt-2 w-full px-2 py-1 bg-teal-600 dark:bg-teal-700 text-white rounded text-xs hover:bg-teal-700 dark:hover:bg-teal-600 focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                            className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
                             aria-label="Close entity selection"
                           >
                             Done
@@ -354,40 +397,47 @@ export default function ScheduleGrid({
                         </div>
                       ) : (
                         <button
-                          className="cursor-pointer hover:bg-teal-700 dark:hover:bg-teal-800 rounded px-1 py-0.5 truncate w-full focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-teal-600"
+                          className="cursor-pointer hover:bg-white/10 rounded-lg px-2 py-1 truncate w-full focus:ring-2 focus:ring-white/50 transition-colors"
                           onClick={() => !readOnly && setEditingDar(idx)}
                           title={formatEntityList(darEntities[idx])}
                           aria-label={`Configure entities for ${dar}. Current: ${formatEntityList(darEntities[idx]) || 'None'}`}
                           disabled={readOnly}
                         >
-                          {getEntityShortCode(darEntities[idx]) || 'Click'}
+                          {getEntityShortCode(darEntities[idx]) || 'Select'}
                         </button>
                       )}
                     </div>
                   </th>
                 ))}
-                <th scope="col" className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-16">CPOE</th>
-                <th scope="col" className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-20">New<br/>Incoming</th>
-                <th scope="col" className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-20">Cross-<br/>Training</th>
-                <th scope="col" className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-24">Special<br/>Projects</th>
+                <th scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-20">CPOE</th>
+                <th scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-24">New<br/>Incoming</th>
+                <th scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-24">Cross-<br/>Training</th>
+                <th scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-28">Special<br/>Projects</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {activeEmployees.map((employee, empIdx) => {
                 const assignment = assignments[employee.id] || {};
                 const isDarTrained = canAssignDAR(employee);
                 const colorClass = employeeColors[empIdx % employeeColors.length];
 
                 return (
-                  <tr key={employee.id} className={empIdx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
-                    {/* Employee Name */}
-                    <th scope="row" className="sticky left-0 bg-inherit px-2 py-1 z-10">
-                      <span className={`font-semibold text-[10px] ${colorClass} dark:brightness-125 truncate block`} title={employee.name}>
-                        {employee.name}
-                      </span>
+                  <tr 
+                    key={employee.id} 
+                    className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30 ${
+                      empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/50 dark:bg-slate-800/50'
+                    }`}
+                  >
+                    {/* Employee Name - Employee Chip Style */}
+                    <th scope="row" className="sticky left-0 bg-inherit px-3 py-2 z-10">
+                      <div className="employee-chip inline-flex">
+                        <span className={`font-semibold text-sm ${colorClass} truncate`} title={employee.name}>
+                          {employee.name}
+                        </span>
+                      </div>
                     </th>
 
-                    {/* DAR Columns - Clickable Cells */}
+                    {/* DAR Columns - Clickable Cells with modern styling */}
                     {darColumns.map((darName, darIdx) => {
                       const isAssigned = assignment.dars?.includes(darIdx);
                       const entityCode = getEntityShortCode(darEntities[darIdx]);
@@ -395,12 +445,12 @@ export default function ScheduleGrid({
                       return (
                         <td
                           key={darIdx}
-                          className={`px-0.5 py-1 text-center transition-colors ${
+                          className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
                             !isDarTrained
-                              ? 'bg-gray-200 dark:bg-gray-700'
+                              ? 'bg-slate-100 dark:bg-slate-700/50'
                               : isAssigned
-                                ? 'bg-teal-100 dark:bg-teal-900/40 hover:bg-teal-200 dark:hover:bg-teal-900/60 cursor-pointer'
-                                : 'hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer'
+                                ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                                : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
                           }`}
                           onClick={() => isDarTrained && handleDARToggle(employee.id, darIdx)}
                           onKeyPress={(e) => {
@@ -416,23 +466,23 @@ export default function ScheduleGrid({
                         >
                           {isDarTrained ? (
                             isAssigned ? (
-                              <div className="text-[9px] font-medium text-teal-800 dark:text-teal-300 leading-tight">
+                              <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
                                 {entityCode || '✓'}
                               </div>
                             ) : (
-                              <span className="text-gray-300 dark:text-gray-600 text-[9px]">—</span>
+                              <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
                             )
                           ) : (
-                            <span className="text-gray-300 dark:text-gray-600 text-[9px]">—</span>
+                            <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
                           )}
                         </td>
                       );
                     })}
 
                     {/* CPOE */}
-                    <td className="px-1 py-2 text-center" role="gridcell">
+                    <td className="px-2 py-2 text-center" role="gridcell">
                       {readOnly ? (
-                        <span className="text-gray-600 dark:text-gray-400 text-[10px]">{formatEntityList(assignment.cpoe)}</span>
+                        <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.cpoe)}</span>
                       ) : (
                         <select
                           multiple
@@ -441,7 +491,7 @@ export default function ScheduleGrid({
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'cpoe', selected);
                           }}
-                          className="w-full px-1 py-0.5 text-[10px] border border-gray-200 dark:border-gray-600 rounded focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-400 focus:border-teal-500 bg-white dark:bg-gray-800 dark:text-gray-100"
+                          className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
                           size="1"
                           aria-label={`CPOE assignment for ${employee.name}`}
                         >
@@ -453,9 +503,9 @@ export default function ScheduleGrid({
                     </td>
 
                     {/* New Incoming Items */}
-                    <td className="px-1 py-2 text-center" role="gridcell">
+                    <td className="px-2 py-2 text-center" role="gridcell">
                       {readOnly ? (
-                        <span className="text-gray-600 dark:text-gray-400 text-[10px]">{formatEntityList(assignment.newIncoming)}</span>
+                        <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.newIncoming)}</span>
                       ) : (
                         <select
                           multiple
@@ -464,7 +514,7 @@ export default function ScheduleGrid({
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'newIncoming', selected);
                           }}
-                          className="w-full px-1 py-0.5 text-[10px] border border-gray-200 dark:border-gray-600 rounded focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-400 focus:border-teal-500 bg-white dark:bg-gray-800 dark:text-gray-100"
+                          className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
                           size="1"
                           aria-label={`New incoming items assignment for ${employee.name}`}
                         >
@@ -476,9 +526,9 @@ export default function ScheduleGrid({
                     </td>
 
                     {/* Cross-Training */}
-                    <td className="px-1 py-2 text-center" role="gridcell">
+                    <td className="px-2 py-2 text-center" role="gridcell">
                       {readOnly ? (
-                        <span className="text-gray-600 dark:text-gray-400 text-[10px]">{formatEntityList(assignment.crossTraining)}</span>
+                        <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.crossTraining)}</span>
                       ) : (
                         <select
                           multiple
@@ -487,7 +537,7 @@ export default function ScheduleGrid({
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'crossTraining', selected);
                           }}
-                          className="w-full px-1 py-0.5 text-[10px] border border-gray-200 dark:border-gray-600 rounded focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-400 focus:border-teal-500 bg-white dark:bg-gray-800 dark:text-gray-100"
+                          className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
                           size="1"
                           aria-label={`Cross-training assignment for ${employee.name}`}
                         >
@@ -499,15 +549,15 @@ export default function ScheduleGrid({
                     </td>
 
                     {/* Special Projects/Assignments */}
-                    <td className="px-1 py-2 text-center" role="gridcell">
+                    <td className="px-2 py-2 text-center" role="gridcell">
                       {readOnly ? (
-                        <span className="text-gray-600 dark:text-gray-400 text-[10px]">{formatEntityList(assignment.specialProjects)}</span>
+                        <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.specialProjects)}</span>
                       ) : (
                         <input
                           type="text"
                           value={formatEntityList(assignment.specialProjects)}
                           onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
-                          className="w-full px-1 py-0.5 text-[10px] border border-gray-200 dark:border-gray-600 rounded focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-400 focus:border-teal-500 text-center bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
+                          className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 text-center bg-white dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
                           placeholder=""
                           aria-label={`Special projects for ${employee.name}`}
                         />
@@ -520,22 +570,24 @@ export default function ScheduleGrid({
           </table>
 
           {activeEmployees.length === 0 && (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-              <p>No employees found. Add employees first to create a schedule.</p>
+            <div className="text-center py-16 text-slate-500 dark:text-slate-400">
+              <Calendar className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+              <p className="text-lg font-medium">No employees found</p>
+              <p className="text-sm mt-1">Add employees first to create a schedule.</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Save Button */}
+      {/* Save Button - Modern floating style */}
       {!readOnly && hasChanges && (
-        <div className="fixed bottom-4 right-4 z-50">
+        <div className="fixed bottom-6 right-6 z-50">
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-600 text-white rounded-lg font-semibold text-sm shadow-lg flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 dark:focus:ring-offset-gray-900"
+            className="px-6 py-3 bg-thr-blue-500 hover:bg-thr-blue-600 text-white rounded-2xl font-semibold text-sm shadow-soft-lg hover:shadow-glow flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-slate-900 transform hover:-translate-y-0.5 transition-all duration-200"
             aria-label="Save schedule changes"
           >
-            <Save className="w-4 h-4" aria-hidden="true" />
+            <Save className="w-5 h-5" aria-hidden="true" />
             Save Changes
           </button>
         </div>

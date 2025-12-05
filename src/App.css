@@ -1,28 +1,241 @@
-/* Additional app-specific styles */
+/* THR Component Library - Modern Design System */
+
+/* ============================================
+   BUTTONS - Pill-style with soft shadows
+   ============================================ */
 .btn-primary {
-  @apply bg-thr-blue-500 hover:bg-thr-blue-600 dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  @apply bg-thr-blue-500 hover:bg-thr-blue-600 dark:bg-thr-blue-500 dark:hover:bg-thr-blue-600;
+  @apply text-white font-semibold py-2.5 px-5 rounded-xl;
+  @apply shadow-soft hover:shadow-soft-md;
+  @apply transition-all duration-200 ease-out;
+  @apply transform hover:-translate-y-0.5 active:translate-y-0;
 }
 
 .btn-secondary {
-  @apply bg-thr-green-500 hover:bg-thr-green-600 dark:bg-thr-green-600 dark:hover:bg-thr-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  @apply bg-thr-green-500 hover:bg-thr-green-600 dark:bg-thr-green-500 dark:hover:bg-thr-green-600;
+  @apply text-white font-semibold py-2.5 px-5 rounded-xl;
+  @apply shadow-soft hover:shadow-soft-md;
+  @apply transition-all duration-200 ease-out;
+  @apply transform hover:-translate-y-0.5 active:translate-y-0;
 }
 
 .btn-danger {
-  @apply bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  @apply bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700;
+  @apply text-white font-semibold py-2.5 px-5 rounded-xl;
+  @apply shadow-soft hover:shadow-soft-md;
+  @apply transition-all duration-200 ease-out;
+  @apply transform hover:-translate-y-0.5 active:translate-y-0;
 }
 
 .btn-outline {
-  @apply border-2 border-thr-blue-500 dark:border-thr-blue-400 text-thr-blue-500 dark:text-thr-blue-400 hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 font-semibold py-2 px-4 rounded-lg transition-colors;
+  @apply border-2 border-thr-blue-500 dark:border-thr-blue-400;
+  @apply text-thr-blue-600 dark:text-thr-blue-400;
+  @apply hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20;
+  @apply font-semibold py-2.5 px-5 rounded-xl;
+  @apply transition-all duration-200 ease-out;
+  @apply transform hover:-translate-y-0.5 active:translate-y-0;
 }
 
+.btn-ghost {
+  @apply text-slate-600 dark:text-slate-300;
+  @apply hover:bg-slate-100 dark:hover:bg-slate-800;
+  @apply font-medium py-2 px-4 rounded-lg;
+  @apply transition-all duration-200;
+}
+
+/* Glossy pill buttons for quick-assign toolbar */
+.btn-pill {
+  @apply py-2 px-4 rounded-full font-medium text-sm;
+  @apply shadow-soft hover:shadow-soft-md;
+  @apply transition-all duration-200 ease-out;
+  @apply transform hover:scale-105 active:scale-100;
+}
+
+/* ============================================
+   CARDS - Clean white surfaces with soft shadows
+   ============================================ */
 .card {
-  @apply bg-white dark:bg-gray-800 dark:border dark:border-gray-700 rounded-lg shadow-md p-6;
+  @apply bg-white dark:bg-slate-800;
+  @apply rounded-2xl shadow-card;
+  @apply p-6;
+  @apply border border-slate-100 dark:border-slate-700;
+  @apply transition-all duration-200;
 }
 
+.card-hover {
+  @apply hover:shadow-card-hover hover:-translate-y-1;
+}
+
+.card-interactive {
+  @apply cursor-pointer;
+  @apply hover:shadow-card-hover hover:-translate-y-1;
+  @apply active:translate-y-0 active:shadow-card;
+}
+
+/* Role-colored left accent for assignment cells */
+.card-accent-dar { @apply border-l-4 border-l-role-dar; }
+.card-accent-cr { @apply border-l-4 border-l-role-cr; }
+.card-accent-fax { @apply border-l-4 border-l-role-fax; }
+.card-accent-cpoe { @apply border-l-4 border-l-role-cpoe; }
+.card-accent-float { @apply border-l-4 border-l-role-float; }
+.card-accent-email { @apply border-l-4 border-l-role-email; }
+.card-accent-incoming { @apply border-l-4 border-l-role-incoming; }
+
+/* ============================================
+   INPUTS - Modern form styling
+   ============================================ */
 .input-field {
-  @apply w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-transparent outline-none;
+  @apply w-full px-4 py-3;
+  @apply border border-slate-200 dark:border-slate-600;
+  @apply bg-white dark:bg-slate-800;
+  @apply text-slate-900 dark:text-slate-100;
+  @apply rounded-xl;
+  @apply focus:ring-2 focus:ring-thr-blue-500/20 dark:focus:ring-thr-blue-400/30;
+  @apply focus:border-thr-blue-500 dark:focus:border-thr-blue-400;
+  @apply outline-none;
+  @apply transition-all duration-200;
+  @apply placeholder:text-slate-400 dark:placeholder:text-slate-500;
 }
 
 .label {
-  @apply block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2;
+  @apply block text-sm font-semibold;
+  @apply text-slate-700 dark:text-slate-200;
+  @apply mb-2;
+}
+
+/* ============================================
+   EMPLOYEE CHIPS - Slight drop shadow, clickable
+   ============================================ */
+.employee-chip {
+  @apply inline-flex items-center gap-2;
+  @apply px-3 py-1.5 rounded-lg;
+  @apply bg-white dark:bg-slate-700;
+  @apply shadow-soft;
+  @apply border border-slate-100 dark:border-slate-600;
+  @apply font-medium text-sm;
+  @apply text-slate-700 dark:text-slate-200;
+  @apply cursor-pointer;
+  @apply transition-all duration-200;
+  @apply hover:shadow-soft-md hover:-translate-y-0.5;
+}
+
+/* ============================================
+   NAVIGATION - Smooth slides, THR green highlight
+   ============================================ */
+.nav-item {
+  @apply flex items-center gap-3;
+  @apply px-4 py-3 rounded-xl;
+  @apply text-slate-600 dark:text-slate-400;
+  @apply font-medium;
+  @apply transition-all duration-200;
+  @apply hover:bg-slate-100 dark:hover:bg-slate-800;
+}
+
+.nav-item-active {
+  @apply bg-thr-green-50 dark:bg-thr-green-900/20;
+  @apply text-thr-green-600 dark:text-thr-green-400;
+  @apply border-l-4 border-thr-green-500;
+}
+
+/* ============================================
+   HEADER BAR - THR-blue gradient with drop shadow
+   ============================================ */
+.header-gradient {
+  @apply bg-gradient-to-r from-thr-blue-500 to-thr-blue-600;
+  @apply shadow-soft-md;
+}
+
+/* ============================================
+   SIDEBAR - Slide-out panel with glassmorphism
+   ============================================ */
+.sidebar-panel {
+  @apply fixed inset-y-0 right-0;
+  @apply w-full max-w-md;
+  @apply bg-white/95 dark:bg-slate-800/95;
+  @apply backdrop-blur-md;
+  @apply shadow-2xl;
+  @apply z-50;
+}
+
+.sidebar-header {
+  @apply bg-gradient-to-r from-thr-blue-500 to-thr-blue-600;
+  @apply px-6 py-5;
+  @apply text-white;
+}
+
+/* ============================================
+   SCHEDULE GRID CELLS - Modern styling
+   ============================================ */
+.grid-cell {
+  @apply px-2 py-2;
+  @apply bg-white dark:bg-slate-800;
+  @apply border-b border-slate-100 dark:border-slate-700;
+  @apply transition-all duration-150;
+}
+
+.grid-cell-hover {
+  @apply hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20;
+  @apply hover:shadow-glow;
+  @apply cursor-pointer;
+}
+
+.grid-cell-assigned {
+  @apply bg-thr-green-50 dark:bg-thr-green-900/20;
+}
+
+/* ============================================
+   HOVER CARDS - Popover with smooth fade-in
+   ============================================ */
+.hover-card {
+  @apply absolute z-50;
+  @apply bg-white dark:bg-slate-800;
+  @apply rounded-xl shadow-soft-lg;
+  @apply border border-slate-100 dark:border-slate-700;
+  @apply p-4;
+  @apply animate-fade-in-up;
+}
+
+/* ============================================
+   PROGRESS BARS - THR colors with animation
+   ============================================ */
+.progress-bar {
+  @apply h-2 rounded-full;
+  @apply bg-slate-200 dark:bg-slate-700;
+  @apply overflow-hidden;
+}
+
+.progress-bar-fill {
+  @apply h-full rounded-full;
+  @apply bg-gradient-to-r from-thr-blue-500 to-thr-green-500;
+  @apply transition-all duration-500;
+}
+
+/* ============================================
+   SKILL/TRAINING TAGS
+   ============================================ */
+.skill-tag {
+  @apply inline-flex items-center;
+  @apply px-2.5 py-1 rounded-lg;
+  @apply text-xs font-semibold;
+  @apply transition-all duration-200;
+}
+
+.skill-tag-dar { @apply bg-role-dar/10 text-role-dar; }
+.skill-tag-cr { @apply bg-role-cr/10 text-role-cr; }
+.skill-tag-cpoe { @apply bg-role-cpoe/10 text-role-cpoe; }
+.skill-tag-float { @apply bg-role-float/10 text-role-float; }
+.skill-tag-fax { @apply bg-role-fax/10 text-role-fax; }
+
+/* ============================================
+   FLOATING TOOLBAR
+   ============================================ */
+.floating-toolbar {
+  @apply fixed bottom-6 left-1/2 -translate-x-1/2;
+  @apply bg-white/95 dark:bg-slate-800/95;
+  @apply backdrop-blur-md;
+  @apply rounded-2xl shadow-soft-lg;
+  @apply border border-slate-200 dark:border-slate-700;
+  @apply px-4 py-3;
+  @apply flex items-center gap-3;
+  @apply z-40;
 }

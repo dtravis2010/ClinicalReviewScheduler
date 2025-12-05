@@ -134,55 +134,60 @@ export default function EmployeeManagement({ employees, onUpdate }) {
   const archivedEmployees = employees.filter(e => e.archived);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Employee Management</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-h2 text-slate-900 dark:text-slate-100">Employee Management</h2>
+          <p className="text-body-sm text-slate-600 dark:text-slate-400 mt-1">
             Manage employees and their skills/training
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn-primary"
+          className="btn-primary flex items-center gap-2"
         >
-          <Plus className="w-4 h-4 inline mr-2" />
+          <Plus className="w-4 h-4" />
           Add Employee
         </button>
       </div>
 
       {/* Active Employees */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="card card-hover">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
           Active Employees ({activeEmployees.length})
         </h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
+          <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-800/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Skills/Training
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Notes
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {activeEmployees.map(employee => (
-                <tr key={employee.id}>
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
+              {activeEmployees.map((employee, idx) => (
+                <tr 
+                  key={employee.id} 
+                  className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 ${
+                    idx % 2 === 0 ? '' : 'bg-slate-50/50 dark:bg-slate-800/50'
+                  }`}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {employee.name}
                     </div>
                   </td>
@@ -191,14 +196,16 @@ export default function EmployeeManagement({ employees, onUpdate }) {
                       {employee.skills?.map(skill => (
                         <span
                           key={skill}
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          className={`skill-tag ${
                             skill === 'Float'
-                              ? 'bg-purple-100 text-purple-800'
+                              ? 'skill-tag-float'
                               : skill === 'DAR'
-                              ? 'bg-blue-100 text-blue-800'
+                              ? 'skill-tag-dar'
                               : skill === 'Trace'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-role-cr/10 text-role-cr'
+                              : skill === 'CPOE'
+                              ? 'skill-tag-cpoe'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                           }`}
                         >
                           {skill}
@@ -206,24 +213,26 @@ export default function EmployeeManagement({ employees, onUpdate }) {
                       ))}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                     {employee.email || '-'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                     {employee.notes || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleEdit(employee)}
-                      className="text-thr-blue-600 hover:text-thr-blue-900 mr-4"
+                      className="p-2 rounded-lg text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 transition-colors mr-2"
+                      aria-label={`Edit ${employee.name}`}
                     >
-                      <Edit2 className="w-4 h-4 inline" />
+                      <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setEmployeeToArchive(employee)}
-                      className="text-red-600 hover:text-red-900"
+                      className="p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      aria-label={`Archive ${employee.name}`}
                     >
-                      <Archive className="w-4 h-4 inline" />
+                      <Archive className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
@@ -232,8 +241,8 @@ export default function EmployeeManagement({ employees, onUpdate }) {
           </table>
 
           {activeEmployees.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <UserPlus className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+              <UserPlus className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
               <p>No employees yet. Click "Add Employee" to get started.</p>
             </div>
           )}
@@ -243,24 +252,26 @@ export default function EmployeeManagement({ employees, onUpdate }) {
       {/* Archived Employees */}
       {archivedEmployees.length > 0 && (
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
             Archived Employees ({archivedEmployees.length})
           </h3>
           <div className="space-y-2">
             {archivedEmployees.map(employee => (
               <div
                 key={employee.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-600"
               >
                 <div>
-                  <div className="text-sm font-medium text-gray-700">
+                  <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {employee.name}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
                     {employee.skills?.join(', ')}
                   </div>
                 </div>
-                <span className="text-xs text-gray-500">Archived</span>
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300">
+                  Archived
+                </span>
               </div>
             ))}
           </div>

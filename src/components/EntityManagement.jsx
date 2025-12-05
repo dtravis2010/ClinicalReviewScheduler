@@ -109,43 +109,56 @@ export default function EntityManagement({ entities, onUpdate }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Entity Management</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-h2 text-slate-900 dark:text-slate-100">Entity Management</h2>
+          <p className="text-body-sm text-slate-600 dark:text-slate-400 mt-1">
             Manage locations and entities for assignment
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn-primary"
+          className="btn-primary flex items-center gap-2"
         >
-          <Plus className="w-4 h-4 inline mr-2" />
+          <Plus className="w-4 h-4" />
           Add Entity
         </button>
       </div>
 
-      {/* Entities Grid */}
+      {/* Entities Grid - 3 columns responsive */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {entities.map(entity => (
-          <div key={entity.id} className="card hover:shadow-lg transition-shadow">
+          <div 
+            key={entity.id} 
+            className="card card-interactive group"
+          >
             <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-thr-blue-500" />
-                <h3 className="font-semibold text-gray-900">{entity.name}</h3>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-thr-blue-500/10 to-thr-green-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <Building2 className="w-5 h-5 text-thr-blue-500" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-thr-blue-600 dark:group-hover:text-thr-blue-400 transition-colors">{entity.name}</h3>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
-                  onClick={() => handleEdit(entity)}
-                  className="text-thr-blue-600 hover:text-thr-blue-900"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(entity);
+                  }}
+                  className="p-2 rounded-lg text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 transition-colors"
+                  aria-label={`Edit ${entity.name}`}
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleDelete(entity)}
-                  className="text-red-600 hover:text-red-900"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(entity);
+                  }}
+                  className="p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  aria-label={`Delete ${entity.name}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -153,21 +166,21 @@ export default function EntityManagement({ entities, onUpdate }) {
             </div>
 
             {entity.code && (
-              <div className="text-xs text-gray-500 mb-2">
-                Code: <span className="font-mono">{entity.code}</span>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                Code: <span className="font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{entity.code}</span>
               </div>
             )}
 
             {entity.description && (
-              <p className="text-sm text-gray-600">{entity.description}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{entity.description}</p>
             )}
           </div>
         ))}
 
         {entities.length === 0 && (
           <div className="col-span-full card text-center py-12">
-            <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-500">No entities yet. Click "Add Entity" to get started.</p>
+            <Building2 className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+            <p className="text-slate-500 dark:text-slate-400">No entities yet. Click "Add Entity" to get started.</p>
           </div>
         )}
       </div>
