@@ -5,7 +5,14 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
 
-export default function ScheduleGrid({ schedule, employees = [], entities = [], onSave, readOnly = false }) {
+export default function ScheduleGrid({
+  schedule,
+  employees = [],
+  entities = [],
+  onSave,
+  readOnly = false,
+  onCreateNewSchedule
+}) {
   const [assignments, setAssignments] = useState({});
   const [scheduleName, setScheduleName] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -246,9 +253,15 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
           {!readOnly && (
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              <button className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-800 touch-manipulation" aria-label="Create new schedule">
-                <span className="text-base" aria-hidden="true">+</span> <span className="hidden sm:inline">New Schedule</span><span className="sm:hidden">New</span>
-              </button>
+              {onCreateNewSchedule && (
+                <button
+                  className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-800 touch-manipulation"
+                  aria-label="Create new schedule"
+                  onClick={onCreateNewSchedule}
+                >
+                  <span className="text-base" aria-hidden="true">+</span> <span className="hidden sm:inline">New Schedule</span><span className="sm:hidden">New</span>
+                </button>
+              )}
               <button onClick={() => setShowHistoryModal(true)} className="px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-800 touch-manipulation" aria-label="Show history">
                 <History className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Show History</span><span className="sm:hidden">History</span>
               </button>
