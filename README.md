@@ -85,21 +85,21 @@ const firebaseConfig = {
 
 ### Step 2: Configure the Application
 
-1. Open the file: `src/firebase.js`
-2. Replace the placeholder config with your actual Firebase config:
+1. Create a new file named `.env` in the root directory (where `package.json` is).
+2. Copy the contents of `.env.example` into `.env`.
+3. Update the values in `.env` with your actual Firebase config keys:
 
-```javascript
-const firebaseConfig = {
-  apiKey: "YOUR_ACTUAL_API_KEY",
-  authDomain: "YOUR_ACTUAL_AUTH_DOMAIN",
-  projectId: "YOUR_ACTUAL_PROJECT_ID",
-  storageBucket: "YOUR_ACTUAL_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_ACTUAL_SENDER_ID",
-  appId: "YOUR_ACTUAL_APP_ID"
-};
+```bash
+VITE_FIREBASE_API_KEY=your_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 ```
 
-3. Save the file
+4. Save the file.
 
 ### Step 3: Run the Application Locally
 
@@ -236,7 +236,7 @@ If an employee is NOT trained for a task, that section of their row is grayed ou
 ## Troubleshooting
 
 **"Firebase: Error (auth/configuration-not-found)"**
-- You haven't updated `src/firebase.js` with your Firebase config
+- You haven't created or updated `.env` with your Firebase config
 - Follow Step 2 above
 
 **"Cannot find module" errors**
