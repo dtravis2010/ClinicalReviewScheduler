@@ -11,15 +11,26 @@ import { Building2, Activity, MapPin } from 'lucide-react';
  * - Click opens entity detail dialog
  */
 export default function EntityCard({ entity, onClick, isSelected = false }) {
-  // Get primary color based on entity type/name (can be customized)
+  // Get primary color based on entity type/name
   const getEntityColor = (name) => {
-    const colors = {
-      hospital: 'from-thr-blue-500 to-thr-blue-600',
-      clinic: 'from-thr-green-500 to-thr-green-600',
-      specialty: 'from-purple-500 to-purple-600',
-      default: 'from-slate-500 to-slate-600',
-    };
-    return colors.default;
+    if (!name) return 'from-slate-500 to-slate-600';
+    
+    const lowerName = name.toLowerCase();
+    
+    // Hospital entities get blue
+    if (lowerName.includes('hospital') || lowerName.includes('memorial') || lowerName.includes('medical')) {
+      return 'from-thr-blue-500 to-thr-blue-600';
+    }
+    // Specialty/surgical entities get purple
+    if (lowerName.includes('specialty') || lowerName.includes('surgical') || lowerName.includes('orthopedic')) {
+      return 'from-purple-500 to-purple-600';
+    }
+    // Clinic/outpatient entities get green
+    if (lowerName.includes('clinic') || lowerName.includes('outpatient') || lowerName.includes('center')) {
+      return 'from-thr-green-500 to-thr-green-600';
+    }
+    // Default slate
+    return 'from-slate-500 to-slate-600';
   };
 
   return (

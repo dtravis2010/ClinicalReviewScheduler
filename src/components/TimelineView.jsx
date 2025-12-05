@@ -193,7 +193,9 @@ export default function TimelineView({
                     }`}
                   >
                     {dateColumns.map((date, dateIdx) => {
-                      // Mock assignment bar (in real implementation, check actual assignments)
+                      // PLACEHOLDER: Visual demonstration of timeline bars
+                      // In production, this should check actual assignment dates from the schedule
+                      // The modulo pattern creates a visual sample - replace with real date matching
                       const hasDAR = empAssignment.dars?.length > 0 && dateIdx % 3 === 0;
                       const hasCPOE = empAssignment.cpoe && dateIdx % 4 === 1;
                       

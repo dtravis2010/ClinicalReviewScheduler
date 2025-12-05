@@ -71,12 +71,17 @@ export default function EmployeeSidebar({ employee, isOpen, onClose, assignments
     .filter((a) => a.employeeId === employee?.id)
     .slice(0, 3);
 
-  // Calculate skill coverage percentages (mock data for now)
-  const skillCoverage = {
-    DAR: Math.floor(Math.random() * 40) + 60,
-    CR: Math.floor(Math.random() * 40) + 60,
-    CPOE: Math.floor(Math.random() * 40) + 60,
+  // Calculate skill coverage percentages based on employee skills
+  // Using deterministic values based on employee properties
+  const getSkillCoverage = () => {
+    const hasSkill = (skill) => employee?.skills?.includes(skill) || employee?.skills?.includes('Float');
+    return {
+      DAR: hasSkill('DAR') ? 85 : 0,
+      CR: hasSkill('Trace') ? 75 : 0,
+      CPOE: hasSkill('CPOE') ? 90 : 0,
+    };
   };
+  const skillCoverage = getSkillCoverage();
 
   const sidebarContent = (
     <>

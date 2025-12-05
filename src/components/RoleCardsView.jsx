@@ -139,11 +139,10 @@ export default function RoleCardsView({
                 isExpanded ? 'shadow-card-hover' : 'shadow-card'
               }`}
             >
-              {/* Card Header */}
+              {/* Card Header - Full width using negative margin compensation */}
               <button
                 onClick={() => toggleRole(role)}
-                className={`w-full flex items-center justify-between p-4 ${config.bgLight} -mx-6 -mt-6 mb-4 transition-colors hover:opacity-90`}
-                style={{ width: 'calc(100% + 3rem)' }}
+                className={`w-[calc(100%+3rem)] flex items-center justify-between p-4 ${config.bgLight} -mx-6 -mt-6 mb-4 transition-colors hover:opacity-90`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${config.color} flex items-center justify-center shadow-soft`}>
