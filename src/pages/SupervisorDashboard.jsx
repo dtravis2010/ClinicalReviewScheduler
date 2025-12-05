@@ -5,6 +5,7 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
   deleteDoc,
@@ -101,12 +102,15 @@ export default function SupervisorDashboard() {
 
   async function createNewSchedule() {
     try {
+      const defaultDar = await getDefaultDarConfig();
+
       const newSchedule = {
         name: `Schedule ${new Date().toLocaleDateString()}`,
         startDate: '',
         endDate: '',
         status: 'draft',
         assignments: {},
+        darEntities: defaultDar,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -119,6 +123,18 @@ export default function SupervisorDashboard() {
       console.error('Error creating schedule:', error);
       alert('Failed to create new schedule');
     }
+  }
+
+  async function getDefaultDarConfig() {
+    try {
+      const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
+      if (configDoc.exists()) {
+        return configDoc.data().config || {};
+      }
+    } catch (error) {
+      console.error('Error loading default DAR config:', error);
+    }
+    return {};
   }
 
   async function saveSchedule(scheduleData) {
@@ -327,6 +343,7 @@ export default function SupervisorDashboard() {
                 employees={employees}
                 entities={entities}
                 onSave={saveSchedule}
+                onCreateSchedule={createNewSchedule}
                 readOnly={false}
               />
             ) : (
