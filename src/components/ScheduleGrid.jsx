@@ -26,6 +26,8 @@ export default function ScheduleGrid({
   const [hasChanges, setHasChanges] = useState(false);
   const [showDarInfoPanel, setShowDarInfoPanel] = useState(false);
   const [selectedDarIndex, setSelectedDarIndex] = useState(null);
+  // State for editing assignment cells (New Incoming, Cross-Training)
+  const [editingCell, setEditingCell] = useState(null); // { employeeId, field }
 
   const darColumns = ['DAR 1', 'DAR 2', 'DAR 3', 'DAR 4', 'DAR 5', 'DAR 6'];
 
@@ -94,7 +96,7 @@ export default function ScheduleGrid({
 
     Object.entries(assignments).forEach(([empId, assignment]) => {
       if (empId !== employeeId) {
-        ['cpoe', 'newIncoming', 'crossTraining'].forEach(f => {
+        ['newIncoming', 'crossTraining'].forEach(f => {
           if (assignment[f]) {
             if (Array.isArray(assignment[f])) {
               assignment[f].forEach(e => assignedEntities.add(e));
@@ -104,7 +106,7 @@ export default function ScheduleGrid({
           }
         });
       } else {
-        ['cpoe', 'newIncoming', 'crossTraining'].forEach(f => {
+        ['newIncoming', 'crossTraining'].forEach(f => {
           if (f !== field && assignment[f]) {
             if (Array.isArray(assignment[f])) {
               assignment[f].forEach(e => assignedEntities.add(e));
@@ -171,6 +173,25 @@ export default function ScheduleGrid({
     setHasChanges(true);
   }
 
+  function handleAssignmentEntityToggle(employeeId, field, entityName) {
+    setAssignments(prev => {
+      const current = prev[employeeId]?.[field] || [];
+      const currentArray = Array.isArray(current) ? current : (current ? [current] : []);
+      const newArray = currentArray.includes(entityName)
+        ? currentArray.filter(e => e !== entityName)
+        : [...currentArray, entityName];
+
+      return {
+        ...prev,
+        [employeeId]: {
+          ...prev[employeeId],
+          [field]: newArray
+        }
+      };
+    });
+    setHasChanges(true);
+  }
+
   function handleSave() {
     if (onSave) {
       onSave({
@@ -203,7 +224,6 @@ export default function ScheduleGrid({
       });
 
       const formatField = (val) => Array.isArray(val) ? val.join(', ') : (val || '');
-      row['CPOE'] = formatField(assignment.cpoe);
       row['New Incoming Items'] = formatField(assignment.newIncoming);
       row['Cross-Training'] = formatField(assignment.crossTraining);
       row['Special Projects/Assignments'] = formatField(assignment.specialProjects);
@@ -357,25 +377,31 @@ export default function ScheduleGrid({
             </div>
             {!readOnly ? (
               <div className="flex items-center justify-center gap-2 mt-2">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    setHasChanges(true);
-                  }}
-                  className="bg-white/10 backdrop-blur-sm px-2 py-1 rounded-lg border border-white/20 text-white text-xs focus:bg-white/20 focus:outline-none"
-                />
-                <span className="text-white/60 text-xs">to</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => {
-                    setEndDate(e.target.value);
-                    setHasChanges(true);
-                  }}
-                  className="bg-white/10 backdrop-blur-sm px-2 py-1 rounded-lg border border-white/20 text-white text-xs focus:bg-white/20 focus:outline-none"
-                />
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      setHasChanges(true);
+                    }}
+                    className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/30 text-white text-xs font-medium focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-soft transition-all duration-200 cursor-pointer hover:bg-white/25 [color-scheme:dark]"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                </div>
+                <span className="text-white/80 text-xs font-medium px-1">to</span>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => {
+                      setEndDate(e.target.value);
+                      setHasChanges(true);
+                    }}
+                    className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/30 text-white text-xs font-medium focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-soft transition-all duration-200 cursor-pointer hover:bg-white/25 [color-scheme:dark]"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                </div>
               </div>
             ) : (
               <p className="text-white/80 text-sm mt-1">
@@ -467,7 +493,6 @@ export default function ScheduleGrid({
                   </div>
                 </th>
               ))}
-              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[80px]">CPOE</th>
               <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">New<br/>Incoming</th>
               <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">Cross-<br/>Training</th>
               <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px]">Special<br/>Projects</th>
@@ -537,72 +562,131 @@ export default function ScheduleGrid({
                     );
                   })}
 
-                  {/* CPOE */}
-                  <td className="px-2 py-2 text-center" role="gridcell">
-                    {readOnly ? (
-                      <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.cpoe)}</span>
-                    ) : (
-                      <select
-                        multiple
-                        value={Array.isArray(assignment.cpoe) ? assignment.cpoe : (assignment.cpoe ? [assignment.cpoe] : [])}
-                        onChange={(e) => {
-                          const selected = Array.from(e.target.selectedOptions, option => option.value);
-                          handleAssignmentChange(employee.id, 'cpoe', selected);
-                        }}
-                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
-                        size="1"
-                        aria-label={`CPOE assignment for ${employee.name}`}
-                      >
-                        {getAvailableEntitiesForAssignment(employee.id, 'cpoe').map(entity => (
-                          <option key={entity.id} value={entity.name}>{entity.name}</option>
-                        ))}
-                      </select>
-                    )}
-                  </td>
-
-                  {/* New Incoming Items */}
-                  <td className="px-2 py-2 text-center" role="gridcell">
+                  {/* New Incoming Items - Clickable cell with popup */}
+                  <td 
+                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
+                      (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0)
+                        ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                        : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                    }`}
+                    onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'newIncoming' })}
+                    onKeyPress={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
+                        e.preventDefault();
+                        setEditingCell({ employeeId: employee.id, field: 'newIncoming' });
+                      }
+                    }}
+                    tabIndex={!readOnly ? 0 : -1}
+                    role="gridcell"
+                    aria-label={`New incoming items for ${employee.name}: ${formatEntityList(assignment.newIncoming) || 'None'}`}
+                  >
                     {readOnly ? (
                       <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.newIncoming)}</span>
                     ) : (
-                      <select
-                        multiple
-                        value={Array.isArray(assignment.newIncoming) ? assignment.newIncoming : (assignment.newIncoming ? [assignment.newIncoming] : [])}
-                        onChange={(e) => {
-                          const selected = Array.from(e.target.selectedOptions, option => option.value);
-                          handleAssignmentChange(employee.id, 'newIncoming', selected);
-                        }}
-                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
-                        size="1"
-                        aria-label={`New incoming items assignment for ${employee.name}`}
-                      >
-                        {getAvailableEntitiesForAssignment(employee.id, 'newIncoming').map(entity => (
-                          <option key={entity.id} value={entity.name}>{entity.name}</option>
-                        ))}
-                      </select>
+                      <>
+                        {(Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
+                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
+                            {getEntityShortCode(assignment.newIncoming)}
+                          </div>
+                        ) : (
+                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                        )}
+                        {editingCell?.employeeId === employee.id && editingCell?.field === 'newIncoming' && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for New Incoming">
+                            <div className="space-y-1">
+                              {getAvailableEntitiesForAssignment(employee.id, 'newIncoming').map(entity => {
+                                const currentList = assignment.newIncoming || [];
+                                const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
+                                const isSelected = currentArray.includes(entity.name);
+
+                                return (
+                                  <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => handleAssignmentEntityToggle(employee.id, 'newIncoming', entity.name)}
+                                      className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                                      aria-label={`Assign ${entity.name} to New Incoming`}
+                                    />
+                                    <span className="text-sm">{entity.name}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
+                              className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
+                              aria-label="Close entity selection"
+                            >
+                              Done
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </td>
 
-                  {/* Cross-Training */}
-                  <td className="px-2 py-2 text-center" role="gridcell">
+                  {/* Cross-Training - Clickable cell with popup */}
+                  <td 
+                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
+                      (Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0)
+                        ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                        : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                    }`}
+                    onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'crossTraining' })}
+                    onKeyPress={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
+                        e.preventDefault();
+                        setEditingCell({ employeeId: employee.id, field: 'crossTraining' });
+                      }
+                    }}
+                    tabIndex={!readOnly ? 0 : -1}
+                    role="gridcell"
+                    aria-label={`Cross-training for ${employee.name}: ${formatEntityList(assignment.crossTraining) || 'None'}`}
+                  >
                     {readOnly ? (
                       <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.crossTraining)}</span>
                     ) : (
-                      <select
-                        multiple
-                        value={Array.isArray(assignment.crossTraining) ? assignment.crossTraining : (assignment.crossTraining ? [assignment.crossTraining] : [])}
-                        onChange={(e) => {
-                          const selected = Array.from(e.target.selectedOptions, option => option.value);
-                          handleAssignmentChange(employee.id, 'crossTraining', selected);
-                        }}
-                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
-                        size="1"
-                        aria-label={`Cross-training assignment for ${employee.name}`}
-                      >
-                        {getAvailableEntitiesForAssignment(employee.id, 'crossTraining').map(entity => (
-                          <option key={entity.id} value={entity.name}>{entity.name}</option>
-                        ))}
-                      </select>
+                      <>
+                        {(Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
+                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
+                            {getEntityShortCode(assignment.crossTraining)}
+                          </div>
+                        ) : (
+                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                        )}
+                        {editingCell?.employeeId === employee.id && editingCell?.field === 'crossTraining' && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for Cross-Training">
+                            <div className="space-y-1">
+                              {getAvailableEntitiesForAssignment(employee.id, 'crossTraining').map(entity => {
+                                const currentList = assignment.crossTraining || [];
+                                const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
+                                const isSelected = currentArray.includes(entity.name);
+
+                                return (
+                                  <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => handleAssignmentEntityToggle(employee.id, 'crossTraining', entity.name)}
+                                      className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                                      aria-label={`Assign ${entity.name} to Cross-Training`}
+                                    />
+                                    <span className="text-sm">{entity.name}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
+                              className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
+                              aria-label="Close entity selection"
+                            >
+                              Done
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </td>
 
