@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { loginAsSupervisor } = useAuth();
+  const { loginAsSupervisor, isFirebaseConfigured, firebaseConfigError } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -21,7 +21,19 @@ export default function LoginPage() {
       navigate('/supervisor');
     } catch (err) {
       console.error('Login error:', err);
-      setError('Invalid password. Please try again.');
+
+      if (!isFirebaseConfigured) {
+        setError(firebaseConfigError || 'Firebase is not configured. Please check your environment settings.');
+        return;
+      }
+
+      const errorCode = err?.code;
+      const message =
+        errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-login-credentials'
+          ? 'Invalid password. Please try again.'
+          : 'Unable to log in. Please try again or contact an administrator.';
+
+      setError(message);
     } finally {
       setLoading(false);
     }
