@@ -2,15 +2,15 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// TODO: Replace this with your actual Firebase config
-// Get this from Firebase Console > Project Settings > Your apps > Web app
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCYTMk7hB96D3PlSDjK0SUlK6hTS0EgqPo",
+  authDomain: "clinicalreviewscheduler.firebaseapp.com",
+  projectId: "clinicalreviewscheduler",
+  storageBucket: "clinicalreviewscheduler.firebasestorage.app",
+  messagingSenderId: "367634726664",
+  appId: "1:367634726664:web:3e2c1b5bbf06d0c289b6bd",
+  measurementId: "G-FPPY02D8YV"
 };
 
 // Initialize Firebase
