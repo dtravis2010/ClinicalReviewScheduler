@@ -101,11 +101,10 @@ export default function SupervisorDashboard() {
     }));
     setSchedules(schedulesList);
 
-    // Load the most recent draft or create a new one
+    // Prefer the most recent draft, otherwise show the latest schedule
     const draftSchedule = schedulesList.find(s => s.status === 'draft');
-    if (draftSchedule) {
-      setCurrentSchedule(draftSchedule);
-    }
+    const latestSchedule = schedulesList[0] || null;
+    setCurrentSchedule(draftSchedule || latestSchedule);
   }
 
   async function createNewSchedule() {
@@ -141,6 +140,13 @@ export default function SupervisorDashboard() {
       });
 
       setCurrentSchedule({ ...currentSchedule, ...scheduleData });
+      setSchedules((prev) =>
+        prev.map((schedule) =>
+          schedule.id === currentSchedule.id
+            ? { ...schedule, ...scheduleData }
+            : schedule
+        )
+      );
       showSuccess('Schedule saved successfully!');
     } catch (error) {
       console.error('Error saving schedule:', error);
@@ -166,6 +172,13 @@ export default function SupervisorDashboard() {
       });
 
       setCurrentSchedule({ ...currentSchedule, status: 'published' });
+      setSchedules((prev) =>
+        prev.map((schedule) =>
+          schedule.id === currentSchedule.id
+            ? { ...schedule, status: 'published' }
+            : schedule
+        )
+      );
       showSuccess('Schedule published successfully!');
     } catch (error) {
       console.error('Error publishing schedule:', error);
