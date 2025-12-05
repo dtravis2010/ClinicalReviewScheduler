@@ -260,10 +260,10 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
               >
                 <span className="text-base">+</span> New Schedule
-              </button>
-              <button onClick={() => setShowHistoryModal(true)} className="px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors">
-                <History className="w-3.5 h-3.5" /> Show History
-              </button>
+              <button
+                onClick={() => onCreateSchedule?.()}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+              >
               <button className="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors">
                 <Settings className="w-3.5 h-3.5" /> Config
               </button>
@@ -356,24 +356,24 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
       {/* Schedule Table - Spreadsheet-like view */}
       <div className="bg-gradient-to-b from-white to-gray-50 flex-1 overflow-hidden border-t border-gray-200 shadow-inner">
-        <div className="h-full flex flex-col rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-          <table className="w-full table-fixed flex-1 border-collapse">
+        <div className="h-full flex flex-col rounded-xl overflow-hidden border border-gray-300 shadow">
+          <table className="w-full table-fixed flex-1 border-collapse text-[12px]">
             <thead className="sticky top-0 z-20 shadow">
-              <tr className="bg-slate-800 text-white uppercase text-[11px] tracking-[0.04em]">
-                <th className="sticky left-0 bg-slate-800 px-3 py-2 text-left font-bold z-30 w-32 border-r border-slate-700">
+              <tr className="bg-slate-900 text-white uppercase text-[12px] tracking-[0.05em]">
+                <th className="sticky left-0 bg-slate-900 px-3 py-2.5 text-left font-bold z-30 w-36 border-r border-slate-700/70">
                   Team Member
                 </th>
                 {darColumns.map((dar, idx) => (
                   <th
                     key={idx}
-                    className={`px-2 py-2 text-center font-bold border-r border-slate-700 relative ${hoveredCol === idx ? 'bg-slate-700/80' : ''}`}
+                    className={`px-2.5 py-2.5 text-center font-bold border-r border-slate-700/70 relative ${hoveredCol === idx ? 'bg-slate-700/70' : ''}`}
                     onMouseEnter={() => setHoveredCol(idx)}
                     onMouseLeave={() => setHoveredCol(null)}
                   >
-                    <div className="mb-0.5 text-[10px]">{dar}</div>
-                    <div className="text-[9px] font-normal opacity-90">
+                    <div className="mb-0.5 text-[11px]">{dar}</div>
+                    <div className="text-[10px] font-normal opacity-90">
                       {editingDar === idx && !readOnly ? (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-slate-100 rounded shadow-lg p-2 z-50 max-h-48 overflow-y-auto min-w-[220px]">
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded shadow-lg p-2 z-50 max-h-48 overflow-y-auto min-w-[220px]">
                           <div className="space-y-1">
                             {getAvailableEntitiesForDar(idx).map(entity => {
                               const currentList = darEntities[idx] || [];
@@ -402,7 +402,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                         </div>
                       ) : (
                         <div
-                          className="cursor-pointer hover:bg-slate-700/70 rounded px-1 py-0.5 truncate"
+                          className="cursor-pointer hover:bg-slate-700/60 rounded px-1 py-0.5 truncate"
                           onClick={() => !readOnly && setEditingDar(idx)}
                           title={formatEntityList(darEntities[idx])}
                         >
@@ -413,28 +413,28 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                   </th>
                 ))}
                 <th
-                  className={`px-2 py-2 text-center font-bold border-r border-slate-700 ${hoveredCol === 6 ? 'bg-slate-700/80' : ''}`}
+                  className={`px-2.5 py-2.5 text-center font-bold border-r border-slate-700/70 ${hoveredCol === 6 ? 'bg-slate-700/70' : ''}`}
                   onMouseEnter={() => setHoveredCol(6)}
                   onMouseLeave={() => setHoveredCol(null)}
                 >
                   CPOE
                 </th>
                 <th
-                  className={`px-2 py-2 text-center font-bold border-r border-slate-700 ${hoveredCol === 7 ? 'bg-slate-700/80' : ''}`}
+                  className={`px-2.5 py-2.5 text-center font-bold border-r border-slate-700/70 ${hoveredCol === 7 ? 'bg-slate-700/70' : ''}`}
                   onMouseEnter={() => setHoveredCol(7)}
                   onMouseLeave={() => setHoveredCol(null)}
                 >
                   New Incoming
                 </th>
                 <th
-                  className={`px-2 py-2 text-center font-bold border-r border-slate-700 ${hoveredCol === 8 ? 'bg-slate-700/80' : ''}`}
+                  className={`px-2.5 py-2.5 text-center font-bold border-r border-slate-700/70 ${hoveredCol === 8 ? 'bg-slate-700/70' : ''}`}
                   onMouseEnter={() => setHoveredCol(8)}
                   onMouseLeave={() => setHoveredCol(null)}
                 >
                   Cross-Training
                 </th>
                 <th
-                  className={`px-2 py-2 text-center font-bold ${hoveredCol === 9 ? 'bg-slate-700/80' : ''}`}
+                  className={`px-2.5 py-2.5 text-center font-bold ${hoveredCol === 9 ? 'bg-slate-700/70' : ''}`}
                   onMouseEnter={() => setHoveredCol(9)}
                   onMouseLeave={() => setHoveredCol(null)}
                 >
@@ -442,7 +442,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 text-[11px]">
+            <tbody className="divide-y divide-gray-200 text-[12px]">
               {activeEmployees.map((employee, empIdx) => {
                 const assignment = assignments[employee.id] || {};
                 const isDarTrained = canAssignDAR(employee);
@@ -452,14 +452,14 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                 return (
                   <tr
                     key={employee.id}
-                    className={`${empIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} ${isRowHovered ? 'ring-1 ring-emerald-400/40 bg-emerald-50/40' : ''}`}
+                    className={`${empIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${isRowHovered ? 'ring-1 ring-emerald-300/50 bg-emerald-50/40' : ''}`}
                     onMouseEnter={() => setHoveredRow(employee.id)}
                     onMouseLeave={() => setHoveredRow(null)}
                   >
                     {/* Employee Name */}
-                    <td className="sticky left-0 bg-inherit px-3 py-2 z-10 border-r border-gray-200 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                    <td className="sticky left-0 bg-inherit px-3 py-2.5 z-10 border-r border-gray-300 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]">
                       <div className="flex items-center justify-between gap-2">
-                        <span className={`font-semibold text-[11px] ${colorClass} truncate block`} title={employee.name}>
+                        <span className={`font-semibold text-[12px] ${colorClass} truncate block`} title={employee.name}>
                           {employee.name}
                         </span>
                         {!readOnly && (
@@ -483,11 +483,11 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                       return (
                         <td
                           key={darIdx}
-                          className={`px-1.5 py-2 text-center cursor-pointer transition-colors border border-gray-200 ${
+                          className={`px-2 py-2.5 text-center cursor-pointer transition-colors border border-gray-200 ${
                             !isDarTrained
-                              ? 'bg-gray-200'
+                              ? 'bg-gray-100 text-gray-400'
                               : isAssigned
-                                ? 'bg-emerald-50 hover:bg-emerald-100'
+                                ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200'
                                 : 'bg-white hover:bg-slate-100'
                           } ${isColHovered ? 'bg-emerald-50/70' : ''}`}
                           onClick={() => isDarTrained && handleDARToggle(employee.id, darIdx)}
@@ -496,14 +496,14 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                         >
                           {isDarTrained ? (
                             isAssigned ? (
-                              <div className="text-[10px] font-semibold text-emerald-800 leading-tight">
+                              <div className="text-[11px] font-semibold text-emerald-800 leading-tight">
                                 {entityCode || '✓'}
                               </div>
                             ) : (
-                              <span className="text-gray-300 text-[11px]">—</span>
+                              <span className="text-gray-300 text-[12px]">—</span>
                             )
                           ) : (
-                            <span className="text-gray-300 text-[11px]">—</span>
+                            <span className="text-gray-400 text-[12px]">—</span>
                           )}
                         </td>
                       );
@@ -511,12 +511,12 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
                     {/* CPOE */}
                     <td
-                      className={`px-2 py-2 text-center border border-gray-200 ${hoveredCol === 6 ? 'bg-emerald-50/70' : ''}`}
+                      className={`px-2.5 py-2.5 text-center border border-gray-200 ${hoveredCol === 6 ? 'bg-emerald-50/70' : ''}`}
                       onMouseEnter={() => setHoveredCol(6)}
                       onMouseLeave={() => setHoveredCol(null)}
                     >
                       {readOnly ? (
-                        <span className="text-gray-700 font-semibold text-[11px]">{formatEntityList(assignment.cpoe)}</span>
+                        <span className="text-gray-800 font-semibold text-[12px]">{formatEntityList(assignment.cpoe)}</span>
                       ) : (
                         <select
                           multiple
@@ -525,7 +525,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'cpoe', selected);
                           }}
-                          className="w-full px-2 py-1 text-[11px] border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                          className="w-full px-2.5 py-1.5 text-[12px] border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                           size="1"
                         >
                           {getAvailableEntitiesForAssignment(employee.id, 'cpoe').map(entity => (
@@ -537,12 +537,12 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
                     {/* New Incoming Items */}
                     <td
-                      className={`px-2 py-2 text-center border border-gray-200 ${hoveredCol === 7 ? 'bg-emerald-50/70' : ''}`}
+                      className={`px-2.5 py-2.5 text-center border border-gray-200 ${hoveredCol === 7 ? 'bg-emerald-50/70' : ''}`}
                       onMouseEnter={() => setHoveredCol(7)}
                       onMouseLeave={() => setHoveredCol(null)}
                     >
                       {readOnly ? (
-                        <span className="text-gray-700 font-semibold text-[11px]">{formatEntityList(assignment.newIncoming)}</span>
+                        <span className="text-gray-800 font-semibold text-[12px]">{formatEntityList(assignment.newIncoming)}</span>
                       ) : (
                         <select
                           multiple
@@ -551,7 +551,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'newIncoming', selected);
                           }}
-                          className="w-full px-2 py-1 text-[11px] border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                          className="w-full px-2.5 py-1.5 text-[12px] border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                           size="1"
                         >
                           {getAvailableEntitiesForAssignment(employee.id, 'newIncoming').map(entity => (
@@ -563,12 +563,12 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
                     {/* Cross-Training */}
                     <td
-                      className={`px-2 py-2 text-center border border-gray-200 ${hoveredCol === 8 ? 'bg-emerald-50/70' : ''}`}
+                      className={`px-2.5 py-2.5 text-center border border-gray-200 ${hoveredCol === 8 ? 'bg-emerald-50/70' : ''}`}
                       onMouseEnter={() => setHoveredCol(8)}
                       onMouseLeave={() => setHoveredCol(null)}
                     >
                       {readOnly ? (
-                        <span className="text-gray-700 font-semibold text-[11px]">{formatEntityList(assignment.crossTraining)}</span>
+                        <span className="text-gray-800 font-semibold text-[12px]">{formatEntityList(assignment.crossTraining)}</span>
                       ) : (
                         <select
                           multiple
@@ -577,7 +577,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'crossTraining', selected);
                           }}
-                          className="w-full px-2 py-1 text-[11px] border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                          className="w-full px-2.5 py-1.5 text-[12px] border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                           size="1"
                         >
                           {getAvailableEntitiesForAssignment(employee.id, 'crossTraining').map(entity => (
@@ -589,18 +589,18 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
                     {/* Special Projects/Assignments */}
                     <td
-                      className={`px-2 py-2 text-center border border-gray-200 ${hoveredCol === 9 ? 'bg-emerald-50/70' : ''}`}
+                      className={`px-2.5 py-2.5 text-center border border-gray-200 ${hoveredCol === 9 ? 'bg-emerald-50/70' : ''}`}
                       onMouseEnter={() => setHoveredCol(9)}
                       onMouseLeave={() => setHoveredCol(null)}
                     >
                       {readOnly ? (
-                        <span className="text-gray-700 font-semibold text-[11px]">{formatEntityList(assignment.specialProjects)}</span>
+                        <span className="text-gray-800 font-semibold text-[12px]">{formatEntityList(assignment.specialProjects)}</span>
                       ) : (
                         <input
                           type="text"
                           value={formatEntityList(assignment.specialProjects)}
                           onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
-                          className="w-full px-2 py-1 text-[11px] border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center bg-white"
+                          className="w-full px-2.5 py-1.5 text-[12px] border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center bg-white"
                           placeholder=""
                         />
                       )}
