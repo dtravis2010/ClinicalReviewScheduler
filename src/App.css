@@ -1,0 +1,28 @@
+/* Additional app-specific styles */
+.btn-primary {
+  @apply bg-thr-blue-500 hover:bg-thr-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-thr-green-500 hover:bg-thr-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+}
+
+.btn-danger {
+  @apply bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+}
+
+.btn-outline {
+  @apply border-2 border-thr-blue-500 text-thr-blue-500 hover:bg-thr-blue-50 font-semibold py-2 px-4 rounded-lg transition-colors;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-md p-6;
+}
+
+.input-field {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-thr-blue-500 focus:border-transparent outline-none;
+}
+
+.label {
+  @apply block text-sm font-semibold text-gray-700 mb-2;
+}
