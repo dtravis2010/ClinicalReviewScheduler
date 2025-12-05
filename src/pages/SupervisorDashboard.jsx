@@ -6,9 +6,9 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
-  deleteDoc,
   query,
   orderBy,
   serverTimestamp
@@ -45,8 +45,10 @@ export default function SupervisorDashboard() {
   const [entities, setEntities] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [currentSchedule, setCurrentSchedule] = useState(null);
+  const [defaultDarConfig, setDefaultDarConfig] = useState({});
   const [loading, setLoading] = useState(true);
-  const canStartNewSchedule = !currentSchedule || currentSchedule.status === 'published';
+  const [creatingSchedule, setCreatingSchedule] = useState(false);
+  const scheduleStatus = currentSchedule?.status || 'draft';
 
   useEffect(() => {
     if (!isSupervisor) {
@@ -58,10 +60,11 @@ export default function SupervisorDashboard() {
 
   async function loadData() {
     try {
+      const darConfig = await loadDarConfig();
       await Promise.all([
         loadEmployees(),
         loadEntities(),
-        loadSchedules()
+        loadSchedules(darConfig)
       ]);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -92,14 +95,31 @@ export default function SupervisorDashboard() {
     setEntities(entitiesList);
   }
 
-  async function loadSchedules() {
+  async function loadDarConfig() {
+    try {
+      const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
+      const config = configDoc.exists() ? configDoc.data().config || {} : {};
+      setDefaultDarConfig(config);
+      return config;
+    } catch (error) {
+      console.error('Error loading DAR defaults:', error);
+      return {};
+    }
+  }
+
+  async function loadSchedules(darConfig = defaultDarConfig) {
     const schedulesRef = collection(db, 'schedules');
     const q = query(schedulesRef, orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
-    const schedulesList = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const schedulesList = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        status: data.status || 'draft',
+        darEntities: data.darEntities || darConfig,
+        ...data
+      };
+    });
     setSchedules(schedulesList);
 
     // Prefer the most recent draft, otherwise show the latest schedule
@@ -109,13 +129,30 @@ export default function SupervisorDashboard() {
   }
 
   async function createNewSchedule() {
+    if (creatingSchedule) return;
+
+    if (currentSchedule?.status === 'draft') {
+      const confirmed = await showConfirm(
+        'You already have a draft schedule. Start a new one anyway?',
+        { confirmText: 'Start new', cancelText: 'Keep editing' }
+      );
+      if (!confirmed) return;
+    }
+
+    setCreatingSchedule(true);
+
     try {
+      const darConfig = Object.keys(defaultDarConfig || {}).length
+        ? defaultDarConfig
+        : await loadDarConfig();
+
       const newSchedule = {
         name: `Schedule ${new Date().toLocaleDateString()}`,
         startDate: '',
         endDate: '',
         status: 'draft',
         assignments: {},
+        darEntities: darConfig,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -123,10 +160,12 @@ export default function SupervisorDashboard() {
       const docRef = await addDoc(collection(db, 'schedules'), newSchedule);
       const created = { id: docRef.id, ...newSchedule };
       setCurrentSchedule(created);
-      setSchedules([created, ...schedules]);
+      setSchedules((prev) => [created, ...prev]);
     } catch (error) {
       console.error('Error creating schedule:', error);
       showError('Failed to create new schedule');
+    } finally {
+      setCreatingSchedule(false);
     }
   }
 
@@ -312,12 +351,12 @@ export default function SupervisorDashboard() {
                       Status:{' '}
                       <span
                         className={`font-medium ${
-                          currentSchedule.status === 'published'
+                          scheduleStatus === 'published'
                             ? 'text-green-600 dark:text-green-400'
                             : 'text-yellow-600 dark:text-yellow-400'
                         }`}
                       >
-                        {currentSchedule.status.toUpperCase()}
+                        {scheduleStatus.toUpperCase()}
                       </span>
                     </p>
                   </div>
@@ -328,17 +367,16 @@ export default function SupervisorDashboard() {
                 )}
               </div>
               <div className="flex items-center gap-3">
-                {canStartNewSchedule && (
-                  <button
-                    onClick={createNewSchedule}
-                    className="btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-900"
-                    aria-label="Create new schedule"
-                  >
-                    <Plus className="w-4 h-4 inline mr-2" aria-hidden="true" />
-                    {currentSchedule?.status === 'published' ? 'Start New Schedule' : 'Create New Schedule'}
-                  </button>
-                )}
-                {currentSchedule && currentSchedule.status === 'draft' && (
+                <button
+                  onClick={createNewSchedule}
+                  disabled={creatingSchedule}
+                  className={`btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-900 ${creatingSchedule ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  aria-label="Create new schedule"
+                >
+                  <Plus className="w-4 h-4 inline mr-2" aria-hidden="true" />
+                  {creatingSchedule ? 'Creating...' : currentSchedule ? 'Start New Schedule' : 'Create New Schedule'}
+                </button>
+                {currentSchedule && scheduleStatus !== 'published' && (
                   <>
                     <button
                       onClick={publishSchedule}
@@ -360,7 +398,7 @@ export default function SupervisorDashboard() {
                 employees={employees}
                 entities={entities}
                 onSave={saveSchedule}
-                onCreateNewSchedule={canStartNewSchedule ? createNewSchedule : undefined}
+                onCreateNewSchedule={createNewSchedule}
                 readOnly={false}
               />
             ) : (

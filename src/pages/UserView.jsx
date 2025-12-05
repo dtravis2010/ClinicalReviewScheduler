@@ -28,7 +28,7 @@ export default function UserView() {
 
       try {
         const schedulesRef = collection(db, 'schedules');
-        const q = query(
+        const publishedQuery = query(
           schedulesRef,
           where('status', '==', 'published'),
           orderBy('createdAt', 'desc'),
@@ -39,9 +39,25 @@ export default function UserView() {
           timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
         });
 
-        const snapshot = await Promise.race([getDocs(q), timeoutPromise]);
+        let snapshot = await Promise.race([getDocs(publishedQuery), timeoutPromise]);
 
         if (timeoutId) clearTimeout(timeoutId);
+
+        // Fallback for schedules created before "status" was added
+        if (snapshot.empty) {
+          const fallbackTimeout = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
+          });
+
+          const fallbackQuery = query(
+            schedulesRef,
+            orderBy('createdAt', 'desc'),
+            limit(1)
+          );
+
+          snapshot = await Promise.race([getDocs(fallbackQuery), fallbackTimeout]);
+          if (timeoutId) clearTimeout(timeoutId);
+        }
 
         if (isMounted) {
           if (!snapshot.empty) {

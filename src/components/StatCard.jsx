@@ -1,5 +1,3 @@
-import { LucideIcon } from 'lucide-react';
-
 export default function StatCard({ title, value, icon: Icon, description, trend, color = 'blue' }) {
   const colorClasses = {
     blue: {
