@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 
 /**
  * A reusable, accessible Modal component with focus trap and keyboard navigation
+ * Modern THR-styled with clean design
  *
  * @param {Object} props
  * @param {boolean} props.isOpen - Controls modal visibility
@@ -29,7 +30,7 @@ export default function Modal({
   const previousActiveElementRef = useRef(null);
   const titleId = useRef(`modal-title-${Math.random().toString(36).substr(2, 9)}`);
 
-  // Size mapping
+  // Size mapping - Modern 20px rounded corners
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -149,26 +150,26 @@ export default function Modal({
       {/* Backdrop with blur */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
 
-      {/* Modal */}
+      {/* Modal - Modern THR styling with 20px rounded corners */}
       <div
         ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId.current}
-        className={`relative bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} animate-slideUp`}
+        className={`relative bg-white dark:bg-slate-800 rounded-2xl shadow-soft-lg w-full ${sizeClasses[size]} animate-scale-up`}
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
             {title && (
-              <h3 id={titleId.current} className="text-lg font-semibold text-gray-900">
+              <h3 id={titleId.current} className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {title}
               </h3>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-all duration-200"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
