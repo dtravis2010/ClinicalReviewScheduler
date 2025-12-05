@@ -7,15 +7,27 @@
       // Single Page App hack for GitHub Pages
       // Redirects 404s back to index.html with the original path preserved
       // in the URL so the app's router can handle it
-      const pathSegmentsToKeep = 1; // Keep /ClinicalReviewScheduler/ base path
-      const l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
+      (function() {
+        var loc = window.location;
+        var pathSegmentsToKeep = 1; // Keep /ClinicalReviewScheduler/ base path
+        
+        // Build the base path
+        var basePath = loc.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/');
+        
+        // Get the route path (after the base path)
+        var routePath = loc.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/');
+        
+        // Encode ampersands to preserve them through the redirect
+        var encodedPath = routePath.replace(/&/g, '~and~');
+        var encodedSearch = loc.search ? '&' + loc.search.slice(1).replace(/&/g, '~and~') : '';
+        
+        // Redirect to index.html with path info in query string
+        var redirectUrl = loc.protocol + '//' + loc.hostname + 
+          (loc.port ? ':' + loc.port : '') + 
+          basePath + '/?/' + encodedPath + encodedSearch + loc.hash;
+        
+        loc.replace(redirectUrl);
+      })();
     </script>
   </head>
   <body>
