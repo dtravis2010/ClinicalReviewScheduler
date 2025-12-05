@@ -18,20 +18,10 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
   const darColumns = ['DAR 1', 'DAR 2', 'DAR 3', 'DAR 4', 'DAR 5', 'DAR 6'];
 
-  // Color palette for employee names
   const employeeColors = [
-    'text-blue-600',
-    'text-pink-600',
-    'text-green-600',
-    'text-purple-600',
-    'text-orange-600',
-    'text-cyan-600',
-    'text-red-600',
-    'text-indigo-600',
-    'text-teal-600',
-    'text-fuchsia-600',
-    'text-lime-600',
-    'text-rose-600',
+    'text-blue-600', 'text-pink-600', 'text-green-600', 'text-purple-600',
+    'text-orange-600', 'text-cyan-600', 'text-red-600', 'text-indigo-600',
+    'text-teal-600', 'text-fuchsia-600', 'text-lime-600', 'text-rose-600',
   ];
 
   useEffect(() => {
@@ -179,13 +169,13 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
       const row = { 'TEAM MEMBER': employee.name };
 
       darColumns.forEach((dar, idx) => {
-        const isDarTrained = employee.skills?.includes('DAR') || employee.skills?.includes('Float');
+        const isDarTrained = canAssignDAR(employee);
         const entityList = darEntities[idx] || [];
         const entityNames = Array.isArray(entityList) ? entityList.join('/') : (entityList || '');
         const columnName = entityNames ? `${dar}\n${entityNames}` : dar;
 
-        if (isDarTrained) {
-          row[columnName] = assignment.dars?.includes(idx) ? '✓' : '';
+        if (isDarTrained && assignment.dars?.includes(idx)) {
+          row[columnName] = entityNames;
         } else {
           row[columnName] = '';
         }
@@ -228,43 +218,50 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
     return `${startDate} to ${endDate}`;
   }
 
+  // Get short entity code for display in cells
+  function getEntityShortCode(entityList) {
+    if (!entityList) return '';
+    if (Array.isArray(entityList)) {
+      return entityList.map(e => {
+        const parts = e.split('/');
+        return parts[0];
+      }).join('/');
+    }
+    const parts = entityList.split('/');
+    return parts[0];
+  }
+
   const activeEmployees = employees.filter(e => !e.archived);
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 h-screen flex flex-col">
       {/* Header Section */}
-      <div className="bg-white px-6 py-4 border-b border-gray-200">
+      <div className="bg-white px-4 py-3 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Schedule Builder</h1>
-            <p className="text-sm text-gray-600 mt-1">Click any cell to assign or modify</p>
+            <h1 className="text-xl font-bold text-gray-900">Schedule Builder</h1>
+            <p className="text-xs text-gray-600 mt-0.5">Click any cell to assign or modify</p>
           </div>
 
           {!readOnly && (
-            <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors">
-                <span className="text-lg">+</span> New Schedule
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors">
+                <span className="text-base">+</span> New Schedule
               </button>
-              <button
-                onClick={() => setShowHistoryModal(true)}
-                className="px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
-              >
-                <History className="w-4 h-4" /> Show History
+              <button onClick={() => setShowHistoryModal(true)} className="px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors">
+                <History className="w-3.5 h-3.5" /> Show History
               </button>
-              <button className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors">
-                <Settings className="w-4 h-4" /> Config
+              <button className="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors">
+                <Settings className="w-3.5 h-3.5" /> Config
               </button>
-              <button
-                onClick={exportToExcel}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
-              >
-                <FileDown className="w-4 h-4" /> Export
+              <button onClick={exportToExcel} className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors">
+                <FileDown className="w-3.5 h-3.5" /> Export
               </button>
-              <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors">
-                <Eye className="w-4 h-4" /> Published
+              <button className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors">
+                <Eye className="w-3.5 h-3.5" /> Published
               </button>
-              <button className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors">
-                <Upload className="w-4 h-4" /> Unpublish (Draft)
+              <button className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors">
+                <Upload className="w-3.5 h-3.5" /> Unpublish (Draft)
               </button>
             </div>
           )}
@@ -272,87 +269,88 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
       </div>
 
       {/* Date Header - Green Banner */}
-      <div className="bg-emerald-600 px-6 py-6 text-white">
+      <div className="bg-emerald-600 px-4 py-3 text-white flex-shrink-0">
         <div className="flex items-center justify-between">
-          <button className="p-2 hover:bg-emerald-700 rounded-lg transition-colors">
-            <ChevronLeft className="w-6 h-6" />
+          <button className="p-1.5 hover:bg-emerald-700 rounded-lg transition-colors">
+            <ChevronLeft className="w-5 h-5" />
           </button>
 
           <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="flex items-center gap-2 bg-emerald-700 px-4 py-2 rounded-lg">
-                <span className="text-xl">✓</span>
-                <span className="font-semibold text-lg">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <div className="flex items-center gap-2 bg-emerald-700 px-3 py-1.5 rounded-lg">
+                <span className="text-base">✓</span>
+                <span className="font-semibold text-sm">
                   {scheduleName || 'DEC'} ({formatDateRange() || '2025-12-03 to 2025-12-16'})
                 </span>
               </div>
-              <span className="px-3 py-1 bg-emerald-700 rounded-full text-sm font-semibold">LIVE</span>
+              <span className="px-2 py-0.5 bg-emerald-700 rounded-full text-xs font-semibold">LIVE</span>
             </div>
-            <p className="text-emerald-100 text-sm">{formatDateRange() || '2025-12-03 to 2025-12-16'}</p>
+            <p className="text-emerald-100 text-xs">{formatDateRange() || '2025-12-03 to 2025-12-16'}</p>
           </div>
 
-          <button className="p-2 hover:bg-emerald-700 rounded-lg transition-colors">
-            <ChevronRight className="w-6 h-6" />
+          <button className="p-1.5 hover:bg-emerald-700 rounded-lg transition-colors">
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Schedule Table */}
-      <div className="bg-white">
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
+      {/* Schedule Table - Fills remaining space */}
+      <div className="bg-white flex-1 overflow-hidden">
+        <div className="h-full flex flex-col">
+          <table className="w-full border-collapse table-fixed flex-1">
+            <thead className="sticky top-0 z-20">
               <tr className="bg-teal-600 text-white">
-                <th className="sticky left-0 bg-teal-600 px-6 py-4 text-left text-sm font-bold uppercase z-10 min-w-[200px]">
+                <th className="sticky left-0 bg-teal-600 px-2 py-1.5 text-left text-[10px] font-bold uppercase z-30 w-28">
                   TEAM MEMBER
                 </th>
                 {darColumns.map((dar, idx) => (
-                  <th key={idx} className="px-4 py-4 text-center text-sm font-bold uppercase min-w-[140px] relative">
-                    <div className="mb-1">{dar}</div>
-                    <div className="text-xs font-normal opacity-90">
+                  <th key={idx} className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-20 relative">
+                    <div className="mb-0.5 text-[9px]">{dar}</div>
+                    <div className="text-[8px] font-normal opacity-90">
                       {editingDar === idx && !readOnly ? (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-white rounded shadow-lg p-3 z-50 max-h-64 overflow-y-auto">
-                          <div className="space-y-2">
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-white rounded shadow-lg p-2 z-50 max-h-48 overflow-y-auto min-w-[200px]">
+                          <div className="space-y-1">
                             {getAvailableEntitiesForDar(idx).map(entity => {
                               const currentList = darEntities[idx] || [];
                               const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                               const isSelected = currentArray.includes(entity.name);
 
                               return (
-                                <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded text-gray-900">
+                                <label key={entity.id} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-100 p-1.5 rounded text-gray-900">
                                   <input
                                     type="checkbox"
                                     checked={isSelected}
                                     onChange={() => handleDarEntityToggle(idx, entity.name)}
-                                    className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+                                    className="w-3.5 h-3.5 text-teal-600 rounded focus:ring-teal-500"
                                   />
-                                  <span className="text-sm">{entity.name}</span>
+                                  <span className="text-xs">{entity.name}</span>
                                 </label>
                               );
                             })}
                           </div>
                           <button
                             onClick={() => setEditingDar(null)}
-                            className="mt-3 w-full px-3 py-1.5 bg-teal-600 text-white rounded text-sm hover:bg-teal-700"
+                            className="mt-2 w-full px-2 py-1 bg-teal-600 text-white rounded text-xs hover:bg-teal-700"
                           >
                             Done
                           </button>
                         </div>
                       ) : (
                         <div
-                          className="cursor-pointer hover:bg-teal-700 rounded px-2 py-1"
+                          className="cursor-pointer hover:bg-teal-700 rounded px-1 py-0.5 truncate"
                           onClick={() => !readOnly && setEditingDar(idx)}
+                          title={formatEntityList(darEntities[idx])}
                         >
-                          {formatEntityList(darEntities[idx]) || 'Click to assign'}
+                          {getEntityShortCode(darEntities[idx]) || 'Click'}
                         </div>
                       )}
                     </div>
                   </th>
                 ))}
-                <th className="px-4 py-4 text-center text-sm font-bold uppercase min-w-[120px]">CPOE</th>
-                <th className="px-4 py-4 text-center text-sm font-bold uppercase min-w-[140px]">New Incoming<br/>Items</th>
-                <th className="px-4 py-4 text-center text-sm font-bold uppercase min-w-[140px]">Cross-<br/>Training</th>
-                <th className="px-4 py-4 text-center text-sm font-bold uppercase min-w-[180px]">Special<br/>Projects/Assignments</th>
+                <th className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-16">CPOE</th>
+                <th className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-20">New<br/>Incoming</th>
+                <th className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-20">Cross-<br/>Training</th>
+                <th className="px-1 py-1.5 text-center text-[10px] font-bold uppercase w-24">Special<br/>Projects</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -364,48 +362,48 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                 return (
                   <tr key={employee.id} className={empIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     {/* Employee Name */}
-                    <td className="sticky left-0 bg-inherit px-6 py-4 z-10">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className={`font-semibold text-base ${colorClass}`}>
-                          {employee.name}
-                        </span>
-                        {!readOnly && (
-                          <button
-                            onClick={() => showEmployeeHistory(employee)}
-                            className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <History className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+                    <td className="sticky left-0 bg-inherit px-2 py-1 z-10">
+                      <span className={`font-semibold text-[10px] ${colorClass} truncate block`} title={employee.name}>
+                        {employee.name}
+                      </span>
                     </td>
 
-                    {/* DAR Columns */}
-                    {darColumns.map((_, darIdx) => (
-                      <td key={darIdx} className={`px-4 py-4 text-center ${!isDarTrained ? 'bg-gray-100' : ''}`}>
-                        {isDarTrained ? (
-                          readOnly ? (
-                            assignment.dars?.includes(darIdx) ? (
-                              <span className="text-gray-400 text-lg">—</span>
-                            ) : null
+                    {/* DAR Columns - Clickable Cells */}
+                    {darColumns.map((_, darIdx) => {
+                      const isAssigned = assignment.dars?.includes(darIdx);
+                      const entityCode = getEntityShortCode(darEntities[darIdx]);
+
+                      return (
+                        <td
+                          key={darIdx}
+                          className={`px-0.5 py-1 text-center cursor-pointer transition-colors ${
+                            !isDarTrained
+                              ? 'bg-gray-200'
+                              : isAssigned
+                                ? 'bg-teal-100 hover:bg-teal-200'
+                                : 'hover:bg-gray-100'
+                          }`}
+                          onClick={() => isDarTrained && handleDARToggle(employee.id, darIdx)}
+                        >
+                          {isDarTrained ? (
+                            isAssigned ? (
+                              <div className="text-[9px] font-medium text-teal-800 leading-tight">
+                                {entityCode || '✓'}
+                              </div>
+                            ) : (
+                              <span className="text-gray-300 text-[9px]">—</span>
+                            )
                           ) : (
-                            <input
-                              type="checkbox"
-                              checked={assignment.dars?.includes(darIdx) || false}
-                              onChange={() => handleDARToggle(employee.id, darIdx)}
-                              className="w-5 h-5 text-teal-600 rounded focus:ring-teal-500 cursor-pointer"
-                            />
-                          )
-                        ) : (
-                          <span className="text-gray-300 text-lg">—</span>
-                        )}
-                      </td>
-                    ))}
+                            <span className="text-gray-300 text-[9px]">—</span>
+                          )}
+                        </td>
+                      );
+                    })}
 
                     {/* CPOE */}
-                    <td className="px-4 py-4 text-center">
+                    <td className="px-1 py-2 text-center">
                       {readOnly ? (
-                        <span className="text-gray-600 text-sm">{formatEntityList(assignment.cpoe)}</span>
+                        <span className="text-gray-600 text-[10px]">{formatEntityList(assignment.cpoe)}</span>
                       ) : (
                         <select
                           multiple
@@ -414,7 +412,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'cpoe', selected);
                           }}
-                          className="w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white"
+                          className="w-full px-1 py-0.5 text-[10px] border border-gray-200 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white"
                           size="1"
                         >
                           {getAvailableEntitiesForAssignment(employee.id, 'cpoe').map(entity => (
@@ -425,9 +423,9 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                     </td>
 
                     {/* New Incoming Items */}
-                    <td className="px-4 py-4 text-center">
+                    <td className="px-1 py-2 text-center">
                       {readOnly ? (
-                        <span className="text-gray-600 text-sm">{formatEntityList(assignment.newIncoming)}</span>
+                        <span className="text-gray-600 text-[10px]">{formatEntityList(assignment.newIncoming)}</span>
                       ) : (
                         <select
                           multiple
@@ -436,7 +434,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'newIncoming', selected);
                           }}
-                          className="w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white"
+                          className="w-full px-1 py-0.5 text-[10px] border border-gray-200 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white"
                           size="1"
                         >
                           {getAvailableEntitiesForAssignment(employee.id, 'newIncoming').map(entity => (
@@ -447,9 +445,9 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                     </td>
 
                     {/* Cross-Training */}
-                    <td className="px-4 py-4 text-center">
+                    <td className="px-1 py-2 text-center">
                       {readOnly ? (
-                        <span className="text-gray-600 text-sm">{formatEntityList(assignment.crossTraining)}</span>
+                        <span className="text-gray-600 text-[10px]">{formatEntityList(assignment.crossTraining)}</span>
                       ) : (
                         <select
                           multiple
@@ -458,7 +456,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                             handleAssignmentChange(employee.id, 'crossTraining', selected);
                           }}
-                          className="w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white"
+                          className="w-full px-1 py-0.5 text-[10px] border border-gray-200 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white"
                           size="1"
                         >
                           {getAvailableEntitiesForAssignment(employee.id, 'crossTraining').map(entity => (
@@ -469,15 +467,15 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                     </td>
 
                     {/* Special Projects/Assignments */}
-                    <td className="px-4 py-4 text-center">
+                    <td className="px-1 py-2 text-center">
                       {readOnly ? (
-                        <span className="text-gray-600 text-sm">{formatEntityList(assignment.specialProjects)}</span>
+                        <span className="text-gray-600 text-[10px]">{formatEntityList(assignment.specialProjects)}</span>
                       ) : (
                         <input
                           type="text"
                           value={formatEntityList(assignment.specialProjects)}
                           onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
-                          className="w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 text-center bg-white"
+                          className="w-full px-1 py-0.5 text-[10px] border border-gray-200 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 text-center bg-white"
                           placeholder=""
                         />
                       )}
@@ -496,14 +494,14 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
         </div>
       </div>
 
-      {/* Save Button (floating or at bottom) */}
+      {/* Save Button */}
       {!readOnly && hasChanges && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-4 right-4 z-50">
           <button
             onClick={handleSave}
-            className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold text-base shadow-lg flex items-center gap-2"
+            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold text-sm shadow-lg flex items-center gap-2"
           >
-            <Save className="w-5 h-5" />
+            <Save className="w-4 h-4" />
             Save Changes
           </button>
         </div>

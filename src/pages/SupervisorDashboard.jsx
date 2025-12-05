@@ -356,6 +356,7 @@ export default function SupervisorDashboard() {
 
         {activeTab === 'settings' && (
           <Settings
+            employees={employees}
             onUpdate={loadData}
           />
         )}

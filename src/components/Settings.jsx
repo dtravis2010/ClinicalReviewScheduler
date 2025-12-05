@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Settings as SettingsIcon, Save, Building2 } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Building2, BarChart3 } from 'lucide-react';
 import EntityManagement from './EntityManagement';
+import ProductivityImport from './ProductivityImport';
 
-export default function Settings({ onUpdate }) {
+export default function Settings({ employees = [], onUpdate }) {
   const [darConfig, setDarConfig] = useState({});
   const [entities, setEntities] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
@@ -159,6 +160,22 @@ export default function Settings({ onUpdate }) {
           </div>
         </div>
         <EntityManagement entities={entities} onUpdate={loadEntities} />
+      </div>
+
+      {/* Productivity Import */}
+      <div className="card">
+        <div className="flex items-center gap-3 mb-4">
+          <BarChart3 className="w-6 h-6 text-thr-blue-500" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Productivity Data Import
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Import and view employee productivity metrics from CSV files
+            </p>
+          </div>
+        </div>
+        <ProductivityImport employees={employees} />
       </div>
     </div>
   );
