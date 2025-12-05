@@ -46,6 +46,7 @@ export default function SupervisorDashboard() {
   const [schedules, setSchedules] = useState([]);
   const [currentSchedule, setCurrentSchedule] = useState(null);
   const [defaultDarConfig, setDefaultDarConfig] = useState({});
+  const [defaultDarCount, setDefaultDarCount] = useState(5); // Default to 5 DARs
   const [loading, setLoading] = useState(true);
   const [creatingSchedule, setCreatingSchedule] = useState(false);
   const scheduleStatus = currentSchedule?.status || 'draft';
@@ -60,11 +61,11 @@ export default function SupervisorDashboard() {
 
   async function loadData() {
     try {
-      const darConfig = await loadDarConfig();
+      const darConfigData = await loadDarConfig();
       await Promise.all([
         loadEmployees(),
         loadEntities(),
-        loadSchedules(darConfig)
+        loadSchedules(darConfigData.config)
       ]);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -98,12 +99,18 @@ export default function SupervisorDashboard() {
   async function loadDarConfig() {
     try {
       const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
-      const config = configDoc.exists() ? configDoc.data().config || {} : {};
-      setDefaultDarConfig(config);
-      return config;
+      if (configDoc.exists()) {
+        const data = configDoc.data();
+        const config = data.config || {};
+        const darCount = data.darCount || 5;
+        setDefaultDarConfig(config);
+        setDefaultDarCount(darCount);
+        return { config, darCount };
+      }
+      return { config: {}, darCount: 5 };
     } catch (error) {
       console.error('Error loading DAR defaults:', error);
-      return {};
+      return { config: {}, darCount: 5 };
     }
   }
 
@@ -142,9 +149,14 @@ export default function SupervisorDashboard() {
     setCreatingSchedule(true);
 
     try {
-      const darConfig = Object.keys(defaultDarConfig || {}).length
-        ? defaultDarConfig
-        : await loadDarConfig();
+      let darConfig = defaultDarConfig;
+      let darCount = defaultDarCount;
+      
+      if (!Object.keys(defaultDarConfig || {}).length) {
+        const configData = await loadDarConfig();
+        darConfig = configData.config;
+        darCount = configData.darCount;
+      }
 
       const newSchedule = {
         name: `Schedule ${new Date().toLocaleDateString()}`,
@@ -153,6 +165,7 @@ export default function SupervisorDashboard() {
         status: 'draft',
         assignments: {},
         darEntities: darConfig,
+        darCount: darCount,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };

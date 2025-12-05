@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Settings as SettingsIcon, Save, Building2, BarChart3 } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus } from 'lucide-react';
 import EntityManagement from './EntityManagement';
 import ProductivityImport from './ProductivityImport';
 
 export default function Settings({ employees = [], onUpdate }) {
   const [darConfig, setDarConfig] = useState({});
+  const [darCount, setDarCount] = useState(5); // Default to 5 DARs
   const [entities, setEntities] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const darColumns = ['DAR 1', 'DAR 2', 'DAR 3', 'DAR 4', 'DAR 5', 'DAR 6'];
+  // Generate DAR columns dynamically based on count
+  const darColumns = Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`);
 
   useEffect(() => {
     loadData();
@@ -31,7 +33,9 @@ export default function Settings({ employees = [], onUpdate }) {
     try {
       const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
       if (configDoc.exists()) {
-        setDarConfig(configDoc.data().config || {});
+        const data = configDoc.data();
+        setDarConfig(data.config || {});
+        setDarCount(data.darCount || 5); // Default to 5 if not set
       }
     } catch (error) {
       console.error('Error loading DAR config:', error);
@@ -60,10 +64,18 @@ export default function Settings({ employees = [], onUpdate }) {
     setHasChanges(true);
   }
 
+  function handleDarCountChange(newCount) {
+    // Limit between 3 and 8 DARs
+    const count = Math.max(3, Math.min(8, newCount));
+    setDarCount(count);
+    setHasChanges(true);
+  }
+
   async function saveDarConfig() {
     try {
       await setDoc(doc(db, 'settings', 'darConfig'), {
         config: darConfig,
+        darCount: darCount,
         updatedAt: new Date()
       });
       setHasChanges(false);
@@ -95,17 +107,49 @@ export default function Settings({ employees = [], onUpdate }) {
 
       {/* DAR Configuration */}
       <div className="card">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-thr-blue-500/10 to-thr-blue-500/5 flex items-center justify-center">
-            <SettingsIcon className="w-5 h-5 text-thr-blue-500" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-thr-blue-500/10 to-thr-blue-500/5 flex items-center justify-center">
+              <SettingsIcon className="w-5 h-5 text-thr-blue-500" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Default DAR Entity Assignments
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Set default entity codes for each DAR column. These will be used when creating new schedules.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Default DAR Entity Assignments
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-              Set default entity codes for each DAR column. These will be used when creating new schedules.
-            </p>
+          
+          {/* DAR Count Controls */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-600 dark:text-slate-400 mr-2">DAR Columns:</span>
+            <button
+              onClick={() => handleDarCountChange(darCount - 1)}
+              disabled={darCount <= 3}
+              className={`p-2 rounded-lg border transition-colors ${
+                darCount <= 3 
+                  ? 'border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed' 
+                  : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+              aria-label="Remove DAR column"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+            <span className="w-8 text-center font-semibold text-slate-900 dark:text-slate-100">{darCount}</span>
+            <button
+              onClick={() => handleDarCountChange(darCount + 1)}
+              disabled={darCount >= 8}
+              className={`p-2 rounded-lg border transition-colors ${
+                darCount >= 8 
+                  ? 'border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed' 
+                  : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+              aria-label="Add DAR column"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
