@@ -46,6 +46,7 @@ export default function SupervisorDashboard() {
   const [schedules, setSchedules] = useState([]);
   const [currentSchedule, setCurrentSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
+  const canStartNewSchedule = !currentSchedule || currentSchedule.status === 'published';
 
   useEffect(() => {
     if (!isSupervisor) {
@@ -327,10 +328,14 @@ export default function SupervisorDashboard() {
                 )}
               </div>
               <div className="flex items-center gap-3">
-                {!currentSchedule && (
-                  <button onClick={createNewSchedule} className="btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-900" aria-label="Create new schedule">
+                {canStartNewSchedule && (
+                  <button
+                    onClick={createNewSchedule}
+                    className="btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-900"
+                    aria-label="Create new schedule"
+                  >
                     <Plus className="w-4 h-4 inline mr-2" aria-hidden="true" />
-                    Create New Schedule
+                    {currentSchedule?.status === 'published' ? 'Start New Schedule' : 'Create New Schedule'}
                   </button>
                 )}
                 {currentSchedule && currentSchedule.status === 'draft' && (
@@ -355,6 +360,7 @@ export default function SupervisorDashboard() {
                 employees={employees}
                 entities={entities}
                 onSave={saveSchedule}
+                onCreateNewSchedule={canStartNewSchedule ? createNewSchedule : undefined}
                 readOnly={false}
               />
             ) : (
