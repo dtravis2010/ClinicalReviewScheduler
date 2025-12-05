@@ -1,29 +1,51 @@
 import { useState } from 'react';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Plus, Edit2, Trash2, X, Save, Building2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, Building2, Check, Loader2 } from 'lucide-react';
+import Modal from './Modal';
+import { useFormValidation, validationPresets } from '../hooks/useFormValidation';
+import { useToast } from '../hooks/useToast';
 
 export default function EntityManagement({ entities, onUpdate }) {
+  const { showSuccess, showError, showConfirm } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEntity, setEditingEntity] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    code: ''
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form validation
+  const {
+    values: formData,
+    errors,
+    touched,
+    isValid,
+    handleChange,
+    handleBlur,
+    resetForm: resetValidation,
+    setValues
+  } = useFormValidation(
+    {
+      name: '',
+      description: '',
+      code: ''
+    },
+    {
+      name: validationPresets.entityName
+    }
+  );
 
   function resetForm() {
-    setFormData({
+    resetValidation({
       name: '',
       description: '',
       code: ''
     });
     setEditingEntity(null);
     setShowAddModal(false);
+    setIsSubmitting(false);
   }
 
   function handleEdit(entity) {
-    setFormData({
+    setValues({
       name: entity.name || '',
       description: entity.description || '',
       code: entity.code || ''
@@ -35,10 +57,11 @@ export default function EntityManagement({ entities, onUpdate }) {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!formData.name.trim()) {
-      alert('Entity name is required');
+    if (!isValid) {
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       if (editingEntity) {
@@ -59,15 +82,18 @@ export default function EntityManagement({ entities, onUpdate }) {
 
       resetForm();
       onUpdate();
+      showSuccess(editingEntity ? 'Entity updated successfully!' : 'Entity added successfully!');
     } catch (error) {
       console.error('Error saving entity:', error);
-      alert('Failed to save entity');
+      showError('Failed to save entity');
+      setIsSubmitting(false);
     }
   }
 
   async function handleDelete(entity) {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${entity.name}? This action cannot be undone.`
+    const confirmed = await showConfirm(
+      `Are you sure you want to delete ${entity.name}? This action cannot be undone.`,
+      { confirmText: 'Delete', cancelText: 'Cancel' }
     );
 
     if (!confirmed) return;
@@ -75,9 +101,10 @@ export default function EntityManagement({ entities, onUpdate }) {
     try {
       await deleteDoc(doc(db, 'entities', entity.id));
       onUpdate();
+      showSuccess('Entity deleted successfully!');
     } catch (error) {
       console.error('Error deleting entity:', error);
-      alert('Failed to delete entity');
+      showError('Failed to delete entity');
     }
   }
 
@@ -146,76 +173,95 @@ export default function EntityManagement({ entities, onUpdate }) {
       </div>
 
       {/* Add/Edit Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {editingEntity ? 'Edit Entity' : 'Add New Entity'}
-              </h3>
-              <button
-                onClick={resetForm}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={showAddModal}
+        onClose={resetForm}
+        title={editingEntity ? 'Edit Entity' : 'Add New Entity'}
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="label">Entity Name *</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                onBlur={() => handleBlur('name')}
+                className={`input-field pr-10 ${
+                  touched.name && errors.name
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                    : touched.name && formData.name
+                    ? 'border-green-500 focus:border-green-500 focus:ring-green-500'
+                    : ''
+                }`}
+                placeholder="e.g., Texas Health Arlington Memorial"
+              />
+              {touched.name && !errors.name && formData.name && (
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <Check className="w-5 h-5 text-green-500" />
+                </div>
+              )}
             </div>
+            {touched.name && errors.name && (
+              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+            )}
+          </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="label">Entity Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input-field"
-                  placeholder="e.g., Texas Health Arlington Memorial"
-                  required
-                />
-              </div>
+          <div>
+            <label className="label">Entity Code</label>
+            <input
+              type="text"
+              value={formData.code}
+              onChange={(e) => handleChange('code', e.target.value)}
+              className="input-field"
+              placeholder="e.g., THAM"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Optional short code for the entity
+            </p>
+          </div>
 
-              <div>
-                <label className="label">Entity Code</label>
-                <input
-                  type="text"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  className="input-field"
-                  placeholder="e.g., THAM"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Optional short code for the entity
-                </p>
-              </div>
+          <div>
+            <label className="label">Description</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              className="input-field"
+              rows="3"
+              placeholder="Optional description or notes about this entity..."
+            />
+          </div>
 
-              <div>
-                <label className="label">Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="input-field"
-                  rows="3"
-                  placeholder="Optional description or notes about this entity..."
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                <button type="submit" className="btn-primary flex-1">
+          <div className="flex items-center gap-3 pt-4">
+            <button
+              type="submit"
+              className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!isValid || isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
                   <Save className="w-4 h-4 inline mr-2" />
                   {editingEntity ? 'Update Entity' : 'Add Entity'}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="btn-outline flex-1"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="btn-outline flex-1"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

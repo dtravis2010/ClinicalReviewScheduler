@@ -18,20 +18,19 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Simple supervisor login - hardcoded for now
-  // Email: supervisor@clinical.com
-  // Password: 1234
   async function loginAsSupervisor(password) {
     if (!isFirebaseConfigured) {
       throw new Error(firebaseConfigError);
     }
     try {
-      // Set session persistence
       await setPersistence(auth, browserSessionPersistence);
-      // For now, we'll use a hardcoded email
+
+      // Use environment variable for supervisor email
+      const supervisorEmail = import.meta.env.VITE_SUPERVISOR_EMAIL || 'supervisor@clinical.com';
+
       const result = await signInWithEmailAndPassword(
         auth,
-        'supervisor@clinical.com',
+        supervisorEmail,
         password
       );
       return result;

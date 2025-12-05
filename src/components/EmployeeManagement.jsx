@@ -1,22 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Plus, Edit2, Archive, X, Save, UserPlus } from 'lucide-react';
+import { Plus, Edit2, Archive, Save, UserPlus, Check, Loader2 } from 'lucide-react';
+import Modal from './Modal';
+import ConfirmDialog from './ConfirmDialog';
+import { useFormValidation, validationPresets } from '../hooks/useFormValidation';
+import { useToast } from '../hooks/useToast';
 
 export default function EmployeeManagement({ employees, onUpdate }) {
+  const { showSuccess, showError } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    skills: [],
-    email: '',
-    notes: ''
-  });
+  const [employeeToArchive, setEmployeeToArchive] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableSkills = ['DAR', 'Trace', 'CPOE', 'Float'];
 
+  // Form validation
+  const {
+    values: formData,
+    errors,
+    touched,
+    isValid,
+    handleChange,
+    handleBlur,
+    resetForm: resetValidation,
+    setValues,
+    getFieldProps
+  } = useFormValidation(
+    {
+      name: '',
+      skills: [],
+      email: '',
+      notes: ''
+    },
+    {
+      name: validationPresets.name,
+      email: validationPresets.optionalEmail,
+      skills: [
+        { type: 'required', message: 'Please select at least one skill' }
+      ]
+    }
+  );
+
   function resetForm() {
-    setFormData({
+    resetValidation({
       name: '',
       skills: [],
       email: '',
@@ -24,10 +52,11 @@ export default function EmployeeManagement({ employees, onUpdate }) {
     });
     setEditingEmployee(null);
     setShowAddModal(false);
+    setIsSubmitting(false);
   }
 
   function handleEdit(employee) {
-    setFormData({
+    setValues({
       name: employee.name || '',
       skills: employee.skills || [],
       email: employee.email || '',
@@ -38,26 +67,20 @@ export default function EmployeeManagement({ employees, onUpdate }) {
   }
 
   function toggleSkill(skill) {
-    setFormData(prev => ({
-      ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter(s => s !== skill)
-        : [...prev.skills, skill]
-    }));
+    const newSkills = formData.skills.includes(skill)
+      ? formData.skills.filter(s => s !== skill)
+      : [...formData.skills, skill];
+    handleChange('skills', newSkills);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!formData.name.trim()) {
-      alert('Employee name is required');
+    if (!isValid) {
       return;
     }
 
-    if (formData.skills.length === 0) {
-      alert('Please select at least one skill');
-      return;
-    }
+    setIsSubmitting(true);
 
     try {
       if (editingEmployee) {
@@ -79,31 +102,31 @@ export default function EmployeeManagement({ employees, onUpdate }) {
 
       resetForm();
       onUpdate();
+      showSuccess(editingEmployee ? 'Employee updated successfully!' : 'Employee added successfully!');
     } catch (error) {
       console.error('Error saving employee:', error);
-      alert('Failed to save employee');
+      showError('Failed to save employee');
+      setIsSubmitting(false);
     }
   }
 
-  async function handleArchive(employee) {
-    const confirmed = window.confirm(
-      `Are you sure you want to archive ${employee.name}? They will no longer appear in new schedules.`
-    );
-
-    if (!confirmed) return;
+  async function handleArchive() {
+    if (!employeeToArchive) return;
 
     try {
-      const employeeRef = doc(db, 'employees', employee.id);
+      const employeeRef = doc(db, 'employees', employeeToArchive.id);
       await updateDoc(employeeRef, {
         archived: true,
         archivedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
 
+      setEmployeeToArchive(null);
       onUpdate();
+      showSuccess('Employee archived successfully!');
     } catch (error) {
       console.error('Error archiving employee:', error);
-      alert('Failed to archive employee');
+      showError('Failed to archive employee');
     }
   }
 
@@ -197,7 +220,7 @@ export default function EmployeeManagement({ employees, onUpdate }) {
                       <Edit2 className="w-4 h-4 inline" />
                     </button>
                     <button
-                      onClick={() => handleArchive(employee)}
+                      onClick={() => setEmployeeToArchive(employee)}
                       className="text-red-600 hover:text-red-900"
                     >
                       <Archive className="w-4 h-4 inline" />
@@ -245,96 +268,147 @@ export default function EmployeeManagement({ employees, onUpdate }) {
       )}
 
       {/* Add/Edit Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
-              </h3>
-              <button
-                onClick={resetForm}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="label">Employee Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input-field"
-                  placeholder="Enter full name"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="label">Skills/Training *</label>
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  {availableSkills.map(skill => (
-                    <button
-                      key={skill}
-                      type="button"
-                      onClick={() => toggleSkill(skill)}
-                      className={`px-4 py-2 rounded-lg border-2 transition-colors ${
-                        formData.skills.includes(skill)
-                          ? 'border-thr-blue-500 bg-thr-blue-50 text-thr-blue-700'
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      {skill}
-                    </button>
-                  ))}
+      <Modal
+        isOpen={showAddModal}
+        onClose={resetForm}
+        title={editingEmployee ? 'Edit Employee' : 'Add New Employee'}
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="label">Employee Name *</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                onBlur={() => handleBlur('name')}
+                className={`input-field pr-10 ${
+                  touched.name && errors.name
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                    : touched.name && formData.name
+                    ? 'border-green-500 focus:border-green-500 focus:ring-green-500'
+                    : ''
+                }`}
+                placeholder="Enter full name"
+              />
+              {touched.name && !errors.name && formData.name && (
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <Check className="w-5 h-5 text-green-500" />
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Float = Trained in all skills (DAR, Trace, CPOE)
-                </p>
-              </div>
+              )}
+            </div>
+            {touched.name && errors.name && (
+              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+            )}
+          </div>
 
-              <div>
-                <label className="label">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="input-field"
-                  placeholder="employee@email.com"
-                />
-              </div>
+          <div>
+            <label className="label">Skills/Training *</label>
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              {availableSkills.map(skill => (
+                <button
+                  key={skill}
+                  type="button"
+                  onClick={() => toggleSkill(skill)}
+                  className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                    formData.skills.includes(skill)
+                      ? 'border-thr-blue-500 bg-thr-blue-50 text-thr-blue-700'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  {skill}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Float = Trained in all skills (DAR, Trace, CPOE)
+            </p>
+            {touched.skills && errors.skills && (
+              <p className="mt-1 text-sm text-red-600">{errors.skills}</p>
+            )}
+          </div>
 
-              <div>
-                <label className="label">Notes</label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="input-field"
-                  rows="3"
-                  placeholder="Any additional notes..."
-                />
-              </div>
+          <div>
+            <label className="label">Email</label>
+            <div className="relative">
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                onBlur={() => handleBlur('email')}
+                className={`input-field pr-10 ${
+                  touched.email && errors.email
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                    : touched.email && formData.email
+                    ? 'border-green-500 focus:border-green-500 focus:ring-green-500'
+                    : ''
+                }`}
+                placeholder="employee@email.com"
+              />
+              {touched.email && !errors.email && formData.email && (
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <Check className="w-5 h-5 text-green-500" />
+                </div>
+              )}
+            </div>
+            {touched.email && errors.email && (
+              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            )}
+          </div>
 
-              <div className="flex items-center gap-3 pt-4">
-                <button type="submit" className="btn-primary flex-1">
+          <div>
+            <label className="label">Notes</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => handleChange('notes', e.target.value)}
+              className="input-field"
+              rows="3"
+              placeholder="Any additional notes..."
+            />
+          </div>
+
+          <div className="flex items-center gap-3 pt-4">
+            <button
+              type="submit"
+              className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!isValid || isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
                   <Save className="w-4 h-4 inline mr-2" />
                   {editingEmployee ? 'Update Employee' : 'Add Employee'}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="btn-outline flex-1"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="btn-outline flex-1"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
+
+      {/* Archive Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!employeeToArchive}
+        onClose={() => setEmployeeToArchive(null)}
+        onConfirm={handleArchive}
+        title="Archive Employee"
+        message={`Are you sure you want to archive ${employeeToArchive?.name}? They will no longer appear in new schedules.`}
+        confirmText="Archive"
+        cancelText="Cancel"
+        danger={true}
+      />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
-import { X, Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
+import Modal from './Modal';
 
 export default function EmployeeHistoryModal({ employee, onClose }) {
   const [history, setHistory] = useState([]);

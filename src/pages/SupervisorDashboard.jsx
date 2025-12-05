@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../hooks/useToast';
 import {
   collection,
   addDoc,
@@ -22,15 +23,23 @@ import {
   Plus,
   Save,
   Eye,
-  Upload
+  Upload,
+  CheckCircle2,
+  Clock,
+  TrendingUp,
+  Zap
 } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import EmployeeManagement from '../components/EmployeeManagement';
 import Settings from '../components/Settings';
+import { DashboardSkeleton } from '../components/Skeleton';
+import ThemeToggle from '../components/ThemeToggle';
+import StatCard from '../components/StatCard';
 
 export default function SupervisorDashboard() {
   const { currentUser, logout, isSupervisor } = useAuth();
   const navigate = useNavigate();
+  const { showSuccess, showError, showConfirm } = useToast();
   const [activeTab, setActiveTab] = useState('schedule');
   const [employees, setEmployees] = useState([]);
   const [entities, setEntities] = useState([]);
@@ -117,7 +126,7 @@ export default function SupervisorDashboard() {
       setSchedules([created, ...schedules]);
     } catch (error) {
       console.error('Error creating schedule:', error);
-      alert('Failed to create new schedule');
+      showError('Failed to create new schedule');
     }
   }
 
@@ -132,17 +141,17 @@ export default function SupervisorDashboard() {
       });
 
       setCurrentSchedule({ ...currentSchedule, ...scheduleData });
-      alert('Schedule saved successfully!');
+      showSuccess('Schedule saved successfully!');
     } catch (error) {
       console.error('Error saving schedule:', error);
-      alert('Failed to save schedule');
+      showError('Failed to save schedule');
     }
   }
 
   async function publishSchedule() {
     if (!currentSchedule) return;
 
-    const confirmed = window.confirm(
+    const confirmed = await showConfirm(
       'Are you sure you want to publish this schedule? Users will be able to view it.'
     );
 
@@ -157,10 +166,10 @@ export default function SupervisorDashboard() {
       });
 
       setCurrentSchedule({ ...currentSchedule, status: 'published' });
-      alert('Schedule published successfully!');
+      showSuccess('Schedule published successfully!');
     } catch (error) {
       console.error('Error publishing schedule:', error);
-      alert('Failed to publish schedule');
+      showError('Failed to publish schedule');
     }
   }
 
@@ -174,46 +183,42 @@ export default function SupervisorDashboard() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-thr-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Calendar className="w-8 h-8 text-thr-blue-500" />
+              <Calendar className="w-8 h-8 text-thr-blue-500 dark:text-thr-blue-400" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   Supervisor Dashboard
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Clinical Review Scheduling
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <button
                 onClick={() => navigate('/schedule')}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors dark:text-gray-200 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-800"
+                aria-label="View public schedule"
               >
-                <Eye className="w-4 h-4" />
+                <Eye className="w-4 h-4" aria-hidden="true" />
                 <span className="text-sm font-medium">View Public Schedule</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800"
+                aria-label="Logout"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4" aria-hidden="true" />
                 <span className="text-sm font-medium">Logout</span>
               </button>
             </div>
@@ -222,45 +227,54 @@ export default function SupervisorDashboard() {
       </header>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex gap-8">
+          <nav className="flex gap-8" role="tablist">
             <button
               onClick={() => setActiveTab('schedule')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-thr-blue-500 ${
                 activeTab === 'schedule'
-                  ? 'border-thr-blue-500 text-thr-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-thr-blue-500 text-thr-blue-600 dark:text-thr-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
+              role="tab"
+              aria-selected={activeTab === 'schedule'}
+              aria-controls="schedule-panel"
             >
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
+                <FileText className="w-4 h-4" aria-hidden="true" />
                 Schedule Management
               </div>
             </button>
             <button
               onClick={() => setActiveTab('employees')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-thr-blue-500 ${
                 activeTab === 'employees'
-                  ? 'border-thr-blue-500 text-thr-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-thr-blue-500 text-thr-blue-600 dark:text-thr-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
+              role="tab"
+              aria-selected={activeTab === 'employees'}
+              aria-controls="employees-panel"
             >
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
+                <Users className="w-4 h-4" aria-hidden="true" />
                 Employee Management
               </div>
             </button>
             <button
               onClick={() => setActiveTab('settings')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-thr-blue-500 ${
                 activeTab === 'settings'
-                  ? 'border-thr-blue-500 text-thr-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-thr-blue-500 text-thr-blue-600 dark:text-thr-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
+              role="tab"
+              aria-selected={activeTab === 'settings'}
+              aria-controls="settings-panel"
             >
               <div className="flex items-center gap-2">
-                <SettingsIcon className="w-4 h-4" />
+                <SettingsIcon className="w-4 h-4" aria-hidden="true" />
                 Settings
               </div>
             </button>
@@ -271,22 +285,22 @@ export default function SupervisorDashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'schedule' && (
-          <div>
+          <div id="schedule-panel" role="tabpanel" aria-labelledby="schedule-tab">
             {/* Schedule Actions */}
             <div className="mb-6 flex items-center justify-between">
               <div>
                 {currentSchedule ? (
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                       {currentSchedule.name}
                     </h2>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       Status:{' '}
                       <span
                         className={`font-medium ${
                           currentSchedule.status === 'published'
-                            ? 'text-green-600'
-                            : 'text-yellow-600'
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-yellow-600 dark:text-yellow-400'
                         }`}
                       >
                         {currentSchedule.status.toUpperCase()}
@@ -294,15 +308,15 @@ export default function SupervisorDashboard() {
                     </p>
                   </div>
                 ) : (
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                     No Active Schedule
                   </h2>
                 )}
               </div>
               <div className="flex items-center gap-3">
                 {!currentSchedule && (
-                  <button onClick={createNewSchedule} className="btn-primary">
-                    <Plus className="w-4 h-4 inline mr-2" />
+                  <button onClick={createNewSchedule} className="btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-900" aria-label="Create new schedule">
+                    <Plus className="w-4 h-4 inline mr-2" aria-hidden="true" />
                     Create New Schedule
                   </button>
                 )}
@@ -310,9 +324,10 @@ export default function SupervisorDashboard() {
                   <>
                     <button
                       onClick={publishSchedule}
-                      className="btn-secondary"
+                      className="btn-secondary dark:bg-thr-green-700 dark:hover:bg-thr-green-800 dark:text-white focus:ring-2 focus:ring-offset-2 focus:ring-thr-green-500 dark:focus:ring-offset-gray-900"
+                      aria-label="Publish schedule"
                     >
-                      <Upload className="w-4 h-4 inline mr-2" />
+                      <Upload className="w-4 h-4 inline mr-2" aria-hidden="true" />
                       Publish Schedule
                     </button>
                   </>
@@ -330,16 +345,16 @@ export default function SupervisorDashboard() {
                 readOnly={false}
               />
             ) : (
-              <div className="card text-center py-12">
-                <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <div className="card dark:bg-gray-800 dark:border-gray-700 text-center py-12">
+                <Calendar className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" aria-hidden="true" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   No Active Schedule
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Create a new schedule to start assigning employees
                 </p>
-                <button onClick={createNewSchedule} className="btn-primary">
-                  <Plus className="w-4 h-4 inline mr-2" />
+                <button onClick={createNewSchedule} className="btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-800" aria-label="Create new schedule">
+                  <Plus className="w-4 h-4 inline mr-2" aria-hidden="true" />
                   Create New Schedule
                 </button>
               </div>
