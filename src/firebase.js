@@ -14,11 +14,34 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Validate required Firebase configuration
+const requiredConfigKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
+const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key]);
 
-// Initialize Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Map config keys to their environment variable names
+const configKeyToEnvVar = {
+  apiKey: 'VITE_FIREBASE_API_KEY',
+  authDomain: 'VITE_FIREBASE_AUTH_DOMAIN',
+  projectId: 'VITE_FIREBASE_PROJECT_ID',
+  appId: 'VITE_FIREBASE_APP_ID'
+};
 
+// Check if Firebase is properly configured
+export const isFirebaseConfigured = missingKeys.length === 0;
+export const firebaseConfigError = missingKeys.length > 0
+  ? `Firebase is not configured. Missing environment variables: ${missingKeys.map(k => configKeyToEnvVar[k]).join(', ')}. Please see .env.example for setup instructions.`
+  : null;
+
+// Initialize Firebase only if properly configured
+let app = null;
+let auth = null;
+let db = null;
+
+if (isFirebaseConfigured) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+}
+
+export { auth, db };
 export default app;

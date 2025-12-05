@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../firebase';
+import { auth, isFirebaseConfigured, firebaseConfigError } from '../firebase';
 import {
   signInWithEmailAndPassword,
   signOut,
@@ -22,6 +22,9 @@ export function AuthProvider({ children }) {
   // Email: supervisor@clinical.com
   // Password: 1234
   async function loginAsSupervisor(password) {
+    if (!isFirebaseConfigured) {
+      throw new Error(firebaseConfigError);
+    }
     try {
       // Set session persistence
       await setPersistence(auth, browserSessionPersistence);
@@ -38,10 +41,17 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
+    if (!isFirebaseConfigured) {
+      return;
+    }
     return signOut(auth);
   }
 
   useEffect(() => {
+    if (!isFirebaseConfigured) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
@@ -55,6 +65,8 @@ export function AuthProvider({ children }) {
     loginAsSupervisor,
     logout,
     isSupervisor: !!currentUser,
+    isFirebaseConfigured,
+    firebaseConfigError,
   };
 
   return (
