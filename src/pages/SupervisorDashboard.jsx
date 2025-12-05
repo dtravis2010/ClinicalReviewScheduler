@@ -17,7 +17,7 @@ import {
   Calendar,
   LogOut,
   Users,
-  Building2,
+  Settings as SettingsIcon,
   FileText,
   Plus,
   Save,
@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import EmployeeManagement from '../components/EmployeeManagement';
-import EntityManagement from '../components/EntityManagement';
+import Settings from '../components/Settings';
 
 export default function SupervisorDashboard() {
   const { currentUser, logout, isSupervisor } = useAuth();
@@ -252,16 +252,16 @@ export default function SupervisorDashboard() {
               </div>
             </button>
             <button
-              onClick={() => setActiveTab('entities')}
+              onClick={() => setActiveTab('settings')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'entities'
+                activeTab === 'settings'
                   ? 'border-thr-blue-500 text-thr-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
-                Entity Management
+                <SettingsIcon className="w-4 h-4" />
+                Settings
               </div>
             </button>
           </nav>
@@ -354,10 +354,9 @@ export default function SupervisorDashboard() {
           />
         )}
 
-        {activeTab === 'entities' && (
-          <EntityManagement
-            entities={entities}
-            onUpdate={loadEntities}
+        {activeTab === 'settings' && (
+          <Settings
+            onUpdate={loadData}
           />
         )}
       </main>

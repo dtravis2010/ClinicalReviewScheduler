@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, Check, Save, Download, History } from 'lucide-react';
+import { Save, Download, History, Edit2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
 
 export default function ScheduleGrid({ schedule, employees = [], entities = [], onSave, readOnly = false }) {
@@ -8,9 +10,13 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
   const [scheduleName, setScheduleName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [darEntities, setDarEntities] = useState({});
+  const [editingDar, setEditingDar] = useState(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const darColumns = ['DAR 1', 'DAR 2', 'DAR 3', 'DAR 4', 'DAR 5', 'DAR 6'];
 
   useEffect(() => {
     if (schedule) {
@@ -18,10 +24,23 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
       setScheduleName(schedule.name || '');
       setStartDate(schedule.startDate || '');
       setEndDate(schedule.endDate || '');
+      setDarEntities(schedule.darEntities || {});
+    } else {
+      // Load default DAR config for new schedules
+      loadDefaultDarConfig();
     }
   }, [schedule]);
 
-  const darColumns = ['DAR 1', 'DAR 2', 'DAR 3', 'DAR 4', 'DAR 5', 'DAR 6'];
+  async function loadDefaultDarConfig() {
+    try {
+      const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
+      if (configDoc.exists()) {
+        setDarEntities(configDoc.data().config || {});
+      }
+    } catch (error) {
+      console.error('Error loading DAR config:', error);
+    }
+  }
 
   function handleAssignmentChange(employeeId, field, value) {
     if (readOnly) return;
@@ -41,7 +60,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
     const employee = employees.find(e => e.id === employeeId);
     if (!employee?.skills?.includes('DAR') && !employee?.skills?.includes('Float')) {
-      return; // Can't assign DAR if not trained
+      return;
     }
 
     setAssignments(prev => {
@@ -61,39 +80,52 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
     setHasChanges(true);
   }
 
+  function handleDarEntityChange(darIndex, value) {
+    setDarEntities(prev => ({
+      ...prev,
+      [darIndex]: value
+    }));
+    setHasChanges(true);
+  }
+
   function handleSave() {
     if (onSave) {
       onSave({
         name: scheduleName,
         startDate,
         endDate,
-        assignments
+        assignments,
+        darEntities
       });
       setHasChanges(false);
     }
   }
 
   function exportToExcel() {
-    const data = employees.map(employee => {
+    const data = employees.filter(e => !e.archived).map(employee => {
       const assignment = assignments[employee.id] || {};
       const row = {
-        'Employee Name': employee.name,
+        'TEAM MEMBER': employee.name,
       };
 
-      // DAR columns
       darColumns.forEach((dar, idx) => {
         const isDarTrained = employee.skills?.includes('DAR') || employee.skills?.includes('Float');
+        const entityName = darEntities[idx] || '';
+        const columnName = entityName ? `${dar}\n${entityName}` : dar;
+
         if (isDarTrained) {
-          row[dar] = assignment.dars?.includes(idx) ? 'X' : '';
+          row[columnName] = assignment.dars?.includes(idx) ? 'X' : '';
         } else {
-          row[dar] = 'N/A';
+          row[columnName] = '';
         }
       });
 
-      row['Assignment'] = assignment.entity || '';
-      row['Special Projects'] = assignment.specialProjects || '';
-      row['3PM Email - Primary'] = assignment.email3pmPrimary ? 'X' : '';
-      row['3PM Email - Backup'] = assignment.email3pmBackup ? 'X' : '';
+      row['Back up New incoming items'] = assignment.backupIncoming || '';
+      row['CPOE'] = assignment.cpoe || '';
+      row['New Incoming Items'] = assignment.newIncoming || '';
+      row['Censa/Tracing'] = assignment.tracing || '';
+      row['3PM EMAIL'] = assignment.email3pm || '';
+      row['Special Projects / Assign'] = assignment.specialProjects || '';
 
       return row;
     });
@@ -115,19 +147,10 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
     return employee.skills?.includes('DAR') || employee.skills?.includes('Float');
   }
 
-  function canAssignTrace(employee) {
-    return employee.skills?.includes('Trace') || employee.skills?.includes('Float');
-  }
-
-  function canAssignCPOE(employee) {
-    return employee.skills?.includes('CPOE') || employee.skills?.includes('Float');
-  }
-
-  // Filter out archived employees
   const activeEmployees = employees.filter(e => !e.archived);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Schedule Details */}
       {!readOnly && (
         <div className="card">
@@ -141,8 +164,8 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                   setScheduleName(e.target.value);
                   setHasChanges(true);
                 }}
-                className="input-field"
-                placeholder="e.g., November-December 2024"
+                className="input-field text-base"
+                placeholder="e.g., Sept and Oct 2025"
               />
             </div>
             <div>
@@ -154,7 +177,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                   setStartDate(e.target.value);
                   setHasChanges(true);
                 }}
-                className="input-field"
+                className="input-field text-base"
               />
             </div>
             <div>
@@ -166,7 +189,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                   setEndDate(e.target.value);
                   setHasChanges(true);
                 }}
-                className="input-field"
+                className="input-field text-base"
               />
             </div>
           </div>
@@ -174,22 +197,22 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
           <div className="mt-4 flex items-center justify-between">
             <div>
               {hasChanges && (
-                <span className="text-sm text-yellow-600 font-medium">
+                <span className="text-base text-yellow-600 font-medium">
                   Unsaved changes
                 </span>
               )}
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={exportToExcel} className="btn-outline">
-                <Download className="w-4 h-4 inline mr-2" />
+              <button onClick={exportToExcel} className="btn-outline text-base">
+                <Download className="w-5 h-5 inline mr-2" />
                 Export to Excel
               </button>
               <button
                 onClick={handleSave}
                 disabled={!hasChanges}
-                className={`btn-primary ${!hasChanges ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`btn-primary text-base ${!hasChanges ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <Save className="w-4 h-4 inline mr-2" />
+                <Save className="w-5 h-5 inline mr-2" />
                 Save Schedule
               </button>
             </div>
@@ -198,72 +221,101 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
       )}
 
       {readOnly && (
-        <div className="flex justify-end">
-          <button onClick={exportToExcel} className="btn-outline">
-            <Download className="w-4 h-4 inline mr-2" />
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900">{scheduleName}</h2>
+            <p className="text-base text-gray-600">{startDate} to {endDate}</p>
+          </div>
+          <button onClick={exportToExcel} className="btn-outline text-base">
+            <Download className="w-5 h-5 inline mr-2" />
             Export to Excel
           </button>
         </div>
       )}
 
       {/* Schedule Grid */}
-      <div className="card overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto schedule-scroll">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-thr-blue-500 text-white">
-              <tr>
-                <th className="sticky left-0 bg-thr-blue-500 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider z-10">
-                  Employee Name
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-blue-600">
+                <th className="sticky left-0 bg-blue-600 px-4 py-3 text-left text-sm font-bold text-white uppercase tracking-wider border border-gray-300 z-10 min-w-[160px]">
+                  TEAM MEMBER
                 </th>
                 {darColumns.map((dar, idx) => (
-                  <th key={idx} className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider">
-                    {dar}
+                  <th
+                    key={idx}
+                    className="px-4 py-3 text-center text-sm font-bold text-white uppercase tracking-wider border border-gray-300 min-w-[120px]"
+                  >
+                    <div>{dar}</div>
+                    <div className="text-xs font-normal mt-1.5 opacity-90">
+                      {editingDar === idx && !readOnly ? (
+                        <input
+                          type="text"
+                          value={darEntities[idx] || ''}
+                          onChange={(e) => handleDarEntityChange(idx, e.target.value)}
+                          onBlur={() => setEditingDar(null)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') setEditingDar(null);
+                          }}
+                          autoFocus
+                          className="w-full px-1.5 py-1 text-xs text-gray-900 bg-white border-0 rounded focus:ring-2 focus:ring-white"
+                          placeholder="e.g., THFR/FM"
+                        />
+                      ) : (
+                        <div
+                          className="flex items-center justify-center gap-1 cursor-pointer hover:bg-blue-700 rounded px-1.5 py-1"
+                          onClick={() => !readOnly && setEditingDar(idx)}
+                        >
+                          <span>{darEntities[idx] || 'Click to edit'}</span>
+                          {!readOnly && <Edit2 className="w-3 h-3" />}
+                        </div>
+                      )}
+                    </div>
                   </th>
                 ))}
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                  Assignment (Entity)
+                <th className="px-4 py-3 text-center text-sm font-bold text-white uppercase tracking-wider border border-gray-300 min-w-[140px]">
+                  Back up New<br/>incoming items
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                  Special Projects
+                <th className="px-4 py-3 text-center text-sm font-bold text-white uppercase tracking-wider border border-gray-300 min-w-[110px]">
+                  CPOE
                 </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider" colSpan="2">
-                  3 PM Email
+                <th className="px-4 py-3 text-center text-sm font-bold text-white uppercase tracking-wider border border-gray-300 min-w-[140px]">
+                  New Incoming<br/>Items
                 </th>
-              </tr>
-              <tr className="bg-thr-blue-600">
-                <th className="sticky left-0 bg-thr-blue-600 px-4 py-2"></th>
-                {darColumns.map((_, idx) => (
-                  <th key={idx}></th>
-                ))}
-                <th></th>
-                <th></th>
-                <th className="px-3 py-2 text-center text-xs font-semibold">Primary</th>
-                <th className="px-3 py-2 text-center text-xs font-semibold">Backup</th>
+                <th className="px-4 py-3 text-center text-sm font-bold text-white uppercase tracking-wider border border-gray-300 min-w-[140px]">
+                  Censa/Tracing
+                </th>
+                <th className="px-4 py-3 text-center text-sm font-bold text-white uppercase tracking-wider border border-gray-300 min-w-[90px]">
+                  3PM<br/>EMAIL
+                </th>
+                <th className="px-4 py-3 text-center text-sm font-bold text-white uppercase tracking-wider border border-gray-300 min-w-[160px]">
+                  Special Projects /<br/>Assign
+                </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {activeEmployees.map((employee, empIdx) => {
                 const assignment = assignments[employee.id] || {};
                 const isDarTrained = canAssignDAR(employee);
 
                 return (
-                  <tr key={employee.id} className={empIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr key={employee.id} className="hover:bg-blue-50">
                     {/* Employee Name */}
-                    <td className="sticky left-0 bg-inherit px-4 py-3 whitespace-nowrap z-10">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900">{employee.name}</span>
+                    <td className="sticky left-0 bg-white px-4 py-3 border border-gray-300 z-10">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-base text-blue-700 uppercase">
+                          {employee.name}
+                        </span>
                         {!readOnly && (
                           <button
                             onClick={() => showEmployeeHistory(employee)}
-                            className="text-thr-blue-500 hover:text-thr-blue-700"
+                            className="text-gray-400 hover:text-blue-600"
                             title="View assignment history"
                           >
                             <History className="w-4 h-4" />
                           </button>
                         )}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {employee.skills?.join(', ') || 'No skills assigned'}
                       </div>
                     </td>
 
@@ -271,83 +323,115 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
                     {darColumns.map((_, darIdx) => (
                       <td
                         key={darIdx}
-                        className={`px-3 py-3 text-center ${
-                          !isDarTrained ? 'bg-gray-200' : ''
+                        className={`px-4 py-3 text-center border border-gray-300 ${
+                          !isDarTrained ? 'bg-gray-100' : 'bg-white'
                         }`}
                       >
                         {isDarTrained ? (
-                          <button
-                            onClick={() => handleDARToggle(employee.id, darIdx)}
-                            disabled={readOnly}
-                            className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${
-                              assignment.dars?.includes(darIdx)
-                                ? 'bg-thr-green-500 text-white'
-                                : 'border-2 border-gray-300 hover:border-thr-green-500'
-                            } ${readOnly ? 'cursor-default' : 'cursor-pointer'}`}
-                          >
-                            {assignment.dars?.includes(darIdx) && <Check className="w-4 h-4" />}
-                          </button>
-                        ) : (
-                          <span className="text-gray-400 text-xs">N/A</span>
-                        )}
+                          readOnly ? (
+                            assignment.dars?.includes(darIdx) ? (
+                              <span className="text-green-600 font-bold text-xl">X</span>
+                            ) : null
+                          ) : (
+                            <input
+                              type="checkbox"
+                              checked={assignment.dars?.includes(darIdx) || false}
+                              onChange={() => handleDARToggle(employee.id, darIdx)}
+                              className="w-6 h-6 text-green-600 rounded focus:ring-green-500"
+                            />
+                          )
+                        ) : null}
                       </td>
                     ))}
 
-                    {/* Assignment (Entity) */}
-                    <td className="px-4 py-3">
+                    {/* Back up New incoming items */}
+                    <td className="px-3 py-3 border border-gray-300 bg-white">
                       {readOnly ? (
-                        <span className="text-gray-900">{assignment.entity || '-'}</span>
+                        <span className="text-base text-blue-600 font-medium">{assignment.backupIncoming || ''}</span>
                       ) : (
-                        <select
-                          value={assignment.entity || ''}
-                          onChange={(e) => handleAssignmentChange(employee.id, 'entity', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-thr-blue-500 focus:border-transparent text-sm"
-                        >
-                          <option value="">Select Entity</option>
-                          {entities.map(entity => (
-                            <option key={entity.id} value={entity.name}>
-                              {entity.name}
-                            </option>
-                          ))}
-                        </select>
+                        <input
+                          type="text"
+                          value={assignment.backupIncoming || ''}
+                          onChange={(e) => handleAssignmentChange(employee.id, 'backupIncoming', e.target.value)}
+                          className="w-full px-2 py-1.5 text-base border-0 focus:ring-1 focus:ring-blue-500 text-center"
+                          placeholder=""
+                        />
                       )}
                     </td>
 
-                    {/* Special Projects */}
-                    <td className="px-4 py-3">
+                    {/* CPOE */}
+                    <td className="px-3 py-3 border border-gray-300 bg-white">
                       {readOnly ? (
-                        <span className="text-gray-900">{assignment.specialProjects || '-'}</span>
+                        <span className="text-base text-blue-600 font-medium">{assignment.cpoe || ''}</span>
+                      ) : (
+                        <input
+                          type="text"
+                          value={assignment.cpoe || ''}
+                          onChange={(e) => handleAssignmentChange(employee.id, 'cpoe', e.target.value)}
+                          className="w-full px-2 py-1.5 text-base border-0 focus:ring-1 focus:ring-blue-500 text-center"
+                          placeholder=""
+                        />
+                      )}
+                    </td>
+
+                    {/* New Incoming Items */}
+                    <td className="px-3 py-3 border border-gray-300 bg-white">
+                      {readOnly ? (
+                        <span className="text-base text-blue-600 font-medium">{assignment.newIncoming || ''}</span>
+                      ) : (
+                        <input
+                          type="text"
+                          value={assignment.newIncoming || ''}
+                          onChange={(e) => handleAssignmentChange(employee.id, 'newIncoming', e.target.value)}
+                          className="w-full px-2 py-1.5 text-base border-0 focus:ring-1 focus:ring-blue-500 text-center"
+                          placeholder=""
+                        />
+                      )}
+                    </td>
+
+                    {/* Censa/Tracing */}
+                    <td className="px-3 py-3 border border-gray-300 bg-white">
+                      {readOnly ? (
+                        <span className="text-base text-blue-600 font-medium">{assignment.tracing || ''}</span>
+                      ) : (
+                        <input
+                          type="text"
+                          value={assignment.tracing || ''}
+                          onChange={(e) => handleAssignmentChange(employee.id, 'tracing', e.target.value)}
+                          className="w-full px-2 py-1.5 text-base border-0 focus:ring-1 focus:ring-blue-500 text-center"
+                          placeholder=""
+                        />
+                      )}
+                    </td>
+
+                    {/* 3PM EMAIL */}
+                    <td className="px-3 py-3 border border-gray-300 bg-white">
+                      {readOnly ? (
+                        <span className="text-base text-pink-600 font-bold">{assignment.email3pm || ''}</span>
+                      ) : (
+                        <input
+                          type="text"
+                          value={assignment.email3pm || ''}
+                          onChange={(e) => handleAssignmentChange(employee.id, 'email3pm', e.target.value)}
+                          className="w-full px-2 py-1.5 text-base border-0 focus:ring-1 focus:ring-blue-500 text-center"
+                          placeholder=""
+                        />
+                      )}
+                    </td>
+
+                    {/* Special Projects / Assign */}
+                    <td className="px-3 py-3 border border-gray-300 bg-white">
+                      {readOnly ? (
+                        <span className="text-base text-pink-600 font-medium">{assignment.specialProjects || ''}</span>
                       ) : (
                         <input
                           type="text"
                           value={assignment.specialProjects || ''}
                           onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-thr-blue-500 focus:border-transparent text-sm"
-                          placeholder="Enter project..."
+                          className="w-full px-2 py-1.5 text-base border-0 focus:ring-1 focus:ring-blue-500 text-center"
+                          placeholder=""
                         />
                       )}
-                    </td>
-
-                    {/* 3PM Email - Primary */}
-                    <td className="px-3 py-3 text-center">
-                      <input
-                        type="checkbox"
-                        checked={assignment.email3pmPrimary || false}
-                        onChange={(e) => handleAssignmentChange(employee.id, 'email3pmPrimary', e.target.checked)}
-                        disabled={readOnly}
-                        className="w-5 h-5 text-thr-blue-500 rounded focus:ring-thr-blue-500"
-                      />
-                    </td>
-
-                    {/* 3PM Email - Backup */}
-                    <td className="px-3 py-3 text-center">
-                      <input
-                        type="checkbox"
-                        checked={assignment.email3pmBackup || false}
-                        onChange={(e) => handleAssignmentChange(employee.id, 'email3pmBackup', e.target.checked)}
-                        disabled={readOnly}
-                        className="w-5 h-5 text-thr-blue-500 rounded focus:ring-thr-blue-500"
-                      />
                     </td>
                   </tr>
                 );
@@ -357,7 +441,7 @@ export default function ScheduleGrid({ schedule, employees = [], entities = [], 
 
           {activeEmployees.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              <p>No employees found. Add employees first to create a schedule.</p>
+              <p className="text-base">No employees found. Add employees first to create a schedule.</p>
             </div>
           )}
         </div>
