@@ -97,6 +97,8 @@ VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+# Optional: change the supervisor login email (defaults to supervisor@clinical.com)
+VITE_SUPERVISOR_EMAIL=supervisor@clinical.com
 ```
 
 4. Save the file.
