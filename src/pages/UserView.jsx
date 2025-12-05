@@ -8,6 +8,7 @@ import ScheduleGrid from '../components/ScheduleGrid';
 export default function UserView() {
   const [schedule, setSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,6 +16,15 @@ export default function UserView() {
   }, []);
 
   async function loadPublishedSchedule() {
+    // Check if Firestore is available
+    if (!db) {
+      setError('Database connection not available');
+      setLoading(false);
+      return;
+    }
+
+    let timeoutId = null;
+    
     try {
       const schedulesRef = collection(db, 'schedules');
       const q = query(
@@ -24,7 +34,15 @@ export default function UserView() {
         limit(1)
       );
 
-      const snapshot = await getDocs(q);
+      // Add timeout to prevent hanging forever
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
+      });
+
+      const snapshot = await Promise.race([getDocs(q), timeoutPromise]);
+      
+      // Clear the timeout if the query resolved first
+      if (timeoutId) clearTimeout(timeoutId);
 
       if (!snapshot.empty) {
         setSchedule({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
@@ -32,7 +50,10 @@ export default function UserView() {
         setSchedule(null);
       }
     } catch (error) {
+      // Clear the timeout on error
+      if (timeoutId) clearTimeout(timeoutId);
       console.error('Error loading schedule:', error);
+      setError(error.message || 'Failed to load schedule');
     } finally {
       setLoading(false);
     }
@@ -77,7 +98,20 @@ export default function UserView() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {schedule ? (
+        {error ? (
+          <div className="card text-center py-12">
+            <Calendar className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Unable to Load Schedule
+            </h3>
+            <p className="text-gray-600 mb-4">
+              There was a problem connecting to the database.
+            </p>
+            <p className="text-sm text-gray-500">
+              {error}
+            </p>
+          </div>
+        ) : schedule ? (
           <div>
             <div className="mb-6 card">
               <div className="flex items-center justify-between">

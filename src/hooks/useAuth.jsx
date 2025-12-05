@@ -52,12 +52,23 @@ export function AuthProvider({ children }) {
       setLoading(false);
       return;
     }
+    
+    // Set a timeout to prevent hanging forever if auth never responds
+    const timeoutId = setTimeout(() => {
+      console.warn('Auth state change timed out');
+      setLoading(false);
+    }, 10000);
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      clearTimeout(timeoutId);
       setCurrentUser(user);
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, []);
 
   const value = {
@@ -69,9 +80,20 @@ export function AuthProvider({ children }) {
     firebaseConfigError,
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }
