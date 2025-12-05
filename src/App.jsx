@@ -1,23 +1,36 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './hooks/useAuth';
+import { AuthProvider, useAuth } from './hooks/useAuth';
 import LoginPage from './pages/LoginPage';
 import SupervisorDashboard from './pages/SupervisorDashboard';
 import UserView from './pages/UserView';
+import ConfigurationError from './components/ConfigurationError';
 import './App.css';
+
+function AppContent() {
+  const { isFirebaseConfigured, firebaseConfigError } = useAuth();
+
+  if (!isFirebaseConfigured) {
+    return <ConfigurationError error={firebaseConfigError} />;
+  }
+
+  return (
+    <Router basename="/ClinicalReviewScheduler">
+      <div className="min-h-screen bg-gray-50">
+        <Routes>
+          <Route path="/" element={<Navigate to="/schedule" replace />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/supervisor" element={<SupervisorDashboard />} />
+          <Route path="/schedule" element={<UserView />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
 
 function App() {
   return (
     <AuthProvider>
-      <Router basename="/ClinicalReviewScheduler">
-        <div className="min-h-screen bg-gray-50">
-          <Routes>
-            <Route path="/" element={<Navigate to="/schedule" replace />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/supervisor" element={<SupervisorDashboard />} />
-            <Route path="/schedule" element={<UserView />} />
-          </Routes>
-        </div>
-      </Router>
+      <AppContent />
     </AuthProvider>
   );
 }
