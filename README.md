@@ -174,7 +174,20 @@ git commit -m "Initial commit: Clinical Review Scheduler"
 git push origin main
 ```
 
-3. Enable GitHub Pages:
+3. **Configure Repository Secrets** (Required for Firebase):
+   - Go to your repository on GitHub
+   - Click "Settings"
+   - Click "Secrets and variables" > "Actions" in the left sidebar
+   - Add the following secrets by clicking "New repository secret":
+     - `VITE_FIREBASE_API_KEY` - Your Firebase API key
+     - `VITE_FIREBASE_AUTH_DOMAIN` - Your Firebase auth domain
+     - `VITE_FIREBASE_PROJECT_ID` - Your Firebase project ID
+     - `VITE_FIREBASE_STORAGE_BUCKET` - Your Firebase storage bucket
+     - `VITE_FIREBASE_MESSAGING_SENDER_ID` - Your Firebase messaging sender ID
+     - `VITE_FIREBASE_APP_ID` - Your Firebase app ID
+     - `VITE_FIREBASE_MEASUREMENT_ID` - Your Firebase measurement ID (optional)
+
+4. Enable GitHub Pages:
    - Go to your repository on GitHub
    - Click "Settings"
    - Click "Pages" in the left sidebar
