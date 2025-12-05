@@ -3,14 +3,15 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
+// These values are loaded from environment variables for security
 const firebaseConfig = {
-  apiKey: "AIzaSyCYTMk7hB96D3PlSDjK0SUlK6hTS0EgqPo",
-  authDomain: "clinicalreviewscheduler.firebaseapp.com",
-  projectId: "clinicalreviewscheduler",
-  storageBucket: "clinicalreviewscheduler.firebasestorage.app",
-  messagingSenderId: "367634726664",
-  appId: "1:367634726664:web:3e2c1b5bbf06d0c289b6bd",
-  measurementId: "G-FPPY02D8YV"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
