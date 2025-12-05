@@ -23,6 +23,8 @@ export default function UserView() {
       return;
     }
 
+    let timeoutId = null;
+    
     try {
       const schedulesRef = collection(db, 'schedules');
       const q = query(
@@ -34,10 +36,13 @@ export default function UserView() {
 
       // Add timeout to prevent hanging forever
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timed out')), 10000);
+        timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
       });
 
       const snapshot = await Promise.race([getDocs(q), timeoutPromise]);
+      
+      // Clear the timeout if the query resolved first
+      if (timeoutId) clearTimeout(timeoutId);
 
       if (!snapshot.empty) {
         setSchedule({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
@@ -45,6 +50,8 @@ export default function UserView() {
         setSchedule(null);
       }
     } catch (error) {
+      // Clear the timeout on error
+      if (timeoutId) clearTimeout(timeoutId);
       console.error('Error loading schedule:', error);
       setError(error.message || 'Failed to load schedule');
     } finally {
