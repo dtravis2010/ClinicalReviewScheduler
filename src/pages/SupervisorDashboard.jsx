@@ -400,6 +400,7 @@ export default function SupervisorDashboard() {
                 onSave={saveSchedule}
                 onCreateNewSchedule={createNewSchedule}
                 readOnly={false}
+                schedules={schedules}
               />
             ) : (
               <div className="card dark:bg-gray-800 dark:border-gray-700 text-center py-12">

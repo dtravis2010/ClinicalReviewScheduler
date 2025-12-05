@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Calendar } from 'lucide-react';
+import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Calendar, Info } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
+import DarInfoPanel from './DarInfoPanel';
 
 export default function ScheduleGrid({
   schedule,
@@ -11,7 +12,8 @@ export default function ScheduleGrid({
   entities = [],
   onSave,
   readOnly = false,
-  onCreateNewSchedule
+  onCreateNewSchedule,
+  schedules = []
 }) {
   const [assignments, setAssignments] = useState({});
   const [scheduleName, setScheduleName] = useState('');
@@ -22,6 +24,8 @@ export default function ScheduleGrid({
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showDarInfoPanel, setShowDarInfoPanel] = useState(false);
+  const [selectedDarIndex, setSelectedDarIndex] = useState(null);
 
   const darColumns = ['DAR 1', 'DAR 2', 'DAR 3', 'DAR 4', 'DAR 5', 'DAR 6'];
 
@@ -251,14 +255,14 @@ export default function ScheduleGrid({
   const activeEmployees = employees.filter(e => !e.archived);
 
   return (
-    <div className="space-y-0 h-screen flex flex-col animate-fade-in-up">
+    <div className="space-y-0 flex flex-col animate-fade-in-up" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
       {/* Header Section - Modern THR styling */}
-      <div className="bg-white dark:bg-slate-800 px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-soft">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 px-4 sm:px-6 py-3 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-soft">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-h3 text-slate-900 dark:text-slate-100">Schedule Builder</h1>
-            <p className="text-caption text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">Click any cell to assign or modify</p>
-            <p className="text-caption text-slate-500 dark:text-slate-400 mt-1 sm:hidden">Tap to assign</p>
+            <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 hidden sm:block">Click any cell to assign • Click DAR info icon for history</p>
+            <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 sm:hidden">Tap to assign</p>
           </div>
 
           {!readOnly && (
@@ -316,35 +320,72 @@ export default function ScheduleGrid({
         </div>
       </div>
 
-      {/* Date Header - THR Blue Gradient Banner */}
-      <div className="header-gradient px-4 sm:px-6 py-4 text-white flex-shrink-0">
+      {/* Date Header - THR Blue Gradient Banner with inline date editing */}
+      <div className="header-gradient px-4 sm:px-6 py-3 text-white flex-shrink-0">
         <div className="flex items-center justify-between">
           <button 
-            className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50" 
+            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50" 
             aria-label="Previous schedule"
           >
             <ChevronLeft className="w-5 h-5" aria-hidden="true" />
           </button>
 
-          <div className="text-center flex-1 px-4">
-            <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20">
-                <div className="w-2 h-2 rounded-full bg-thr-green-400 animate-pulse-subtle" />
-                <span className="font-semibold text-sm sm:text-base">
-                  {scheduleName || 'Schedule'}
-                </span>
-              </div>
-              <span className="px-3 py-1 bg-thr-green-500 rounded-full text-xs font-bold uppercase tracking-wider shadow-soft">
-                LIVE
+          <div className="text-center flex-1 px-2">
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              {!readOnly ? (
+                <input
+                  type="text"
+                  value={scheduleName}
+                  onChange={(e) => {
+                    setScheduleName(e.target.value);
+                    setHasChanges(true);
+                  }}
+                  className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/20 text-white font-semibold text-sm text-center focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 placeholder:text-white/60"
+                  placeholder="Schedule name"
+                />
+              ) : (
+                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20">
+                  <div className="w-2 h-2 rounded-full bg-thr-green-400 animate-pulse-subtle" />
+                  <span className="font-semibold text-sm">
+                    {scheduleName || 'Schedule'}
+                  </span>
+                </div>
+              )}
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-soft ${schedule?.status === 'published' ? 'bg-thr-green-500' : 'bg-orange-500'}`}>
+                {schedule?.status === 'published' ? 'LIVE' : 'DRAFT'}
               </span>
             </div>
-            <p className="text-white/80 text-sm mt-2">
-              {formatDateRange() || 'Select date range'}
-            </p>
+            {!readOnly ? (
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setHasChanges(true);
+                  }}
+                  className="bg-white/10 backdrop-blur-sm px-2 py-1 rounded-lg border border-white/20 text-white text-xs focus:bg-white/20 focus:outline-none"
+                />
+                <span className="text-white/60 text-xs">to</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setHasChanges(true);
+                  }}
+                  className="bg-white/10 backdrop-blur-sm px-2 py-1 rounded-lg border border-white/20 text-white text-xs focus:bg-white/20 focus:outline-none"
+                />
+              </div>
+            ) : (
+              <p className="text-white/80 text-sm mt-1">
+                {formatDateRange() || 'No date range set'}
+              </p>
+            )}
           </div>
 
           <button 
-            className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50" 
+            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50" 
             aria-label="Next schedule"
           >
             <ChevronRight className="w-5 h-5" aria-hidden="true" />
@@ -353,24 +394,41 @@ export default function ScheduleGrid({
       </div>
 
       {/* Schedule Table - Modern styling with rounded corners and shadows */}
-      <div className="bg-slate-50 dark:bg-slate-900 flex-1 overflow-hidden p-4">
-        <div className="h-full flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-card overflow-hidden border border-slate-100 dark:border-slate-700">
-          <table className="w-full border-collapse table-fixed flex-1" role="grid" aria-label="Schedule assignments">
-            <thead className="sticky top-0 z-20">
-              <tr className="bg-gradient-to-r from-thr-blue-500 to-thr-blue-600 dark:from-thr-blue-600 dark:to-thr-blue-700 text-white">
-                <th scope="col" className="sticky left-0 bg-thr-blue-500 dark:bg-thr-blue-600 px-3 py-3 text-left text-xs font-bold uppercase tracking-wider z-30 w-32">
-                  Team Member
-                </th>
-                {darColumns.map((dar, idx) => (
-                  <th key={idx} scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-24 relative">
-                    <div className="mb-1 text-xs">{dar}</div>
-                    <div className="text-[10px] font-normal opacity-80">
-                      {editingDar === idx && !readOnly ? (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for DAR">
-                          <div className="space-y-1">
-                            {getAvailableEntitiesForDar(idx).map(entity => {
-                              const currentList = darEntities[idx] || [];
-                              const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
+      <div className="bg-slate-50 dark:bg-slate-900 flex-1 overflow-auto p-3">
+        <div className="h-full flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-card overflow-auto border border-slate-100 dark:border-slate-700">
+          <div className="overflow-auto flex-1">
+            <table className="w-full border-collapse min-w-max" role="grid" aria-label="Schedule assignments">
+              <thead className="sticky top-0 z-20">
+                <tr className="bg-gradient-to-r from-thr-blue-500 to-thr-blue-600 dark:from-thr-blue-600 dark:to-thr-blue-700 text-white">
+                  <th scope="col" className="sticky left-0 bg-thr-blue-500 dark:bg-thr-blue-600 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider z-30 min-w-[140px]">
+                    Team Member
+                  </th>
+                  {darColumns.map((dar, idx) => (
+                    <th key={idx} scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px] relative">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <span className="text-xs">{dar}</span>
+                        {!readOnly && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDarIndex(idx);
+                              setShowDarInfoPanel(true);
+                            }}
+                            className="p-0.5 rounded hover:bg-white/20 transition-colors"
+                            aria-label={`View ${dar} history and info`}
+                            title="View DAR history"
+                          >
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="text-[10px] font-normal opacity-80">
+                        {editingDar === idx && !readOnly ? (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for DAR">
+                            <div className="space-y-1">
+                              {getAvailableEntitiesForDar(idx).map(entity => {
+                                const currentList = darEntities[idx] || [];
+                                const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                               const isSelected = currentArray.includes(entity.name);
 
                               return (
@@ -394,180 +452,181 @@ export default function ScheduleGrid({
                           >
                             Done
                           </button>
-                        </div>
-                      ) : (
-                        <button
-                          className="cursor-pointer hover:bg-white/10 rounded-lg px-2 py-1 truncate w-full focus:ring-2 focus:ring-white/50 transition-colors"
-                          onClick={() => !readOnly && setEditingDar(idx)}
-                          title={formatEntityList(darEntities[idx])}
-                          aria-label={`Configure entities for ${dar}. Current: ${formatEntityList(darEntities[idx]) || 'None'}`}
-                          disabled={readOnly}
-                        >
-                          {getEntityShortCode(darEntities[idx]) || 'Select'}
-                        </button>
-                      )}
+                      </div>
+                    ) : (
+                      <button
+                        className="cursor-pointer hover:bg-white/10 rounded-lg px-2 py-1 truncate w-full focus:ring-2 focus:ring-white/50 transition-colors"
+                        onClick={() => !readOnly && setEditingDar(idx)}
+                        title={formatEntityList(darEntities[idx])}
+                        aria-label={`Configure entities for ${dar}. Current: ${formatEntityList(darEntities[idx]) || 'None'}`}
+                        disabled={readOnly}
+                      >
+                        {getEntityShortCode(darEntities[idx]) || 'Select'}
+                      </button>
+                    )}
+                  </div>
+                </th>
+              ))}
+              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[80px]">CPOE</th>
+              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">New<br/>Incoming</th>
+              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">Cross-<br/>Training</th>
+              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px]">Special<br/>Projects</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            {activeEmployees.map((employee, empIdx) => {
+              const assignment = assignments[employee.id] || {};
+              const isDarTrained = canAssignDAR(employee);
+              const colorClass = employeeColors[empIdx % employeeColors.length];
+
+              return (
+                <tr 
+                  key={employee.id} 
+                  className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30 ${
+                    empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/50 dark:bg-slate-800/50'
+                  }`}
+                >
+                  {/* Employee Name - Employee Chip Style */}
+                  <th scope="row" className="sticky left-0 bg-inherit px-3 py-2 z-10">
+                    <div className="employee-chip inline-flex">
+                      <span className={`font-semibold text-sm ${colorClass} truncate`} title={employee.name}>
+                        {employee.name}
+                      </span>
                     </div>
                   </th>
-                ))}
-                <th scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-20">CPOE</th>
-                <th scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-24">New<br/>Incoming</th>
-                <th scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-24">Cross-<br/>Training</th>
-                <th scope="col" className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider w-28">Special<br/>Projects</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-              {activeEmployees.map((employee, empIdx) => {
-                const assignment = assignments[employee.id] || {};
-                const isDarTrained = canAssignDAR(employee);
-                const colorClass = employeeColors[empIdx % employeeColors.length];
 
-                return (
-                  <tr 
-                    key={employee.id} 
-                    className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30 ${
-                      empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/50 dark:bg-slate-800/50'
-                    }`}
-                  >
-                    {/* Employee Name - Employee Chip Style */}
-                    <th scope="row" className="sticky left-0 bg-inherit px-3 py-2 z-10">
-                      <div className="employee-chip inline-flex">
-                        <span className={`font-semibold text-sm ${colorClass} truncate`} title={employee.name}>
-                          {employee.name}
-                        </span>
-                      </div>
-                    </th>
+                  {/* DAR Columns - Clickable Cells with modern styling */}
+                  {darColumns.map((darName, darIdx) => {
+                    const isAssigned = assignment.dars?.includes(darIdx);
+                    const entityCode = getEntityShortCode(darEntities[darIdx]);
 
-                    {/* DAR Columns - Clickable Cells with modern styling */}
-                    {darColumns.map((darName, darIdx) => {
-                      const isAssigned = assignment.dars?.includes(darIdx);
-                      const entityCode = getEntityShortCode(darEntities[darIdx]);
-
-                      return (
-                        <td
-                          key={darIdx}
-                          className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
-                            !isDarTrained
-                              ? 'bg-slate-100 dark:bg-slate-700/50'
-                              : isAssigned
-                                ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
-                                : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                          }`}
-                          onClick={() => isDarTrained && handleDARToggle(employee.id, darIdx)}
-                          onKeyPress={(e) => {
-                            if ((e.key === 'Enter' || e.key === ' ') && isDarTrained) {
-                              e.preventDefault();
-                              handleDARToggle(employee.id, darIdx);
-                            }
-                          }}
-                          tabIndex={isDarTrained && !readOnly ? 0 : -1}
-                          role="gridcell"
-                          aria-label={`${isAssigned ? 'Remove' : 'Assign'} ${employee.name} to ${darName}`}
-                          aria-pressed={isAssigned}
-                        >
-                          {isDarTrained ? (
-                            isAssigned ? (
-                              <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                                {entityCode || '✓'}
-                              </div>
-                            ) : (
-                              <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
-                            )
+                    return (
+                      <td
+                        key={darIdx}
+                        className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
+                          !isDarTrained
+                            ? 'bg-slate-100 dark:bg-slate-700/50'
+                            : isAssigned
+                              ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                              : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                        }`}
+                        onClick={() => isDarTrained && handleDARToggle(employee.id, darIdx)}
+                        onKeyPress={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && isDarTrained) {
+                            e.preventDefault();
+                            handleDARToggle(employee.id, darIdx);
+                          }
+                        }}
+                        tabIndex={isDarTrained && !readOnly ? 0 : -1}
+                        role="gridcell"
+                        aria-label={`${isAssigned ? 'Remove' : 'Assign'} ${employee.name} to ${darName}`}
+                        aria-pressed={isAssigned}
+                      >
+                        {isDarTrained ? (
+                          isAssigned ? (
+                            <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
+                              {entityCode || '✓'}
+                            </div>
                           ) : (
                             <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
-                          )}
-                        </td>
-                      );
-                    })}
+                          )
+                        ) : (
+                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
 
-                    {/* CPOE */}
-                    <td className="px-2 py-2 text-center" role="gridcell">
-                      {readOnly ? (
-                        <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.cpoe)}</span>
-                      ) : (
-                        <select
-                          multiple
-                          value={Array.isArray(assignment.cpoe) ? assignment.cpoe : (assignment.cpoe ? [assignment.cpoe] : [])}
-                          onChange={(e) => {
-                            const selected = Array.from(e.target.selectedOptions, option => option.value);
-                            handleAssignmentChange(employee.id, 'cpoe', selected);
-                          }}
-                          className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
-                          size="1"
-                          aria-label={`CPOE assignment for ${employee.name}`}
-                        >
-                          {getAvailableEntitiesForAssignment(employee.id, 'cpoe').map(entity => (
-                            <option key={entity.id} value={entity.name}>{entity.name}</option>
-                          ))}
-                        </select>
-                      )}
-                    </td>
+                  {/* CPOE */}
+                  <td className="px-2 py-2 text-center" role="gridcell">
+                    {readOnly ? (
+                      <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.cpoe)}</span>
+                    ) : (
+                      <select
+                        multiple
+                        value={Array.isArray(assignment.cpoe) ? assignment.cpoe : (assignment.cpoe ? [assignment.cpoe] : [])}
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.selectedOptions, option => option.value);
+                          handleAssignmentChange(employee.id, 'cpoe', selected);
+                        }}
+                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
+                        size="1"
+                        aria-label={`CPOE assignment for ${employee.name}`}
+                      >
+                        {getAvailableEntitiesForAssignment(employee.id, 'cpoe').map(entity => (
+                          <option key={entity.id} value={entity.name}>{entity.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
 
-                    {/* New Incoming Items */}
-                    <td className="px-2 py-2 text-center" role="gridcell">
-                      {readOnly ? (
-                        <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.newIncoming)}</span>
-                      ) : (
-                        <select
-                          multiple
-                          value={Array.isArray(assignment.newIncoming) ? assignment.newIncoming : (assignment.newIncoming ? [assignment.newIncoming] : [])}
-                          onChange={(e) => {
-                            const selected = Array.from(e.target.selectedOptions, option => option.value);
-                            handleAssignmentChange(employee.id, 'newIncoming', selected);
-                          }}
-                          className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
-                          size="1"
-                          aria-label={`New incoming items assignment for ${employee.name}`}
-                        >
-                          {getAvailableEntitiesForAssignment(employee.id, 'newIncoming').map(entity => (
-                            <option key={entity.id} value={entity.name}>{entity.name}</option>
-                          ))}
-                        </select>
-                      )}
-                    </td>
+                  {/* New Incoming Items */}
+                  <td className="px-2 py-2 text-center" role="gridcell">
+                    {readOnly ? (
+                      <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.newIncoming)}</span>
+                    ) : (
+                      <select
+                        multiple
+                        value={Array.isArray(assignment.newIncoming) ? assignment.newIncoming : (assignment.newIncoming ? [assignment.newIncoming] : [])}
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.selectedOptions, option => option.value);
+                          handleAssignmentChange(employee.id, 'newIncoming', selected);
+                        }}
+                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
+                        size="1"
+                        aria-label={`New incoming items assignment for ${employee.name}`}
+                      >
+                        {getAvailableEntitiesForAssignment(employee.id, 'newIncoming').map(entity => (
+                          <option key={entity.id} value={entity.name}>{entity.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
 
-                    {/* Cross-Training */}
-                    <td className="px-2 py-2 text-center" role="gridcell">
-                      {readOnly ? (
-                        <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.crossTraining)}</span>
-                      ) : (
-                        <select
-                          multiple
-                          value={Array.isArray(assignment.crossTraining) ? assignment.crossTraining : (assignment.crossTraining ? [assignment.crossTraining] : [])}
-                          onChange={(e) => {
-                            const selected = Array.from(e.target.selectedOptions, option => option.value);
-                            handleAssignmentChange(employee.id, 'crossTraining', selected);
-                          }}
-                          className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
-                          size="1"
-                          aria-label={`Cross-training assignment for ${employee.name}`}
-                        >
-                          {getAvailableEntitiesForAssignment(employee.id, 'crossTraining').map(entity => (
-                            <option key={entity.id} value={entity.name}>{entity.name}</option>
-                          ))}
-                        </select>
-                      )}
-                    </td>
+                  {/* Cross-Training */}
+                  <td className="px-2 py-2 text-center" role="gridcell">
+                    {readOnly ? (
+                      <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.crossTraining)}</span>
+                    ) : (
+                      <select
+                        multiple
+                        value={Array.isArray(assignment.crossTraining) ? assignment.crossTraining : (assignment.crossTraining ? [assignment.crossTraining] : [])}
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.selectedOptions, option => option.value);
+                          handleAssignmentChange(employee.id, 'crossTraining', selected);
+                        }}
+                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
+                        size="1"
+                        aria-label={`Cross-training assignment for ${employee.name}`}
+                      >
+                        {getAvailableEntitiesForAssignment(employee.id, 'crossTraining').map(entity => (
+                          <option key={entity.id} value={entity.name}>{entity.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
 
-                    {/* Special Projects/Assignments */}
-                    <td className="px-2 py-2 text-center" role="gridcell">
-                      {readOnly ? (
-                        <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.specialProjects)}</span>
-                      ) : (
-                        <input
-                          type="text"
-                          value={formatEntityList(assignment.specialProjects)}
-                          onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
-                          className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 text-center bg-white dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
-                          placeholder=""
-                          aria-label={`Special projects for ${employee.name}`}
-                        />
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  {/* Special Projects/Assignments */}
+                  <td className="px-2 py-2 text-center" role="gridcell">
+                    {readOnly ? (
+                      <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.specialProjects)}</span>
+                    ) : (
+                      <input
+                        type="text"
+                        value={formatEntityList(assignment.specialProjects)}
+                        onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
+                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 text-center bg-white dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
+                        placeholder=""
+                        aria-label={`Special projects for ${employee.name}`}
+                      />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
           {activeEmployees.length === 0 && (
             <div className="text-center py-16 text-slate-500 dark:text-slate-400">
@@ -600,6 +659,23 @@ export default function ScheduleGrid({
           onClose={() => {
             setShowHistoryModal(false);
             setSelectedEmployee(null);
+          }}
+        />
+      )}
+
+      {/* DAR Info Panel - Shows historical data about DAR assignments */}
+      {showDarInfoPanel && selectedDarIndex !== null && (
+        <DarInfoPanel
+          darIndex={selectedDarIndex}
+          darName={darColumns[selectedDarIndex]}
+          darEntities={darEntities[selectedDarIndex]}
+          employees={employees}
+          currentAssignments={assignments}
+          schedules={schedules}
+          isOpen={showDarInfoPanel}
+          onClose={() => {
+            setShowDarInfoPanel(false);
+            setSelectedDarIndex(null);
           }}
         />
       )}
