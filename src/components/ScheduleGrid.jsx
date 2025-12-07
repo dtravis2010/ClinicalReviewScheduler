@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Minus, Calendar, Info } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { doc, getDoc } from 'firebase/firestore';
@@ -818,3 +819,29 @@ export default function ScheduleGrid({
     </div>
   );
 }
+
+ScheduleGrid.propTypes = {
+  schedule: PropTypes.shape({
+    id: PropTypes.string,
+    name: PropTypes.string,
+    startDate: PropTypes.string,
+    endDate: PropTypes.string,
+    assignments: PropTypes.object,
+    darEntities: PropTypes.object,
+    darCount: PropTypes.number
+  }),
+  employees: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    skills: PropTypes.arrayOf(PropTypes.string),
+    archived: PropTypes.bool
+  })),
+  entities: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired
+  })),
+  onSave: PropTypes.func,
+  readOnly: PropTypes.bool,
+  onCreateNewSchedule: PropTypes.func,
+  schedules: PropTypes.array
+};

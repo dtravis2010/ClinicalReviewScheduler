@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { 
-  Clock, 
-  UserCheck, 
+import { useState, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
+import {
+  Clock,
+  UserCheck,
   UserX,
   BarChart3,
   Calendar,
@@ -29,21 +30,19 @@ export default function DarInfoPanel({
   onClose,
   isOpen = true
 }) {
-  const [historyData, setHistoryData] = useState({
-    assignmentCounts: {},
-    neverAssigned: [],
-    recentHistory: [],
-    loading: true
-  });
   const [expandedSection, setExpandedSection] = useState('assigned');
 
-  useEffect(() => {
-    if (isOpen) {
-      analyzeHistoricalData();
+  // Memoize expensive historical data analysis
+  const historyData = useMemo(() => {
+    if (!isOpen) {
+      return {
+        assignmentCounts: [],
+        neverAssigned: [],
+        recentHistory: [],
+        loading: false
+      };
     }
-  }, [darIndex, schedules, employees, isOpen]);
 
-  function analyzeHistoricalData() {
     // Count how many times each employee has been assigned to this DAR
     const assignmentCounts = {};
     const recentHistory = [];
@@ -65,7 +64,7 @@ export default function DarInfoPanel({
       .filter(s => s.status === 'published')
       .forEach(schedule => {
         const assignments = schedule.assignments || {};
-        
+
         Object.entries(assignments).forEach(([empId, assignment]) => {
           if (assignment.dars?.includes(darIndex)) {
             if (assignmentCounts[empId]) {
@@ -106,13 +105,13 @@ export default function DarInfoPanel({
     // Sort recent history by date (most recent first)
     recentHistory.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 
-    setHistoryData({
+    return {
       assignmentCounts: sortedAssigned,
       neverAssigned,
       recentHistory: recentHistory.slice(0, 10), // Last 10 assignments
       loading: false
-    });
-  }
+    };
+  }, [darIndex, schedules, employees, isOpen]);
 
   // Get currently assigned employees for this DAR
   const currentlyAssigned = Object.entries(currentAssignments)
@@ -367,3 +366,29 @@ export default function DarInfoPanel({
     </>
   );
 }
+
+DarInfoPanel.propTypes = {
+  darIndex: PropTypes.number.isRequired,
+  darName: PropTypes.string.isRequired,
+  darEntities: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string)
+  ]),
+  employees: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    skills: PropTypes.arrayOf(PropTypes.string),
+    archived: PropTypes.bool
+  })),
+  currentAssignments: PropTypes.object,
+  schedules: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
+    name: PropTypes.string,
+    status: PropTypes.string,
+    startDate: PropTypes.string,
+    endDate: PropTypes.string,
+    assignments: PropTypes.object
+  })),
+  onClose: PropTypes.func.isRequired,
+  isOpen: PropTypes.bool
+};
