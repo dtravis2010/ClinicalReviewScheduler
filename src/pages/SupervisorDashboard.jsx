@@ -11,6 +11,7 @@ import {
   updateDoc,
   query,
   orderBy,
+  limit,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -62,13 +63,25 @@ export default function SupervisorDashboard() {
   async function loadData() {
     try {
       const darConfigData = await loadDarConfig();
-      await Promise.all([
+
+      // Use Promise.allSettled to allow partial data loading if one fails
+      const results = await Promise.allSettled([
         loadEmployees(),
         loadEntities(),
         loadSchedules(darConfigData.config)
       ]);
+
+      // Log any failures but continue with successfully loaded data
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const dataTypes = ['employees', 'entities', 'schedules'];
+          console.error(`Failed to load ${dataTypes[index]}:`, result.reason);
+          showError(`Failed to load ${dataTypes[index]}. Some data may be unavailable.`);
+        }
+      });
     } catch (error) {
       console.error('Error loading data:', error);
+      showError('Failed to load configuration data');
     } finally {
       setLoading(false);
     }
@@ -116,7 +129,7 @@ export default function SupervisorDashboard() {
 
   async function loadSchedules(darConfig = defaultDarConfig) {
     const schedulesRef = collection(db, 'schedules');
-    const q = query(schedulesRef, orderBy('createdAt', 'desc'));
+    const q = query(schedulesRef, orderBy('createdAt', 'desc'), limit(50)); // Limit to 50 most recent schedules
     const snapshot = await getDocs(q);
     const schedulesList = snapshot.docs.map(doc => {
       const data = doc.data();

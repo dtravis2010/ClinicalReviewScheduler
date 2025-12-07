@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Calendar, Clock } from 'lucide-react';
 import Modal from './Modal';
@@ -17,12 +17,13 @@ export default function EmployeeHistoryModal({ employee, onClose, isOpen = true 
   async function loadHistory() {
     setLoading(true);
     try {
-      // Get all published schedules
+      // Get recent published schedules (limited to avoid performance issues)
       const schedulesRef = collection(db, 'schedules');
       const q = query(
         schedulesRef,
         where('status', '==', 'published'),
-        orderBy('publishedAt', 'desc')
+        orderBy('publishedAt', 'desc'),
+        limit(100) // Limit to last 100 published schedules
       );
 
       const snapshot = await getDocs(q);

@@ -70,8 +70,12 @@ export default function DarInfoPanel({
           if (assignment.dars?.includes(darIndex)) {
             if (assignmentCounts[empId]) {
               assignmentCounts[empId].count++;
-              if (!assignmentCounts[empId].lastAssigned || 
-                  new Date(schedule.startDate) > new Date(assignmentCounts[empId].lastAssigned)) {
+              // Validate dates before comparison
+              const currentDate = schedule.startDate ? new Date(schedule.startDate) : null;
+              const lastDate = assignmentCounts[empId].lastAssigned ? new Date(assignmentCounts[empId].lastAssigned) : null;
+
+              if (currentDate && !isNaN(currentDate.getTime()) &&
+                  (!lastDate || isNaN(lastDate.getTime()) || currentDate > lastDate)) {
                 assignmentCounts[empId].lastAssigned = schedule.startDate;
               }
             }

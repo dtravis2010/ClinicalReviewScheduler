@@ -77,29 +77,34 @@ export default function ScheduleGrid({
 
   function getAvailableEntitiesForDar(darIndex) {
     const assignedToDars = new Set();
-    Object.entries(darEntities).forEach(([idx, entityList]) => {
-      if (parseInt(idx) !== darIndex) {
-        if (Array.isArray(entityList)) {
-          entityList.forEach(e => assignedToDars.add(e));
-        } else if (entityList) {
-          assignedToDars.add(entityList);
+    if (darEntities && typeof darEntities === 'object') {
+      Object.entries(darEntities).forEach(([idx, entityList]) => {
+        if (parseInt(idx) !== darIndex) {
+          if (Array.isArray(entityList)) {
+            entityList.forEach(e => assignedToDars.add(e));
+          } else if (entityList) {
+            assignedToDars.add(entityList);
+          }
         }
-      }
-    });
-    return entities.filter(e => !assignedToDars.has(e.name));
+      });
+    }
+    return Array.isArray(entities) ? entities.filter(e => !assignedToDars.has(e.name)) : [];
   }
 
   function getAvailableEntitiesForAssignment(employeeId, field) {
     const assignedEntities = new Set();
-    Object.values(darEntities).forEach(entityList => {
-      if (Array.isArray(entityList)) {
-        entityList.forEach(e => assignedEntities.add(e));
-      } else if (entityList) {
-        assignedEntities.add(entityList);
-      }
-    });
+    if (darEntities && typeof darEntities === 'object') {
+      Object.values(darEntities).forEach(entityList => {
+        if (Array.isArray(entityList)) {
+          entityList.forEach(e => assignedEntities.add(e));
+        } else if (entityList) {
+          assignedEntities.add(entityList);
+        }
+      });
+    }
 
-    Object.entries(assignments).forEach(([empId, assignment]) => {
+    if (assignments && typeof assignments === 'object') {
+      Object.entries(assignments).forEach(([empId, assignment]) => {
       if (empId !== employeeId) {
         ['newIncoming', 'crossTraining'].forEach(f => {
           if (assignment[f]) {
@@ -121,9 +126,10 @@ export default function ScheduleGrid({
           }
         });
       }
-    });
+      });
+    }
 
-    return entities.filter(e => !assignedEntities.has(e.name));
+    return Array.isArray(entities) ? entities.filter(e => !assignedEntities.has(e.name)) : [];
   }
 
   function handleAssignmentChange(employeeId, field, value) {
@@ -140,6 +146,8 @@ export default function ScheduleGrid({
 
   function handleDARToggle(employeeId, darIndex) {
     if (readOnly) return;
+    if (!Array.isArray(employees)) return;
+
     const employee = employees.find(e => e.id === employeeId);
     if (!employee?.skills?.includes('DAR') && !employee?.skills?.includes('Float')) {
       return;

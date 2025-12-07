@@ -24,6 +24,7 @@ export default function LoginPage() {
 
       if (!isFirebaseConfigured) {
         setError(firebaseConfigError || 'Firebase is not configured. Please check your environment settings.');
+        setLoading(false);
         return;
       }
 
