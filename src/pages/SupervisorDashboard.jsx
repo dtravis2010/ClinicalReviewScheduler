@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { logger } from '../utils/logger';
 import {
   collection,
   addDoc,
@@ -75,12 +76,12 @@ export default function SupervisorDashboard() {
       results.forEach((result, index) => {
         if (result.status === 'rejected') {
           const dataTypes = ['employees', 'entities', 'schedules'];
-          console.error(`Failed to load ${dataTypes[index]}:`, result.reason);
+          logger.error(`Failed to load ${dataTypes[index]}:`, result.reason);
           showError(`Failed to load ${dataTypes[index]}. Some data may be unavailable.`);
         }
       });
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data:', error);
       showError('Failed to load configuration data');
     } finally {
       setLoading(false);
@@ -122,7 +123,7 @@ export default function SupervisorDashboard() {
       }
       return { config: {}, darCount: 5 };
     } catch (error) {
-      console.error('Error loading DAR defaults:', error);
+      logger.error('Error loading DAR defaults:', error);
       return { config: {}, darCount: 5 };
     }
   }
@@ -188,7 +189,7 @@ export default function SupervisorDashboard() {
       setCurrentSchedule(created);
       setSchedules((prev) => [created, ...prev]);
     } catch (error) {
-      console.error('Error creating schedule:', error);
+      logger.error('Error creating schedule:', error);
       showError('Failed to create new schedule');
     } finally {
       setCreatingSchedule(false);
@@ -215,7 +216,7 @@ export default function SupervisorDashboard() {
       );
       showSuccess('Schedule saved successfully!');
     } catch (error) {
-      console.error('Error saving schedule:', error);
+      logger.error('Error saving schedule:', error);
       showError('Failed to save schedule');
     }
   }
@@ -247,7 +248,7 @@ export default function SupervisorDashboard() {
       );
       showSuccess('Schedule published successfully!');
     } catch (error) {
-      console.error('Error publishing schedule:', error);
+      logger.error('Error publishing schedule:', error);
       showError('Failed to publish schedule');
     }
   }
@@ -257,7 +258,7 @@ export default function SupervisorDashboard() {
       await logout();
       navigate('/login');
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', error);
     }
   }
 

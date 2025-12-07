@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { logger } from '../utils/logger';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 /**
@@ -25,8 +26,8 @@ export class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     // Log error details for debugging
-    console.error('Error caught by ErrorBoundary:', error);
-    console.error('Error info:', errorInfo);
+    logger.error('Error caught by ErrorBoundary:', error);
+    logger.error('Error info:', errorInfo);
 
     // Store error info in state for display
     this.setState({

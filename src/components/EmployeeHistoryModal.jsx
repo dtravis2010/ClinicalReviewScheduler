@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Calendar, Clock } from 'lucide-react';
@@ -47,7 +48,7 @@ export default function EmployeeHistoryModal({ employee, onClose, isOpen = true 
 
       setHistory(scheduleHistory);
     } catch (error) {
-      console.error('Error loading history:', error);
+      logger.error('Error loading history:', error);
     } finally {
       setLoading(false);
     }

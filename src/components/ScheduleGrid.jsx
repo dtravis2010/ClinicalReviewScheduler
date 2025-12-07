@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
 import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Minus, Calendar, Info } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -72,7 +73,7 @@ export default function ScheduleGrid({
         setDarCount(data.darCount || 5); // Load darCount from settings
       }
     } catch (error) {
-      console.error('Error loading DAR config:', error);
+      logger.error('Error loading DAR config:', error);
     }
   }
 

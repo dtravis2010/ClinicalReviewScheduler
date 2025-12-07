@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Plus, Edit2, Archive, Save, UserPlus, Check, Loader2 } from 'lucide-react';
@@ -105,7 +106,7 @@ export default function EmployeeManagement({ employees, onUpdate }) {
       onUpdate();
       showSuccess(editingEmployee ? 'Employee updated successfully!' : 'Employee added successfully!');
     } catch (error) {
-      console.error('Error saving employee:', error);
+      logger.error('Error saving employee:', error);
       showError('Failed to save employee');
       setIsSubmitting(false);
     }
@@ -127,7 +128,7 @@ export default function EmployeeManagement({ employees, onUpdate }) {
       onUpdate();
       showSuccess('Employee archived successfully!');
     } catch (error) {
-      console.error('Error archiving employee:', error);
+      logger.error('Error archiving employee:', error);
       showError('Failed to archive employee');
     } finally {
       setIsArchiving(false);

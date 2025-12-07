@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus } from 'lucide-react';
@@ -23,7 +24,7 @@ export default function Settings({ employees = [], onUpdate }) {
     try {
       await Promise.all([loadDarConfig(), loadEntities()]);
     } catch (error) {
-      console.error('Error loading settings:', error);
+      logger.error('Error loading settings:', error);
     } finally {
       setLoading(false);
     }
@@ -38,7 +39,7 @@ export default function Settings({ employees = [], onUpdate }) {
         setDarCount(data.darCount || 5); // Default to 5 if not set
       }
     } catch (error) {
-      console.error('Error loading DAR config:', error);
+      logger.error('Error loading DAR config:', error);
     }
   }
 
@@ -52,7 +53,7 @@ export default function Settings({ employees = [], onUpdate }) {
       }));
       setEntities(entitiesList);
     } catch (error) {
-      console.error('Error loading entities:', error);
+      logger.error('Error loading entities:', error);
     }
   }
 
@@ -82,7 +83,7 @@ export default function Settings({ employees = [], onUpdate }) {
       alert('DAR configuration saved successfully!');
       if (onUpdate) onUpdate();
     } catch (error) {
-      console.error('Error saving DAR config:', error);
+      logger.error('Error saving DAR config:', error);
       alert('Failed to save DAR configuration');
     }
   }

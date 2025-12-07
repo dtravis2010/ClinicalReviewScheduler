@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { logger } from '../utils/logger';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Plus, Edit2, Trash2, Save, Building2, Check, Loader2 } from 'lucide-react';
@@ -85,7 +86,7 @@ export default function EntityManagement({ entities, onUpdate }) {
       onUpdate();
       showSuccess(editingEntity ? 'Entity updated successfully!' : 'Entity added successfully!');
     } catch (error) {
-      console.error('Error saving entity:', error);
+      logger.error('Error saving entity:', error);
       showError('Failed to save entity');
       setIsSubmitting(false);
     }
@@ -107,7 +108,7 @@ export default function EntityManagement({ entities, onUpdate }) {
       onUpdate();
       showSuccess('Entity deleted successfully!');
     } catch (error) {
-      console.error('Error deleting entity:', error);
+      logger.error('Error deleting entity:', error);
       showError('Failed to delete entity');
     } finally {
       setIsDeleting(false);

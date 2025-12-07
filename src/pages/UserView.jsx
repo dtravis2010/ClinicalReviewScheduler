@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
+import { logger } from '../utils/logger';
 import { Calendar, Lock } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import { ScheduleSkeleton } from '../components/Skeleton';
@@ -66,7 +67,7 @@ export default function UserView() {
           timeout.clear();
         } catch (indexError) {
           // If the composite index query fails, fall back to simpler query
-          console.warn('Composite index query failed, using fallback:', indexError.message);
+          logger.warn('Composite index query failed, using fallback:', indexError.message);
 
           // Fallback: get recent schedules and filter in memory (limited to avoid performance issues)
           const fallbackQuery = query(
@@ -110,7 +111,7 @@ export default function UserView() {
         }
       } catch (error) {
         if (isMounted) {
-          console.error('Error loading schedule:', error);
+          logger.error('Error loading schedule:', error);
           setError(error.message || 'Failed to load schedule');
         }
       } finally {
