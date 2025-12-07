@@ -6,19 +6,49 @@ export default function ProductivityImport({ employees }) {
   const [error, setError] = useState(null);
   const [importing, setImporting] = useState(false);
 
+  function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+
+      if (char === '"' && inQuotes && nextChar === '"') {
+        // Escaped quote
+        current += '"';
+        i++; // Skip next quote
+      } else if (char === '"') {
+        // Toggle quote mode
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        // End of field
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    // Add last field
+    result.push(current.trim());
+    return result;
+  }
+
   function parseCSV(text) {
     const lines = text.split('\n').filter(line => line.trim());
     if (lines.length === 0) {
       throw new Error('CSV file is empty');
     }
 
-    // Parse headers
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    // Parse headers using robust CSV line parser
+    const headers = parseCSVLine(lines[0]);
 
     // Parse data rows
     const data = [];
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+      const values = parseCSVLine(lines[i]);
       if (values.length === headers.length) {
         const row = {};
         headers.forEach((header, idx) => {

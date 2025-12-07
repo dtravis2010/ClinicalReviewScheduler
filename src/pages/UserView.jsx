@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
+import { logger } from '../utils/logger';
 import { Calendar, Lock } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import { ScheduleSkeleton } from '../components/Skeleton';
@@ -15,7 +16,29 @@ export default function UserView() {
 
   useEffect(() => {
     let isMounted = true;
-    let timeoutId = null;
+    const timeoutIds = new Set();
+
+    // Helper function to create a timeout promise with cleanup tracking
+    function createTimeoutPromise(ms = 10000) {
+      let timeoutId;
+      const promise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          timeoutIds.delete(timeoutId);
+          reject(new Error('Request timed out'));
+        }, ms);
+        timeoutIds.add(timeoutId);
+      });
+
+      return {
+        promise,
+        clear: () => {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutIds.delete(timeoutId);
+          }
+        }
+      };
+    }
 
     async function fetchSchedule() {
       if (!db) {
@@ -29,7 +52,7 @@ export default function UserView() {
       try {
         const schedulesRef = collection(db, 'schedules');
         let snapshot = null;
-        
+
         // Try the optimized query first (requires composite index)
         try {
           const publishedQuery = query(
@@ -39,40 +62,24 @@ export default function UserView() {
             limit(1)
           );
 
-          const timeoutPromise = new Promise((_, reject) => {
-            timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
-          });
-
-          snapshot = await Promise.race([getDocs(publishedQuery), timeoutPromise]);
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-          }
+          const timeout = createTimeoutPromise();
+          snapshot = await Promise.race([getDocs(publishedQuery), timeout.promise]);
+          timeout.clear();
         } catch (indexError) {
           // If the composite index query fails, fall back to simpler query
-          console.warn('Composite index query failed, using fallback:', indexError.message);
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-          }
-          
-          // Fallback: get recent schedules and filter in memory (limited to avoid performance issues)
-          const fallbackTimeoutPromise = new Promise((_, reject) => {
-            timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
-          });
+          logger.warn('Composite index query failed, using fallback:', indexError.message);
 
+          // Fallback: get recent schedules and filter in memory (limited to avoid performance issues)
           const fallbackQuery = query(
             schedulesRef,
             orderBy('createdAt', 'desc'),
             limit(50) // Limit to recent schedules to avoid fetching too many documents
           );
 
-          const allSnapshots = await Promise.race([getDocs(fallbackQuery), fallbackTimeoutPromise]);
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-          }
-          
+          const fallbackTimeout = createTimeoutPromise();
+          const allSnapshots = await Promise.race([getDocs(fallbackQuery), fallbackTimeout.promise]);
+          fallbackTimeout.clear();
+
           // Find the most recent published schedule
           const publishedDocs = allSnapshots.docs.filter(doc => doc.data().status === 'published');
           if (publishedDocs.length > 0) {
@@ -84,40 +91,34 @@ export default function UserView() {
 
         // Fallback for schedules created before "status" was added
         if (snapshot.empty) {
-          const legacyTimeoutPromise = new Promise((_, reject) => {
-            timeoutId = setTimeout(() => reject(new Error('Request timed out')), 10000);
-          });
-
           const legacyQuery = query(
             schedulesRef,
             orderBy('createdAt', 'desc'),
             limit(1)
           );
 
-          snapshot = await Promise.race([getDocs(legacyQuery), legacyTimeoutPromise]);
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-          }
+          const legacyTimeout = createTimeoutPromise();
+          snapshot = await Promise.race([getDocs(legacyQuery), legacyTimeout.promise]);
+          legacyTimeout.clear();
         }
 
         if (isMounted) {
-          if (!snapshot.empty) {
+          if (!snapshot.empty && snapshot.docs?.[0]) {
             setSchedule({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
           } else {
             setSchedule(null);
           }
         }
       } catch (error) {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
         if (isMounted) {
-          console.error('Error loading schedule:', error);
+          logger.error('Error loading schedule:', error);
           setError(error.message || 'Failed to load schedule');
         }
       } finally {
+        // Clear all timeouts
+        timeoutIds.forEach(id => clearTimeout(id));
+        timeoutIds.clear();
+
         if (isMounted) {
           setLoading(false);
         }
@@ -128,7 +129,9 @@ export default function UserView() {
 
     return () => {
       isMounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
+      // Clear all tracked timeouts on unmount
+      timeoutIds.forEach(id => clearTimeout(id));
+      timeoutIds.clear();
     };
   }, []);
 

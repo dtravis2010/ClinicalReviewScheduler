@@ -1,75 +1,128 @@
 import { Component } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { logger } from '../utils/logger';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
-class ErrorBoundary extends Component {
+/**
+ * Error Boundary Component
+ * Catches JavaScript errors anywhere in the child component tree and displays a fallback UI
+ */
+export class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null
+    };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    // Update state so the next render will show the fallback UI
+    return {
+      hasError: true,
+      error
+    };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Log error details for debugging
+    logger.error('Error caught by ErrorBoundary:', error);
+    logger.error('Error info:', errorInfo);
+
+    // Store error info in state for display
     this.setState({
-      error,
       errorInfo
     });
+
+    // TODO: Send error to error tracking service (e.g., Sentry, LogRocket)
+    // Example: logErrorToService(error, errorInfo);
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null
+    });
+  };
+
+  handleReload = () => {
+    window.location.reload();
+  };
+
+  handleGoHome = () => {
     window.location.href = '/';
   };
 
   render() {
     if (this.state.hasError) {
+      // Custom fallback UI provided by parent
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
+      // Default fallback UI
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
           <div className="max-w-md w-full">
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mx-auto mb-4">
-                <AlertTriangle className="w-8 h-8 text-red-600" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
               </div>
 
-              <h1 className="text-2xl font-bold text-gray-900 text-center mb-2">
-                Something went wrong
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Something Went Wrong
               </h1>
 
-              <p className="text-gray-600 text-center mb-6">
-                We're sorry for the inconvenience. An unexpected error has occurred.
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                We encountered an unexpected error. This has been logged and we'll look into it.
               </p>
 
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <div className="bg-gray-100 rounded-lg p-4 mb-6 overflow-auto max-h-60">
-                  <p className="text-sm font-semibold text-gray-900 mb-2">
-                    Error Details:
+              {/* Show error details in development */}
+              {import.meta.env.DEV && this.state.error && (
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-left">
+                  <p className="text-sm font-semibold text-red-900 dark:text-red-300 mb-2">
+                    Error Details (DEV only):
                   </p>
-                  <pre className="text-xs text-red-600 whitespace-pre-wrap">
+                  <p className="text-xs text-red-700 dark:text-red-400 font-mono break-all">
                     {this.state.error.toString()}
-                  </pre>
+                  </p>
                   {this.state.errorInfo && (
-                    <pre className="text-xs text-gray-600 mt-2 whitespace-pre-wrap">
-                      {this.state.errorInfo.componentStack}
-                    </pre>
+                    <details className="mt-2">
+                      <summary className="text-xs text-red-700 dark:text-red-400 cursor-pointer">
+                        Stack Trace
+                      </summary>
+                      <pre className="text-xs text-red-600 dark:text-red-500 mt-2 overflow-auto max-h-40">
+                        {this.state.errorInfo.componentStack}
+                      </pre>
+                    </details>
                   )}
                 </div>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
+                {this.props.resetKeys && (
+                  <button
+                    onClick={this.handleReset}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-200"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Try Again
+                  </button>
+                )}
                 <button
-                  onClick={this.handleReset}
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  onClick={this.handleReload}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-thr-blue-600 hover:bg-thr-blue-700 dark:bg-thr-blue-700 dark:hover:bg-thr-blue-800 text-white rounded-lg transition-colors"
                 >
-                  Return to Home
+                  <RefreshCw className="w-4 h-4" />
+                  Reload Page
                 </button>
                 <button
-                  onClick={() => window.location.reload()}
-                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
+                  onClick={this.handleGoHome}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-200"
                 >
-                  Reload Page
+                  <Home className="w-4 h-4" />
+                  Go Home
                 </button>
               </div>
             </div>

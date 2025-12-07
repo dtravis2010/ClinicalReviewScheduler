@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Plus, Edit2, Archive, Save, UserPlus, Check, Loader2 } from 'lucide-react';
@@ -13,6 +14,7 @@ export default function EmployeeManagement({ employees, onUpdate }) {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [employeeToArchive, setEmployeeToArchive] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const availableSkills = ['DAR', 'Trace', 'CPOE', 'Float'];
 
@@ -104,15 +106,16 @@ export default function EmployeeManagement({ employees, onUpdate }) {
       onUpdate();
       showSuccess(editingEmployee ? 'Employee updated successfully!' : 'Employee added successfully!');
     } catch (error) {
-      console.error('Error saving employee:', error);
+      logger.error('Error saving employee:', error);
       showError('Failed to save employee');
       setIsSubmitting(false);
     }
   }
 
   async function handleArchive() {
-    if (!employeeToArchive) return;
+    if (!employeeToArchive || isArchiving) return;
 
+    setIsArchiving(true);
     try {
       const employeeRef = doc(db, 'employees', employeeToArchive.id);
       await updateDoc(employeeRef, {
@@ -125,8 +128,10 @@ export default function EmployeeManagement({ employees, onUpdate }) {
       onUpdate();
       showSuccess('Employee archived successfully!');
     } catch (error) {
-      console.error('Error archiving employee:', error);
+      logger.error('Error archiving employee:', error);
       showError('Failed to archive employee');
+    } finally {
+      setIsArchiving(false);
     }
   }
 
@@ -412,11 +417,11 @@ export default function EmployeeManagement({ employees, onUpdate }) {
       {/* Archive Confirmation Dialog */}
       <ConfirmDialog
         isOpen={!!employeeToArchive}
-        onClose={() => setEmployeeToArchive(null)}
+        onClose={() => !isArchiving && setEmployeeToArchive(null)}
         onConfirm={handleArchive}
         title="Archive Employee"
         message={`Are you sure you want to archive ${employeeToArchive?.name}? They will no longer appear in new schedules.`}
-        confirmText="Archive"
+        confirmText={isArchiving ? 'Archiving...' : 'Archive'}
         cancelText="Cancel"
         danger={true}
       />

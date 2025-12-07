@@ -70,11 +70,14 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  // Get supervisor email from environment
+  const supervisorEmail = import.meta.env.VITE_SUPERVISOR_EMAIL || 'supervisor@clinical.com';
+
   const value = {
     currentUser,
     loginAsSupervisor,
     logout,
-    isSupervisor: !!currentUser,
+    isSupervisor: currentUser?.email === supervisorEmail,
     isFirebaseConfigured,
     firebaseConfigError,
   };

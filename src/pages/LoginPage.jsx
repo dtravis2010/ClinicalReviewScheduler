@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Lock, AlertCircle } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import { logger } from '../utils/logger';
 
 export default function LoginPage() {
   const [password, setPassword] = useState('');
@@ -20,10 +21,11 @@ export default function LoginPage() {
       await loginAsSupervisor(password);
       navigate('/supervisor');
     } catch (err) {
-      console.error('Login error:', err);
+      logger.error('Login error:', err);
 
       if (!isFirebaseConfigured) {
         setError(firebaseConfigError || 'Firebase is not configured. Please check your environment settings.');
+        setLoading(false);
         return;
       }
 

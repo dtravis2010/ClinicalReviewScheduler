@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
+import PropTypes from 'prop-types';
 import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Minus, Calendar, Info } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { doc, getDoc } from 'firebase/firestore';
@@ -71,35 +73,40 @@ export default function ScheduleGrid({
         setDarCount(data.darCount || 5); // Load darCount from settings
       }
     } catch (error) {
-      console.error('Error loading DAR config:', error);
+      logger.error('Error loading DAR config:', error);
     }
   }
 
   function getAvailableEntitiesForDar(darIndex) {
     const assignedToDars = new Set();
-    Object.entries(darEntities).forEach(([idx, entityList]) => {
-      if (parseInt(idx) !== darIndex) {
-        if (Array.isArray(entityList)) {
-          entityList.forEach(e => assignedToDars.add(e));
-        } else if (entityList) {
-          assignedToDars.add(entityList);
+    if (darEntities && typeof darEntities === 'object') {
+      Object.entries(darEntities).forEach(([idx, entityList]) => {
+        if (parseInt(idx) !== darIndex) {
+          if (Array.isArray(entityList)) {
+            entityList.forEach(e => assignedToDars.add(e));
+          } else if (entityList) {
+            assignedToDars.add(entityList);
+          }
         }
-      }
-    });
-    return entities.filter(e => !assignedToDars.has(e.name));
+      });
+    }
+    return Array.isArray(entities) ? entities.filter(e => !assignedToDars.has(e.name)) : [];
   }
 
   function getAvailableEntitiesForAssignment(employeeId, field) {
     const assignedEntities = new Set();
-    Object.values(darEntities).forEach(entityList => {
-      if (Array.isArray(entityList)) {
-        entityList.forEach(e => assignedEntities.add(e));
-      } else if (entityList) {
-        assignedEntities.add(entityList);
-      }
-    });
+    if (darEntities && typeof darEntities === 'object') {
+      Object.values(darEntities).forEach(entityList => {
+        if (Array.isArray(entityList)) {
+          entityList.forEach(e => assignedEntities.add(e));
+        } else if (entityList) {
+          assignedEntities.add(entityList);
+        }
+      });
+    }
 
-    Object.entries(assignments).forEach(([empId, assignment]) => {
+    if (assignments && typeof assignments === 'object') {
+      Object.entries(assignments).forEach(([empId, assignment]) => {
       if (empId !== employeeId) {
         ['newIncoming', 'crossTraining'].forEach(f => {
           if (assignment[f]) {
@@ -121,9 +128,10 @@ export default function ScheduleGrid({
           }
         });
       }
-    });
+      });
+    }
 
-    return entities.filter(e => !assignedEntities.has(e.name));
+    return Array.isArray(entities) ? entities.filter(e => !assignedEntities.has(e.name)) : [];
   }
 
   function handleAssignmentChange(employeeId, field, value) {
@@ -140,6 +148,8 @@ export default function ScheduleGrid({
 
   function handleDARToggle(employeeId, darIndex) {
     if (readOnly) return;
+    if (!Array.isArray(employees)) return;
+
     const employee = employees.find(e => e.id === employeeId);
     if (!employee?.skills?.includes('DAR') && !employee?.skills?.includes('Float')) {
       return;
@@ -810,3 +820,29 @@ export default function ScheduleGrid({
     </div>
   );
 }
+
+ScheduleGrid.propTypes = {
+  schedule: PropTypes.shape({
+    id: PropTypes.string,
+    name: PropTypes.string,
+    startDate: PropTypes.string,
+    endDate: PropTypes.string,
+    assignments: PropTypes.object,
+    darEntities: PropTypes.object,
+    darCount: PropTypes.number
+  }),
+  employees: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    skills: PropTypes.arrayOf(PropTypes.string),
+    archived: PropTypes.bool
+  })),
+  entities: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired
+  })),
+  onSave: PropTypes.func,
+  readOnly: PropTypes.bool,
+  onCreateNewSchedule: PropTypes.func,
+  schedules: PropTypes.array
+};
