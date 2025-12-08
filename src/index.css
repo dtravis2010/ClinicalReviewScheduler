@@ -362,3 +362,40 @@ input[type="date"] {
   -webkit-appearance: none;
   appearance: none;
 }
+
+/* Accessibility - Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Accessibility - Focus Visible */
+*:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Accessibility - Skip to main content link */
+.skip-to-main {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 1rem;
+  background-color: var(--primary-blue);
+  color: white;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-to-main:focus {
+  left: 0;
+  top: 0;
+}

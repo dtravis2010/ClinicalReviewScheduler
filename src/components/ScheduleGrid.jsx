@@ -244,13 +244,20 @@ export default function ScheduleGrid({
           redo();
         }
       }
+      // Ctrl+S or Cmd+S for save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (!readOnly && onSave) {
+          onSave(scheduleData);
+        }
+      }
     };
 
     if (!readOnly) {
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [canUndo, canRedo, undo, redo, readOnly]);
+  }, [canUndo, canRedo, undo, redo, readOnly, onSave, scheduleData]);
 
   const exportToExcel = useCallback(() => {
     exportScheduleToExcel({

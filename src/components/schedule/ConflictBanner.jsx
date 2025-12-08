@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { AlertTriangle, AlertCircle, Info, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { AriaLiveRegion } from '../AriaLiveRegion';
 
 /**
  * Banner component for displaying schedule conflicts and warnings
@@ -16,8 +17,19 @@ export default function ConflictBanner({ conflicts, warnings, workloadImbalances
   const hasWarnings = warnings.length > 0;
   const hasInfo = workloadImbalances.length > 0;
 
+  // Generate announcement message for screen readers
+  const getAnnouncementMessage = () => {
+    const parts = [];
+    if (hasErrors) parts.push(`${conflicts.length} error${conflicts.length !== 1 ? 's' : ''}`);
+    if (hasWarnings) parts.push(`${warnings.length} warning${warnings.length !== 1 ? 's' : ''}`);
+    if (hasInfo) parts.push(`${workloadImbalances.length} workload issue${workloadImbalances.length !== 1 ? 's' : ''}`);
+    return `Schedule validation: ${parts.join(', ')} found`;
+  };
+
   return (
-    <div className={`rounded-lg border-2 shadow-soft animate-fade-in ${
+    <>
+      <AriaLiveRegion message={getAnnouncementMessage()} mode={hasErrors ? 'assertive' : 'polite'} />
+      <div className={`rounded-lg border-2 shadow-soft animate-fade-in ${
       hasErrors 
         ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800'
         : hasWarnings
@@ -158,6 +170,7 @@ export default function ConflictBanner({ conflicts, warnings, workloadImbalances
         </div>
       )}
     </div>
+    </>
   );
 }
 
