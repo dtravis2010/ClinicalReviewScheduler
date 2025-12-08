@@ -1,36 +1,44 @@
 import { z } from 'zod';
 
 /**
- * Validation schemas for employee-related data
+ * Valid employee skills
  */
+const VALID_SKILLS = ['DAR', 'Trace', 'CPOE', 'Float'];
 
-// Employee schema
+/**
+ * Schema for employee
+ * Validates employee data including skills and optional fields
+ */
 export const employeeSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long'),
-  email: z.string().email('Invalid email address').optional().or(z.literal('')),
-  skills: z.array(z.enum(['DAR', 'Trace', 'CPOE', 'Float'])).min(1, 'At least one skill required'),
-  notes: z.string().max(500, 'Notes are too long').optional(),
-  archived: z.boolean().default(false),
-  archivedAt: z.any().optional(), // Firebase Timestamp
-  createdAt: z.any().optional(), // Firebase Timestamp
-  updatedAt: z.any().optional() // Firebase Timestamp
+  name: z.string().min(1, 'Employee name is required').max(100, 'Name is too long'),
+  skills: z.array(
+    z.enum(['DAR', 'Trace', 'CPOE', 'Float'], {
+      errorMap: () => ({ message: `Skill must be one of: ${VALID_SKILLS.join(', ')}` })
+    })
+  ).min(1, 'At least one skill is required'),
+  email: z.union([
+    z.string().email('Invalid email address'),
+    z.literal('')
+  ]).optional(),
+  notes: z.string().optional(),
+  archived: z.boolean(),
+  createdAt: z.any().optional(),
+  updatedAt: z.any().optional(),
+  archivedAt: z.any().optional()
 });
 
-// Partial employee schema for updates
-export const partialEmployeeSchema = employeeSchema.partial();
+/**
+ * Schema for creating a new employee (without timestamps)
+ */
+export const createEmployeeSchema = employeeSchema.omit({
+  createdAt: true,
+  updatedAt: true,
+  archivedAt: true
+});
 
-// Validate employee data
-export function validateEmployee(data) {
-  try {
-    return {
-      success: true,
-      data: employeeSchema.parse(data)
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.errors
-    };
-  }
-}
+/**
+ * Schema for updating an employee (all fields optional except id)
+ */
+export const updateEmployeeSchema = employeeSchema.partial().extend({
+  updatedAt: z.any().optional()
+});

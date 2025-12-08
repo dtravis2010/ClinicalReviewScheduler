@@ -1,45 +1,42 @@
 import { z } from 'zod';
 
 /**
- * Validation schemas for schedule-related data
+ * Schema for individual assignment
  */
-
-// Assignment schema
 export const assignmentSchema = z.object({
-  dars: z.array(z.number()).optional().default([]),
-  newIncoming: z.union([z.string(), z.array(z.string())]).optional(),
-  crossTraining: z.union([z.string(), z.array(z.string())]).optional()
+  dars: z.array(z.number()).optional(),
+  cpoe: z.boolean().optional(),
+  newIncoming: z.array(z.string()).optional(),
+  crossTraining: z.array(z.string()).optional(),
+  specialProjects: z.array(z.string()).optional()
 });
 
-// Schedule schema
+/**
+ * Schema for schedule
+ * Validates all schedule data including assignments and DAR entities
+ */
 export const scheduleSchema = z.object({
-  id: z.string().optional(),
   name: z.string().min(1, 'Schedule name is required'),
-  startDate: z.string().min(1, 'Start date is required'),
-  endDate: z.string().min(1, 'End date is required'),
-  status: z.enum(['draft', 'published']).default('draft'),
-  assignments: z.record(assignmentSchema).optional().default({}),
-  darEntities: z.record(z.union([z.string(), z.array(z.string())])).optional().default({}),
-  darCount: z.number().int().positive().optional().default(5),
-  createdAt: z.any().optional(), // Firebase Timestamp
-  updatedAt: z.any().optional(), // Firebase Timestamp
-  publishedAt: z.any().optional() // Firebase Timestamp
-});
-
-// Partial schedule schema for updates
-export const partialScheduleSchema = scheduleSchema.partial();
-
-// Validate schedule data
-export function validateSchedule(data) {
-  try {
-    return {
-      success: true,
-      data: scheduleSchema.parse(data)
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.errors
-    };
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)'),
+  status: z.enum(['draft', 'published'], {
+    errorMap: () => ({ message: 'Status must be either "draft" or "published"' })
+  }),
+  assignments: z.record(z.string(), assignmentSchema),
+  darEntities: z.record(z.string(), z.array(z.string())),
+  darCount: z.number().min(3, 'Must have at least 3 DAR columns').max(8, 'Cannot have more than 8 DAR columns'),
+  createdAt: z.any().optional(),
+  updatedAt: z.any().optional(),
+  publishedAt: z.any().optional()
+}).refine(
+  (data) => {
+    // Validate that end date is not before start date
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+    return end >= start;
+  },
+  {
+    message: 'End date must be on or after start date',
+    path: ['endDate']
   }
-}
+);

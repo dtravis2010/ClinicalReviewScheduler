@@ -1,32 +1,28 @@
 import { z } from 'zod';
 
 /**
- * Validation schemas for entity-related data
+ * Schema for entity (location/facility)
+ * Validates entity data
  */
-
-// Entity schema
 export const entitySchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(2, 'Entity name must be at least 2 characters').max(100, 'Entity name is too long'),
-  description: z.string().max(500, 'Description is too long').optional(),
-  createdAt: z.any().optional(), // Firebase Timestamp
-  updatedAt: z.any().optional() // Firebase Timestamp
+  name: z.string()
+    .min(1, 'Entity name is required')
+    .max(200, 'Entity name is too long'),
+  createdAt: z.any().optional(),
+  updatedAt: z.any().optional()
 });
 
-// Partial entity schema for updates
-export const partialEntitySchema = entitySchema.partial();
+/**
+ * Schema for creating a new entity (without timestamps)
+ */
+export const createEntitySchema = entitySchema.omit({
+  createdAt: true,
+  updatedAt: true
+});
 
-// Validate entity data
-export function validateEntity(data) {
-  try {
-    return {
-      success: true,
-      data: entitySchema.parse(data)
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.errors
-    };
-  }
-}
+/**
+ * Schema for updating an entity
+ */
+export const updateEntitySchema = entitySchema.partial().extend({
+  updatedAt: z.any().optional()
+});
