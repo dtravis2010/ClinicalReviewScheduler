@@ -17,12 +17,29 @@ export function formatEntityList(entityList) {
 
 /**
  * Format date range for display
- * @param {string} startDate - Start date
- * @param {string} endDate - End date
+ * @param {string} startDate - Start date (YYYY-MM-DD format)
+ * @param {string} endDate - End date (YYYY-MM-DD format)
+ * @param {boolean} monthYearOnly - If true, show only month and year (e.g., "Jan 2026 - Feb 2026")
  * @returns {string} Formatted date range
  */
-export function formatDateRange(startDate, endDate) {
+export function formatDateRange(startDate, endDate, monthYearOnly = false) {
   if (!startDate || !endDate) return '';
+  
+  if (monthYearOnly) {
+    try {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      const startMonth = start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      const endMonth = end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      
+      return `${startMonth} - ${endMonth}`;
+    } catch (error) {
+      // Fallback to original format if date parsing fails
+      return `${startDate} to ${endDate}`;
+    }
+  }
+  
   return `${startDate} to ${endDate}`;
 }
 

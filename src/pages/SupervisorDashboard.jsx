@@ -11,6 +11,7 @@ import {
   getDoc,
   doc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   limit,
@@ -297,6 +298,46 @@ export default function SupervisorDashboard() {
     }
   }
 
+  async function deleteSchedule(scheduleId) {
+    const scheduleToDelete = schedules.find(s => s.id === scheduleId);
+    if (!scheduleToDelete) return;
+
+    const confirmed = await showConfirm(
+      `Are you sure you want to delete "${scheduleToDelete.name}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const scheduleRef = doc(db, 'schedules', scheduleId);
+      await deleteDoc(scheduleRef);
+
+      setSchedules((prev) => prev.filter((schedule) => schedule.id !== scheduleId));
+      
+      // If we're deleting the currently open schedule, clear it
+      if (currentSchedule?.id === scheduleId) {
+        setCurrentSchedule(null);
+      }
+
+      // Log audit trail
+      await AuditService.log({
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        action: 'schedule.delete',
+        resourceType: 'schedule',
+        resourceId: scheduleId,
+        metadata: {
+          scheduleName: scheduleToDelete.name
+        }
+      });
+
+      showSuccess('Schedule deleted successfully!');
+    } catch (error) {
+      logger.error('Error deleting schedule:', error);
+      showError('Failed to delete schedule');
+    }
+  }
+
   async function handleLogout() {
     try {
       await logout();
@@ -411,8 +452,8 @@ export default function SupervisorDashboard() {
         {activeTab === 'schedule' && (
           <div id="schedule-panel" role="tabpanel" aria-labelledby="schedule-tab">
             {/* Schedule Actions */}
-            <div className="mb-6 flex items-center justify-between">
-              <div>
+            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
                 {currentSchedule ? (
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -435,6 +476,42 @@ export default function SupervisorDashboard() {
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                     No Active Schedule
                   </h2>
+                )}
+                
+                {/* Schedule Selector */}
+                {schedules.length > 0 && (
+                  <div className="mt-3">
+                    <label htmlFor="schedule-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Load Schedule
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <select
+                        id="schedule-select"
+                        value={currentSchedule?.id || ''}
+                        onChange={(e) => {
+                          const selected = schedules.find(s => s.id === e.target.value);
+                          setCurrentSchedule(selected || null);
+                        }}
+                        className="block w-full max-w-xs px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-thr-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select a schedule...</option>
+                        {schedules.map(schedule => (
+                          <option key={schedule.id} value={schedule.id}>
+                            {schedule.name} ({schedule.status})
+                          </option>
+                        ))}
+                      </select>
+                      {currentSchedule && (
+                        <button
+                          onClick={() => deleteSchedule(currentSchedule.id)}
+                          className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          aria-label="Delete current schedule"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
               <div className="flex items-center gap-3">

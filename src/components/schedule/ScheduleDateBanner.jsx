@@ -50,7 +50,7 @@ function ScheduleDateBanner({
               <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
                 <span className="text-white font-semibold">✓</span>
                 <span className="font-semibold text-sm text-white">
-                  {scheduleName || 'Schedule'} ({formatDateRange(startDate, endDate) || 'No dates'})
+                  {scheduleName || 'Schedule'} ({formatDateRange(startDate, endDate, true) || 'No dates'})
                 </span>
               </div>
             )}
