@@ -24,6 +24,7 @@ A professional healthcare scheduling application designed for managing clinical 
 - **Enhanced Error Handling**: Graceful error recovery with user-friendly messages
 - **Performance Optimizations**: Faster rendering and improved responsiveness
 - **Data Validation**: Comprehensive validation using Zod schemas
+- **Accessibility**: WCAG 2.1 AA compliant with keyboard navigation and screen reader support
 
 ## Getting Started
 
@@ -312,6 +313,18 @@ If an employee is NOT trained for a task, that section of their row is grayed ou
 - Make sure you enabled GitHub Pages in repository Settings
 - Check that "Source" is set to "GitHub Actions"
 - Wait a few minutes after pushing (deployment takes time)
+
+## Accessibility
+
+This application is built with accessibility in mind and follows WCAG 2.1 Level AA guidelines:
+
+- **Keyboard Navigation**: Full keyboard support with shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+S)
+- **Screen Reader Support**: ARIA labels, live regions, and semantic HTML
+- **Focus Management**: Visible focus indicators and focus trapping in modals
+- **Color Contrast**: All text meets WCAG AA contrast requirements
+- **Responsive Design**: Works at 200% zoom without horizontal scrolling
+
+See [ACCESSIBILITY.md](ACCESSIBILITY.md) for detailed accessibility documentation.
 
 ## Tech Stack
 
