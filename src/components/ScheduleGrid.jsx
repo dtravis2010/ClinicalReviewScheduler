@@ -12,6 +12,7 @@ import ScheduleHeader from './schedule/ScheduleHeader';
 import ScheduleDateBanner from './schedule/ScheduleDateBanner';
 import ScheduleTable from './schedule/ScheduleTable';
 import ScheduleTableHeader from './schedule/ScheduleTableHeader';
+import BulkAssignmentModal from './schedule/BulkAssignmentModal';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useConflictDetection } from '../hooks/useConflictDetection';
@@ -52,6 +53,9 @@ export default function ScheduleGrid({
   const [selectedDarIndex, setSelectedDarIndex] = useState(null);
   // State for editing assignment cells (New Incoming, Cross-Training)
   const [editingCell, setEditingCell] = useState(null); // { employeeId, field }
+  // State for bulk assignment
+  const [selectedEmployees, setSelectedEmployees] = useState(new Set());
+  const [showBulkAssignmentModal, setShowBulkAssignmentModal] = useState(false);
 
   // Auto-save functionality
   const scheduleData = {
@@ -205,6 +209,73 @@ export default function ScheduleGrid({
     setHasChanges(true);
   }
 
+  // Bulk assignment handlers
+  const handleEmployeeSelect = useCallback((employeeId) => {
+    setSelectedEmployees(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(employeeId)) {
+        newSet.delete(employeeId);
+      } else {
+        newSet.add(employeeId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    if (selectedEmployees.size === activeEmployees.length) {
+      setSelectedEmployees(new Set());
+    } else {
+      setSelectedEmployees(new Set(activeEmployees.map(emp => emp.id)));
+    }
+  }, [selectedEmployees.size, activeEmployees]);
+
+  const handleBulkAssign = useCallback(() => {
+    if (selectedEmployees.size > 0) {
+      setShowBulkAssignmentModal(true);
+    }
+  }, [selectedEmployees.size]);
+
+  const handleApplyBulkAssignment = useCallback((successfulAssignments) => {
+    // Apply all successful assignments
+    setAssignments(prev => {
+      const newAssignments = { ...prev };
+
+      successfulAssignments.forEach(assignment => {
+        const { employeeId, type, darIndex, entities } = assignment;
+        
+        if (!newAssignments[employeeId]) {
+          newAssignments[employeeId] = {};
+        }
+
+        switch (type) {
+          case 'dar':
+            // Add DAR assignment
+            const currentDars = newAssignments[employeeId].dars || [];
+            if (!currentDars.includes(darIndex)) {
+              newAssignments[employeeId].dars = [...currentDars, darIndex];
+            }
+            break;
+          case 'cpoe':
+            newAssignments[employeeId].cpoe = true;
+            break;
+          case 'newIncoming':
+          case 'crossTraining':
+          case 'specialProjects':
+            // Set entities for these assignment types
+            newAssignments[employeeId][type] = entities;
+            break;
+        }
+      });
+
+      return newAssignments;
+    });
+
+    setHasChanges(true);
+    setShowBulkAssignmentModal(false);
+    setSelectedEmployees(new Set()); // Clear selection after bulk assign
+  }, [setAssignments]);
+
   function handleSave() {
     if (onSave) {
       onSave(scheduleData);
@@ -295,6 +366,8 @@ export default function ScheduleGrid({
         onShowHistory={() => setShowHistoryModal(true)}
         onExport={exportToExcel}
         scheduleStatus={schedule?.status}
+        selectedCount={selectedEmployees.size}
+        onBulkAssign={handleBulkAssign}
       />
 
       {/* Date Banner */}
@@ -344,6 +417,9 @@ export default function ScheduleGrid({
             setShowDarInfoPanel(true);
           }}
           onEditingDarClose={() => setEditingDar(null)}
+          showBulkSelect={!readOnly}
+          allSelected={selectedEmployees.size === activeEmployees.length && activeEmployees.length > 0}
+          onSelectAll={handleSelectAll}
         />
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
             {activeEmployees.map((employee, empIdx) => {
@@ -358,6 +434,18 @@ export default function ScheduleGrid({
                     empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/50 dark:bg-slate-800/50'
                   }`}
                 >
+                  {/* Checkbox for bulk selection */}
+                  {!readOnly && (
+                    <td className="sticky left-0 bg-inherit px-3 py-2 z-10 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedEmployees.has(employee.id)}
+                        onChange={() => handleEmployeeSelect(employee.id)}
+                        className="w-4 h-4 text-thr-blue-500 rounded focus:ring-2 focus:ring-thr-blue-500 cursor-pointer"
+                        aria-label={`Select ${employee.name}`}
+                      />
+                    </td>
+                  )}
                   {/* Employee Name - Employee Chip Style */}
                   <th scope="row" className="sticky left-0 bg-inherit px-3 py-2 z-10">
                     <div className="flex items-center gap-2">
@@ -654,6 +742,17 @@ export default function ScheduleGrid({
           }}
         />
       )}
+
+      {/* Bulk Assignment Modal */}
+      <BulkAssignmentModal
+        isOpen={showBulkAssignmentModal}
+        onClose={() => setShowBulkAssignmentModal(false)}
+        selectedEmployees={selectedEmployees}
+        employees={activeEmployees}
+        entities={entities}
+        darColumns={darColumns}
+        onApply={handleApplyBulkAssignment}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
-import { History, Settings, FileDown, Plus, Eye, Undo, Redo } from 'lucide-react';
+import { History, Settings, FileDown, Plus, Eye, Undo, Redo, Users } from 'lucide-react';
 import AutoSaveIndicator from '../AutoSaveIndicator';
 
 /**
@@ -19,7 +19,9 @@ function ScheduleHeader({
   onCreateNewSchedule,
   onShowHistory,
   onExport,
-  scheduleStatus
+  scheduleStatus,
+  selectedCount = 0,
+  onBulkAssign
 }) {
   return (
     <div className="bg-white dark:bg-slate-800 px-4 sm:px-6 py-3 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-soft">
@@ -42,6 +44,18 @@ function ScheduleHeader({
               lastSaved={lastSaved}
               error={autoSaveError}
             />
+
+            {/* Bulk Assignment button */}
+            {selectedCount > 0 && onBulkAssign && (
+              <button
+                onClick={onBulkAssign}
+                className="btn-pill bg-thr-blue-500 hover:bg-thr-blue-600 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
+                aria-label={`Bulk assign ${selectedCount} selected employee${selectedCount > 1 ? 's' : ''}`}
+              >
+                <Users className="w-4 h-4" aria-hidden="true" />
+                <span>Bulk Assign ({selectedCount})</span>
+              </button>
+            )}
 
             {/* Undo/Redo buttons */}
             <div className="flex items-center gap-1">
@@ -141,7 +155,9 @@ ScheduleHeader.propTypes = {
   onCreateNewSchedule: PropTypes.func,
   onShowHistory: PropTypes.func.isRequired,
   onExport: PropTypes.func.isRequired,
-  scheduleStatus: PropTypes.oneOf(['draft', 'published'])
+  scheduleStatus: PropTypes.oneOf(['draft', 'published']),
+  selectedCount: PropTypes.number,
+  onBulkAssign: PropTypes.func
 };
 
 export default memo(ScheduleHeader);

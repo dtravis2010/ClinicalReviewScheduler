@@ -17,11 +17,26 @@ function ScheduleTableHeader({
   onDarClick,
   onDarEntityToggle,
   onDarInfoClick,
-  onEditingDarClose
+  onEditingDarClose,
+  showBulkSelect = false,
+  allSelected = false,
+  onSelectAll
 }) {
   return (
     <thead className="sticky top-0 z-20">
       <tr className="bg-gradient-to-r from-thr-blue-500 to-thr-blue-600 dark:from-thr-blue-600 dark:to-thr-blue-700 text-white">
+        {showBulkSelect && !readOnly && (
+          <th scope="col" className="sticky left-0 bg-thr-blue-500 dark:bg-thr-blue-600 px-3 py-2.5 text-center z-30 w-12">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={onSelectAll}
+              className="w-4 h-4 text-thr-blue-500 rounded focus:ring-2 focus:ring-white/50 cursor-pointer"
+              aria-label="Select all employees"
+              title="Select all employees"
+            />
+          </th>
+        )}
         <th scope="col" className="sticky left-0 bg-thr-blue-500 dark:bg-thr-blue-600 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider z-30 min-w-[140px]">
           Team Member
         </th>
@@ -109,7 +124,10 @@ ScheduleTableHeader.propTypes = {
   onDarClick: PropTypes.func.isRequired,
   onDarEntityToggle: PropTypes.func.isRequired,
   onDarInfoClick: PropTypes.func.isRequired,
-  onEditingDarClose: PropTypes.func.isRequired
+  onEditingDarClose: PropTypes.func.isRequired,
+  showBulkSelect: PropTypes.bool,
+  allSelected: PropTypes.bool,
+  onSelectAll: PropTypes.func
 };
 
 export default memo(ScheduleTableHeader);

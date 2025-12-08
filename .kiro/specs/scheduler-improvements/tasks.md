@@ -328,30 +328,30 @@
   - **Validates: Requirements 13.2**
 
 - [ ] 13. Implement bulk assignment tools
-- [ ] 13.1 Add multi-select for employees
+- [x] 13.1 Add multi-select for employees
   - Add checkbox column to employee rows
   - Add "Select All" checkbox in header
   - Track selected employees in state
   - _Requirements: 14.1_
 
-- [ ] 13.2 Create BulkAssignmentModal component
+- [x] 13.2 Create BulkAssignmentModal component
   - Create src/components/schedule/BulkAssignmentModal.jsx
   - Allow selecting entity/task for bulk assignment
   - Show preview of assignments
   - _Requirements: 14.2_
 
-- [ ] 13.3 Implement bulk assignment logic
+- [x] 13.3 Implement bulk assignment logic
   - Validate each assignment individually
   - Collect successful and failed assignments
   - Apply successful assignments to schedule
   - _Requirements: 14.3, 14.4_
 
-- [ ] 13.4 Show bulk assignment results
+- [x] 13.4 Show bulk assignment results
   - Display summary of successful assignments
   - Display list of failed assignments with reasons
   - _Requirements: 14.4, 14.5_
 
-- [ ] 13.5 Write property tests for bulk assignment
+- [x] 13.5 Write property tests for bulk assignment
   - **Property 31: Bulk assignment validation**
   - **Validates: Requirements 14.3**
   - **Property 32: Bulk assignment result completeness**
@@ -543,101 +543,101 @@
 
 ## Phase 5: Accessibility
 
-- [ ] 21. Implement keyboard navigation
-- [ ] 21.1 Create useKeyboardNavigation hook
+- [x] 21. Implement keyboard navigation
+- [x] 21.1 Create useKeyboardNavigation hook
   - Create src/hooks/useKeyboardNavigation.js
   - Implement arrow key navigation for grid
   - Implement Home/End keys
   - Implement Enter/Space for activation
   - _Requirements: 11.2_
 
-- [ ] 21.2 Integrate keyboard navigation into ScheduleGrid
+- [x] 21.2 Integrate keyboard navigation into ScheduleGrid
   - Add useKeyboardNavigation hook
   - Track focused cell
   - Show focus indicators
   - _Requirements: 11.1, 11.2_
 
-- [ ] 21.3 Add keyboard shortcuts
+- [x] 21.3 Add keyboard shortcuts
   - Ctrl+Z for undo
   - Ctrl+Y for redo
   - Ctrl+S for save
   - Escape to close modals
   - _Requirements: 11.2_
 
-- [ ] 22. Implement focus management
-- [ ] 22.1 Create useFocusTrap hook
+- [x] 22. Implement focus management
+- [x] 22.1 Create useFocusTrap hook
   - Create src/hooks/useFocusTrap.js
   - Trap focus within modals
   - Return focus to trigger element on close
   - _Requirements: 11.4, 11.5_
 
-- [ ] 22.2 Integrate focus trap into Modal component
+- [x] 22.2 Integrate focus trap into Modal component
   - Add useFocusTrap to Modal
   - Test focus behavior
   - _Requirements: 11.4, 11.5_
 
-- [ ] 22.3 Add visible focus indicators
+- [x] 22.3 Add visible focus indicators
   - Update CSS for focus states
   - Ensure focus is always visible
   - Test with keyboard navigation
   - _Requirements: 11.1_
 
-- [ ] 23. Implement ARIA live regions
-- [ ] 23.1 Create AriaLiveRegion component
+- [x] 23. Implement ARIA live regions
+- [x] 23.1 Create AriaLiveRegion component
   - Create src/components/AriaLiveRegion.jsx
   - Support polite and assertive modes
   - Announce dynamic changes
   - _Requirements: 11.3_
 
-- [ ] 23.2 Add ARIA live regions for dynamic content
+- [x] 23.2 Add ARIA live regions for dynamic content
   - Add to auto-save indicator
   - Add to conflict banner
   - Add to toast notifications
   - _Requirements: 11.3_
 
-- [ ] 23.3 Write property tests for ARIA
+- [x] 23.3 Write property tests for ARIA
   - **Property 27: ARIA live region presence**
   - **Validates: Requirements 11.3**
   - **Property 28: Interactive element ARIA labels**
   - **Validates: Requirements 11.6**
 
-- [ ] 24. Add ARIA labels to interactive elements
-- [ ] 24.1 Audit all buttons and links
+- [x] 24. Add ARIA labels to interactive elements
+- [x] 24.1 Audit all buttons and links
   - Ensure all have aria-label or visible text
   - Add aria-describedby where needed
   - _Requirements: 11.6_
 
-- [ ] 24.2 Add ARIA labels to form inputs
+- [x] 24.2 Add ARIA labels to form inputs
   - Ensure all inputs have labels
   - Add aria-invalid for validation errors
   - Add aria-describedby for error messages
   - _Requirements: 11.6_
 
-- [ ] 24.3 Add ARIA labels to grid cells
+- [x] 24.3 Add ARIA labels to grid cells
   - Add aria-label to each cell
   - Add aria-pressed for toggle cells
   - Add role="grid" and role="gridcell"
   - _Requirements: 11.6_
 
-- [ ] 25. Test accessibility
-- [ ] 25.1 Test with keyboard only
+- [x] 25. Test accessibility
+- [x] 25.1 Test with keyboard only
   - Navigate entire application with keyboard
   - Ensure all functionality is accessible
   - _Requirements: 11.1, 11.2_
 
-- [ ] 25.2 Test with screen reader
+- [x] 25.2 Test with screen reader
   - Test with NVDA or JAWS
   - Ensure all content is announced
   - Ensure navigation is logical
   - _Requirements: 11.3, 11.6_
 
-- [ ] 25.3 Test zoom to 200%
+- [x] 25.3 Test zoom to 200%
   - Ensure no horizontal scrolling
   - Ensure all content is readable
   - Ensure functionality is preserved
   - _Requirements: 11.7_
 
-- [ ] 26. Checkpoint - Ensure all Phase 5 tests pass
+- [x] 26. Checkpoint - Ensure all Phase 5 tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Phase 6: Additional Features
