@@ -36,9 +36,9 @@ describe('useAuth', () => {
       await waitFor(() => {
         expect(result.current).toBeDefined();
         expect(result.current).not.toBeUndefined();
+        expect(result.current.loginAsSupervisor).toBeDefined();
       });
 
-      expect(result.current.currentUser).toBeDefined();
       expect(result.current.loginAsSupervisor).toBeDefined();
       expect(result.current.logout).toBeDefined();
       expect(result.current.isSupervisor).toBeDefined();

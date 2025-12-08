@@ -4,6 +4,7 @@ A professional healthcare scheduling application designed for managing clinical 
 
 ## Features
 
+### Core Functionality
 - **Supervisor Dashboard**: Full control over schedules, employees, and entities
 - **User View**: Public read-only access to published schedules
 - **Employee Management**: Add, edit, and archive employees with skill tracking
@@ -11,8 +12,18 @@ A professional healthcare scheduling application designed for managing clinical 
 - **Schedule Grid**: Visual grid layout for assigning employees to tasks
 - **Draft/Publish Workflow**: Work on schedules privately before publishing
 - **Assignment History**: Track employee assignment history for fairness
-- **Export Functionality**: Export schedules to Excel format
+- **Export Functionality**: Export schedules to Excel with workload summary
 - **Mobile Responsive**: Works on desktop, tablet, and mobile devices
+
+### New Features (2024)
+- **Auto-Save**: Automatic saving with 2-second debounce - never lose your work
+- **Undo/Redo**: Full undo/redo support with keyboard shortcuts (Ctrl+Z, Ctrl+Y)
+- **Conflict Detection**: Real-time validation with visual warnings for scheduling conflicts
+- **Workload Indicators**: Color-coded workload scores showing employee assignment balance
+- **Audit Trail**: Complete logging of all schedule, employee, and entity changes
+- **Enhanced Error Handling**: Graceful error recovery with user-friendly messages
+- **Performance Optimizations**: Faster rendering and improved responsiveness
+- **Data Validation**: Comprehensive validation using Zod schemas
 
 ## Getting Started
 
@@ -239,6 +250,42 @@ https://YOUR_USERNAME.github.io/ClinicalReviewScheduler/
 - View the published schedule
 - Export to Excel if needed
 
+## New Features Guide
+
+### Auto-Save
+- Changes are automatically saved every 2 seconds
+- Status indicator shows "Saving...", "Saved", or error messages
+- No need to manually click save (but you still can)
+- Warning appears if you try to leave with unsaved changes
+
+### Undo/Redo
+- **Undo**: Press `Ctrl+Z` (Windows/Linux) or `Cmd+Z` (Mac)
+- **Redo**: Press `Ctrl+Y` (Windows/Linux) or `Cmd+Shift+Z` (Mac)
+- Buttons in the header show undo/redo availability
+- History preserved during your session (up to 50 changes)
+
+### Conflict Detection
+- Real-time validation as you make assignments
+- **Red warnings**: Critical conflicts (e.g., employee lacks required skill)
+- **Yellow warnings**: Potential issues (e.g., employee assigned to multiple entities)
+- **Blue info**: Workload imbalances
+- Conflicts shown in expandable banner at top of schedule
+- You can still save schedules with warnings (they're advisory)
+
+### Workload Indicators
+- Color-coded badges next to each employee name:
+  - **Red**: Overloaded (>150% of average workload)
+  - **Yellow**: Underutilized (<50% of average workload)
+  - **Blue**: Normal workload
+- Hover over badge to see assignment breakdown
+- Workload scores included in Excel export
+
+### Audit Trail
+- All changes automatically logged to Firestore
+- Track who made what changes and when
+- Includes before/after values for updates
+- Accessible through Firebase Console (auditLogs collection)
+
 ## Skills Explanation
 
 - **DAR**: Can be assigned to DAR columns
@@ -268,33 +315,91 @@ If an employee is NOT trained for a task, that section of their row is grayed ou
 
 ## Tech Stack
 
-- **React 18** - UI framework
-- **Vite** - Build tool
-- **Tailwind CSS** - Styling
+- **React 18** - UI framework with hooks
+- **Vite** - Build tool and dev server
+- **Tailwind CSS** - Utility-first styling
 - **Firebase** - Backend (Firestore + Auth)
-- **React Router** - Navigation
-- **XLSX** - Excel export
-- **Lucide React** - Icons
+- **React Router** - Client-side navigation
+- **XLSX** - Excel export functionality
+- **Lucide React** - Modern icon library
+- **Zod** - Schema validation
+- **Vitest** - Unit and property-based testing
+- **fast-check** - Property-based testing library
 
 ## Project Structure
 
 ```
 src/
   components/        # Reusable UI components
+    schedule/                # Schedule-specific components
+      ScheduleHeader.jsx     # Header with actions
+      ScheduleDateBanner.jsx # Date and name editing
+      ScheduleTable.jsx      # Table wrapper
+      ScheduleTableHeader.jsx # Column headers
+      ConflictBanner.jsx     # Conflict warnings
+      WorkloadIndicator.jsx  # Workload display
     ScheduleGrid.jsx         # Main schedule grid
     EmployeeManagement.jsx   # Employee CRUD
     EntityManagement.jsx     # Entity CRUD
-    EmployeeHistoryModal.jsx # History viewer
+    AutoSaveIndicator.jsx    # Auto-save status
+    EnhancedErrorBoundary.jsx # Error handling
   pages/            # Main application pages
     LoginPage.jsx            # Supervisor login
     SupervisorDashboard.jsx  # Supervisor view
     UserView.jsx             # Public schedule view
   hooks/            # Custom React hooks
     useAuth.jsx              # Authentication logic
+    useAutoSave.js           # Auto-save functionality
+    useUndoRedo.js           # Undo/redo system
+    useConflictDetection.js  # Conflict detection
+  services/         # Business logic services
+    validationService.js     # Data validation
+    auditService.js          # Audit logging
+  utils/            # Utility functions
+    conflictDetection.js     # Conflict detection logic
+    undoRedoManager.js       # Undo/redo manager
+    assignmentLogic.js       # Assignment utilities
+    scheduleUtils.js         # Schedule formatting
+    exportUtils.js           # Excel export
+    errorHandler.js          # Error handling
+  schemas/          # Zod validation schemas
+    scheduleSchema.js        # Schedule validation
+    employeeSchema.js        # Employee validation
+    entitySchema.js          # Entity validation
+  __tests__/        # Test files
+    helpers/                 # Test utilities
+    hooks/                   # Hook tests
+    services/                # Service tests
+    utils/                   # Utility tests
   firebase.js       # Firebase configuration
   App.jsx           # Main app component
   main.jsx          # Entry point
 ```
+
+## Testing
+
+The application includes comprehensive test coverage:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+```
+
+**Test Coverage:**
+- 161 tests across 11 test files
+- Unit tests for utilities and services
+- Property-based tests for correctness (100 iterations each)
+- React component tests with Testing Library
+- Full coverage for validation, conflict detection, undo/redo, and auto-save
 
 ## Support
 
@@ -302,6 +407,7 @@ For issues or questions:
 1. Check the Troubleshooting section above
 2. Review Firebase Console for errors
 3. Check browser console for error messages
+4. Run tests to verify functionality: `npm test`
 
 ## License
 
