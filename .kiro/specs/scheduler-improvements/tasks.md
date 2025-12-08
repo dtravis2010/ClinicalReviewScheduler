@@ -303,25 +303,25 @@
   - **Validates: Requirements 7.4**
 
 - [ ] 12. Implement workload indicators
-- [ ] 12.1 Create WorkloadIndicator component
+- [x] 12.1 Create WorkloadIndicator component
   - Create src/components/schedule/WorkloadIndicator.jsx
   - Display workload score for employee
   - Color-code by load level (low/normal/high)
   - Show tooltip with assignment breakdown
   - _Requirements: 13.1, 13.2_
 
-- [ ] 12.2 Integrate workload indicators into EmployeeRow
+- [x] 12.2 Integrate workload indicators into EmployeeRow
   - Add WorkloadIndicator to each employee row
   - Calculate workload using calculateWorkload utility
   - Highlight employees with imbalanced workload
   - _Requirements: 13.1, 13.2, 13.3_
 
-- [ ] 12.3 Add workload metrics to export
+- [x] 12.3 Add workload metrics to export
   - Include workload scores in Excel export
   - Add workload summary sheet
   - _Requirements: 13.5_
 
-- [ ] 12.4 Write property tests for workload calculation
+- [x] 12.4 Write property tests for workload calculation
   - **Property 29: Workload calculation consistency**
   - **Validates: Requirements 13.1, 13.2**
   - **Property 30: Workload imbalance detection**

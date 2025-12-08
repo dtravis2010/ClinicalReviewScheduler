@@ -9,9 +9,11 @@ import EmployeeHistoryModal from './EmployeeHistoryModal';
 import DarInfoPanel from './DarInfoPanel';
 import AutoSaveIndicator from './AutoSaveIndicator';
 import ConflictBanner from './schedule/ConflictBanner';
+import WorkloadIndicator from './schedule/WorkloadIndicator';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useConflictDetection } from '../hooks/useConflictDetection';
+import { calculateWorkload } from '../utils/conflictDetection';
 
 export default function ScheduleGrid({
   schedule,
@@ -67,7 +69,8 @@ export default function ScheduleGrid({
     conflicts,
     warnings,
     workloadImbalances,
-    hasIssues
+    hasIssues,
+    avgWorkload
   } = useConflictDetection(assignments, employees, darEntities);
 
   // Generate DAR columns dynamically based on count
@@ -324,6 +327,9 @@ export default function ScheduleGrid({
       row['New Incoming Items'] = formatField(assignment.newIncoming);
       row['Cross-Training'] = formatField(assignment.crossTraining);
       row['Special Projects/Assignments'] = formatField(assignment.specialProjects);
+      
+      // Add workload score
+      row['Workload Score'] = calculateWorkload(assignment, darEntities);
 
       return row;
     });
@@ -331,6 +337,16 @@ export default function ScheduleGrid({
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Schedule');
+    
+    // Add workload summary sheet
+    const workloadSummary = [
+      { Metric: 'Average Workload', Value: avgWorkload.toFixed(1) },
+      { Metric: 'Total Employees', Value: employees.filter(e => !e.archived).length },
+      { Metric: 'Employees with Assignments', Value: Object.keys(assignments).length }
+    ];
+    const wsSummary = XLSX.utils.json_to_sheet(workloadSummary);
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Workload Summary');
+    
     const fileName = `${scheduleName || 'Schedule'}_${startDate || 'export'}.xlsx`;
     XLSX.writeFile(wb, fileName);
   }
@@ -687,10 +703,20 @@ export default function ScheduleGrid({
                 >
                   {/* Employee Name - Employee Chip Style */}
                   <th scope="row" className="sticky left-0 bg-inherit px-3 py-2 z-10">
-                    <div className="employee-chip inline-flex">
-                      <span className={`font-semibold text-sm ${colorClass} truncate`} title={employee.name}>
-                        {employee.name}
-                      </span>
+                    <div className="flex items-center gap-2">
+                      <div className="employee-chip inline-flex">
+                        <span className={`font-semibold text-sm ${colorClass} truncate`} title={employee.name}>
+                          {employee.name}
+                        </span>
+                      </div>
+                      {!readOnly && (
+                        <WorkloadIndicator
+                          workload={calculateWorkload(assignment, darEntities)}
+                          avgWorkload={avgWorkload}
+                          employeeName={employee.name}
+                          assignment={assignment}
+                        />
+                      )}
                     </div>
                   </th>
 
