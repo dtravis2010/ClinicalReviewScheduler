@@ -1,6 +1,16 @@
 import { z } from 'zod';
 
 /**
+ * Schema for special projects/assignments
+ */
+export const specialProjectsSchema = z.object({
+  threePEmail: z.boolean().optional().default(false),
+  threePBackupEmail: z.boolean().optional().default(false),
+  float: z.boolean().optional().default(false),
+  other: z.string().optional().default('')
+});
+
+/**
  * Schema for individual assignment
  */
 export const assignmentSchema = z.object({
@@ -8,7 +18,11 @@ export const assignmentSchema = z.object({
   cpoe: z.boolean().optional(),
   newIncoming: z.array(z.string()).optional(),
   crossTraining: z.array(z.string()).optional(),
-  specialProjects: z.array(z.string()).optional()
+  specialProjects: z.union([
+    specialProjectsSchema,
+    z.array(z.string()), // For backward compatibility with old data
+    z.string() // For backward compatibility with old data
+  ]).optional()
 });
 
 /**

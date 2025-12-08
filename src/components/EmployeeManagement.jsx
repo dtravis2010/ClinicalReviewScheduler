@@ -36,6 +36,8 @@ export default function EmployeeManagement({ employees, onUpdate }) {
     {
       name: '',
       skills: [],
+      position: '',
+      can3PEmail: false,
       email: '',
       notes: ''
     },
@@ -52,6 +54,8 @@ export default function EmployeeManagement({ employees, onUpdate }) {
     resetValidation({
       name: '',
       skills: [],
+      position: '',
+      can3PEmail: false,
       email: '',
       notes: ''
     });
@@ -64,6 +68,8 @@ export default function EmployeeManagement({ employees, onUpdate }) {
     setValues({
       name: employee.name || '',
       skills: employee.skills || [],
+      position: employee.position || '',
+      can3PEmail: employee.can3PEmail || false,
       email: employee.email || '',
       notes: employee.notes || ''
     });
@@ -205,7 +211,13 @@ export default function EmployeeManagement({ employees, onUpdate }) {
                   Name
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Position
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Skills/Training
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  3P Email
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Email
@@ -231,6 +243,15 @@ export default function EmployeeManagement({ employees, onUpdate }) {
                       {employee.name}
                     </div>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {employee.position ? (
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-thr-blue-100 text-thr-blue-700 dark:bg-thr-blue-900/30 dark:text-thr-blue-300">
+                        {employee.position}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-slate-400 dark:text-slate-600">-</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-2">
                       {employee.skills?.map(skill => (
@@ -252,6 +273,15 @@ export default function EmployeeManagement({ employees, onUpdate }) {
                         </span>
                       ))}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {employee.can3PEmail ? (
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-thr-green-100 text-thr-green-700 dark:bg-thr-green-900/30 dark:text-thr-green-300">
+                        <Check className="w-4 h-4" />
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 dark:text-slate-600">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                     {employee.email || '-'}
@@ -378,6 +408,33 @@ export default function EmployeeManagement({ employees, onUpdate }) {
             {touched.skills && errors.skills && (
               <p className="mt-1 text-sm text-red-600">{errors.skills}</p>
             )}
+          </div>
+
+          <div>
+            <label className="label">Position</label>
+            <select
+              value={formData.position}
+              onChange={(e) => handleChange('position', e.target.value)}
+              className="input-field"
+            >
+              <option value="">Select position...</option>
+              <option value="CR I">CR I</option>
+              <option value="CR II">CR II</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.can3PEmail}
+                onChange={(e) => handleChange('can3PEmail', e.target.checked)}
+                className="w-4 h-4 text-thr-blue-500 rounded focus:ring-2 focus:ring-thr-blue-500"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Can do 3P Email
+              </span>
+            </label>
           </div>
 
           <div>

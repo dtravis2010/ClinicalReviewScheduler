@@ -6,8 +6,13 @@ import { z } from 'zod';
 const VALID_SKILLS = ['DAR', 'Trace', 'CPOE', 'Float'];
 
 /**
+ * Valid employee positions
+ */
+const VALID_POSITIONS = ['CR I', 'CR II'];
+
+/**
  * Schema for employee
- * Validates employee data including skills and optional fields
+ * Validates employee data including skills, position, and optional fields
  */
 export const employeeSchema = z.object({
   name: z.string().min(1, 'Employee name is required').max(100, 'Name is too long').refine(val => val.trim().length > 0, {
@@ -18,6 +23,10 @@ export const employeeSchema = z.object({
       errorMap: () => ({ message: `Skill must be one of: ${VALID_SKILLS.join(', ')}` })
     })
   ).min(1, 'At least one skill is required'),
+  position: z.enum(['CR I', 'CR II'], {
+    errorMap: () => ({ message: `Position must be one of: ${VALID_POSITIONS.join(', ')}` })
+  }).optional(),
+  can3PEmail: z.boolean().optional().default(false),
   email: z.union([
     z.string().email('Invalid email address'),
     z.literal('')
