@@ -474,7 +474,7 @@
   - Add JSDoc comments
   - _Requirements: 9.2, 9.4_
 
-- [ ] 17.3 Create export utilities
+- [x] 17.3 Create export utilities
   - Create src/utils/exportUtils.js
   - Extract exportToExcel logic
   - Add JSDoc comments

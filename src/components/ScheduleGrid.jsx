@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
 import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Minus, Calendar, Info, Undo, Redo } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
@@ -14,6 +13,9 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useConflictDetection } from '../hooks/useConflictDetection';
 import { calculateWorkload } from '../utils/conflictDetection';
+import { exportToExcel as exportScheduleToExcel } from '../utils/exportUtils';
+import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees } from '../utils/scheduleUtils';
+import { canAssignDAR, getAvailableEntitiesForDar, getAvailableEntitiesForAssignment } from '../utils/assignmentLogic';
 
 export default function ScheduleGrid({
   schedule,
@@ -118,63 +120,6 @@ export default function ScheduleGrid({
     } catch (error) {
       logger.error('Error loading DAR config:', error);
     }
-  }
-
-  function getAvailableEntitiesForDar(darIndex) {
-    const assignedToDars = new Set();
-    if (darEntities && typeof darEntities === 'object') {
-      Object.entries(darEntities).forEach(([idx, entityList]) => {
-        if (parseInt(idx) !== darIndex) {
-          if (Array.isArray(entityList)) {
-            entityList.forEach(e => assignedToDars.add(e));
-          } else if (entityList) {
-            assignedToDars.add(entityList);
-          }
-        }
-      });
-    }
-    return Array.isArray(entities) ? entities.filter(e => !assignedToDars.has(e.name)) : [];
-  }
-
-  function getAvailableEntitiesForAssignment(employeeId, field) {
-    const assignedEntities = new Set();
-    if (darEntities && typeof darEntities === 'object') {
-      Object.values(darEntities).forEach(entityList => {
-        if (Array.isArray(entityList)) {
-          entityList.forEach(e => assignedEntities.add(e));
-        } else if (entityList) {
-          assignedEntities.add(entityList);
-        }
-      });
-    }
-
-    if (assignments && typeof assignments === 'object') {
-      Object.entries(assignments).forEach(([empId, assignment]) => {
-      if (empId !== employeeId) {
-        ['newIncoming', 'crossTraining'].forEach(f => {
-          if (assignment[f]) {
-            if (Array.isArray(assignment[f])) {
-              assignment[f].forEach(e => assignedEntities.add(e));
-            } else {
-              assignedEntities.add(assignment[f]);
-            }
-          }
-        });
-      } else {
-        ['newIncoming', 'crossTraining'].forEach(f => {
-          if (f !== field && assignment[f]) {
-            if (Array.isArray(assignment[f])) {
-              assignment[f].forEach(e => assignedEntities.add(e));
-            } else {
-              assignedEntities.add(assignment[f]);
-            }
-          }
-        });
-      }
-      });
-    }
-
-    return Array.isArray(entities) ? entities.filter(e => !assignedEntities.has(e.name)) : [];
   }
 
   function handleAssignmentChange(employeeId, field, value) {
@@ -305,50 +250,15 @@ export default function ScheduleGrid({
   }, [canUndo, canRedo, undo, redo, readOnly]);
 
   function exportToExcel() {
-    const data = employees.filter(e => !e.archived).map(employee => {
-      const assignment = assignments[employee.id] || {};
-      const row = { 'TEAM MEMBER': employee.name };
-
-      darColumns.forEach((dar, idx) => {
-        const isDarTrained = canAssignDAR(employee);
-        const entityList = darEntities[idx] || [];
-        const entityNames = Array.isArray(entityList) ? entityList.join('/') : (entityList || '');
-        const columnName = entityNames ? `${dar}\n${entityNames}` : dar;
-
-        if (isDarTrained && assignment.dars?.includes(idx)) {
-          row[columnName] = entityNames;
-        } else {
-          row[columnName] = '';
-        }
-      });
-
-      const formatField = (val) => Array.isArray(val) ? val.join(', ') : (val || '');
-      row['CPOE'] = assignment.cpoe ? 'CPOE' : '';
-      row['New Incoming Items'] = formatField(assignment.newIncoming);
-      row['Cross-Training'] = formatField(assignment.crossTraining);
-      row['Special Projects/Assignments'] = formatField(assignment.specialProjects);
-      
-      // Add workload score
-      row['Workload Score'] = calculateWorkload(assignment, darEntities);
-
-      return row;
+    exportScheduleToExcel({
+      scheduleName,
+      startDate,
+      employees,
+      assignments,
+      darColumns,
+      darEntities,
+      avgWorkload
     });
-
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Schedule');
-    
-    // Add workload summary sheet
-    const workloadSummary = [
-      { Metric: 'Average Workload', Value: avgWorkload.toFixed(1) },
-      { Metric: 'Total Employees', Value: employees.filter(e => !e.archived).length },
-      { Metric: 'Employees with Assignments', Value: Object.keys(assignments).length }
-    ];
-    const wsSummary = XLSX.utils.json_to_sheet(workloadSummary);
-    XLSX.utils.book_append_sheet(wb, wsSummary, 'Workload Summary');
-    
-    const fileName = `${scheduleName || 'Schedule'}_${startDate || 'export'}.xlsx`;
-    XLSX.writeFile(wb, fileName);
   }
 
   function showEmployeeHistory(employee) {
@@ -356,63 +266,8 @@ export default function ScheduleGrid({
     setShowHistoryModal(true);
   }
 
-  function canAssignDAR(employee) {
-    return employee.skills?.includes('DAR') || employee.skills?.includes('Float');
-  }
-
-  function formatEntityList(entityList) {
-    if (Array.isArray(entityList)) {
-      return entityList.join('/');
-    }
-    return entityList || '';
-  }
-
-  function formatDateRange() {
-    if (!startDate || !endDate) return '';
-    return `${startDate} to ${endDate}`;
-  }
-
-  // Get short entity code for display in cells
-  function getEntityShortCode(entityList) {
-    if (!entityList) return '';
-    if (Array.isArray(entityList)) {
-      return entityList.map(e => {
-        const parts = e.split('/');
-        return parts[0];
-      }).join('/');
-    }
-    const parts = entityList.split('/');
-    return parts[0];
-  }
-
-  // Filter out archived employees and deduplicate by name (keep most recent)
-  const activeEmployees = (() => {
-    const filtered = employees.filter(e => !e.archived);
-    const seen = new Map();
-
-    // Group by normalized name (case-insensitive, trimmed)
-    filtered.forEach(emp => {
-      const normalizedName = emp.name?.trim().toLowerCase();
-      if (!normalizedName) return;
-
-      const existing = seen.get(normalizedName);
-      if (!existing) {
-        seen.set(normalizedName, emp);
-      } else {
-        // Keep the one with most recent updatedAt or createdAt
-        const existingDate = existing.updatedAt?.toDate?.() || existing.createdAt?.toDate?.() || new Date(0);
-        const currentDate = emp.updatedAt?.toDate?.() || emp.createdAt?.toDate?.() || new Date(0);
-        if (currentDate > existingDate) {
-          seen.set(normalizedName, emp);
-        }
-      }
-    });
-
-    // Return deduplicated list sorted by name
-    return Array.from(seen.values()).sort((a, b) =>
-      (a.name || '').localeCompare(b.name || '')
-    );
-  })();
+  // Use utility function for active employees
+  const activeEmployees = getActiveEmployees(employees);
 
   return (
     <div className="space-y-0 flex flex-col animate-fade-in-up" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
@@ -551,7 +406,7 @@ export default function ScheduleGrid({
                 <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
                   <span className="text-white font-semibold">✓</span>
                   <span className="font-semibold text-sm text-white">
-                    {scheduleName || 'Schedule'} ({formatDateRange() || 'No dates'})
+                    {scheduleName || 'Schedule'} ({formatDateRange(startDate, endDate) || 'No dates'})
                   </span>
                 </div>
               )}
@@ -641,7 +496,7 @@ export default function ScheduleGrid({
                         {editingDar === idx && !readOnly ? (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for DAR">
                             <div className="space-y-1">
-                              {getAvailableEntitiesForDar(idx).map(entity => {
+                              {getAvailableEntitiesForDar(idx, darEntities, entities).map(entity => {
                                 const currentList = darEntities[idx] || [];
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                               const isSelected = currentArray.includes(entity.name);
@@ -828,7 +683,7 @@ export default function ScheduleGrid({
                         {editingCell?.employeeId === employee.id && editingCell?.field === 'newIncoming' && (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for New Incoming">
                             <div className="space-y-1">
-                              {getAvailableEntitiesForAssignment(employee.id, 'newIncoming').map(entity => {
+                              {getAvailableEntitiesForAssignment(employee.id, 'newIncoming', assignments, darEntities, entities).map(entity => {
                                 const currentList = assignment.newIncoming || [];
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                                 const isSelected = currentArray.includes(entity.name);
@@ -892,7 +747,7 @@ export default function ScheduleGrid({
                         {editingCell?.employeeId === employee.id && editingCell?.field === 'crossTraining' && (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for Cross-Training">
                             <div className="space-y-1">
-                              {getAvailableEntitiesForAssignment(employee.id, 'crossTraining').map(entity => {
+                              {getAvailableEntitiesForAssignment(employee.id, 'crossTraining', assignments, darEntities, entities).map(entity => {
                                 const currentList = assignment.crossTraining || [];
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                                 const isSelected = currentArray.includes(entity.name);
