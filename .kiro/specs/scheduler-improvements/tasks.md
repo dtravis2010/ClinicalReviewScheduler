@@ -413,13 +413,13 @@
   - Props: name, startDate, endDate, onChange, readOnly
   - _Requirements: 9.1_
 
-- [ ] 16.3 Extract ScheduleTable component
+- [x] 16.3 Extract ScheduleTable component
   - Create src/components/schedule/ScheduleTable.jsx
   - Move table structure and scroll handling
   - Props: children, className
   - _Requirements: 9.1_
 
-- [ ] 16.4 Extract ScheduleTableHeader component
+- [x] 16.4 Extract ScheduleTableHeader component
   - Create src/components/schedule/ScheduleTableHeader.jsx
   - Move column headers and DAR configuration
   - Props: darColumns, darEntities, onDarEntityChange, readOnly

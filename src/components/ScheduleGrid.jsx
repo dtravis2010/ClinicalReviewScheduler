@@ -10,6 +10,8 @@ import ConflictBanner from './schedule/ConflictBanner';
 import WorkloadIndicator from './schedule/WorkloadIndicator';
 import ScheduleHeader from './schedule/ScheduleHeader';
 import ScheduleDateBanner from './schedule/ScheduleDateBanner';
+import ScheduleTable from './schedule/ScheduleTable';
+import ScheduleTableHeader from './schedule/ScheduleTableHeader';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useConflictDetection } from '../hooks/useConflictDetection';
@@ -320,86 +322,22 @@ export default function ScheduleGrid({
         </div>
       )}
 
-      {/* Schedule Table - Modern styling with rounded corners and shadows */}
-      <div className="bg-slate-50 dark:bg-slate-900 flex-1 overflow-auto p-3">
-        <div className="h-full flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-card overflow-auto border border-slate-100 dark:border-slate-700">
-          <div className="overflow-auto flex-1">
-            <table className="w-full border-collapse min-w-max" role="grid" aria-label="Schedule assignments">
-              <thead className="sticky top-0 z-20">
-                <tr className="bg-gradient-to-r from-thr-blue-500 to-thr-blue-600 dark:from-thr-blue-600 dark:to-thr-blue-700 text-white">
-                  <th scope="col" className="sticky left-0 bg-thr-blue-500 dark:bg-thr-blue-600 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider z-30 min-w-[140px]">
-                    Team Member
-                  </th>
-                  {darColumns.map((dar, idx) => (
-                    <th key={idx} scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px] relative">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <span className="text-xs">{dar}</span>
-                        {!readOnly && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedDarIndex(idx);
-                              setShowDarInfoPanel(true);
-                            }}
-                            className="p-0.5 rounded hover:bg-white/20 transition-colors"
-                            aria-label={`View ${dar} history and info`}
-                            title="View DAR history"
-                          >
-                            <Info className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="text-[10px] font-normal opacity-80">
-                        {editingDar === idx && !readOnly ? (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for DAR">
-                            <div className="space-y-1">
-                              {getAvailableEntitiesForDar(idx, darEntities, entities).map(entity => {
-                                const currentList = darEntities[idx] || [];
-                                const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
-                              const isSelected = currentArray.includes(entity.name);
-
-                              return (
-                                <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={() => handleDarEntityToggle(idx, entity.name)}
-                                    className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
-                                    aria-label={`Assign ${entity.name} to ${dar}`}
-                                  />
-                                  <span className="text-sm">{entity.name}</span>
-                                </label>
-                              );
-                            })}
-                          </div>
-                          <button
-                            onClick={() => setEditingDar(null)}
-                            className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
-                            aria-label="Close entity selection"
-                          >
-                            Done
-                          </button>
-                      </div>
-                    ) : (
-                      <button
-                        className="cursor-pointer hover:bg-white/10 rounded-lg px-2 py-1 truncate w-full focus:ring-2 focus:ring-white/50 transition-colors"
-                        onClick={() => !readOnly && setEditingDar(idx)}
-                        title={formatEntityList(darEntities[idx])}
-                        aria-label={`Configure entities for ${dar}. Current: ${formatEntityList(darEntities[idx]) || 'None'}`}
-                        disabled={readOnly}
-                      >
-                        {getEntityShortCode(darEntities[idx]) || 'Select'}
-                      </button>
-                    )}
-                  </div>
-                </th>
-              ))}
-              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[70px]">CPOE</th>
-              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">New Incoming<br/>Items</th>
-              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">Cross-<br/>Training</th>
-              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px]">Special<br/>Projects</th>
-            </tr>
-          </thead>
+      {/* Schedule Table */}
+      <ScheduleTable>
+        <ScheduleTableHeader
+          darColumns={darColumns}
+          darEntities={darEntities}
+          entities={entities}
+          editingDar={editingDar}
+          readOnly={readOnly}
+          onDarClick={(idx) => setEditingDar(idx)}
+          onDarEntityToggle={handleDarEntityToggle}
+          onDarInfoClick={(idx) => {
+            setSelectedDarIndex(idx);
+            setShowDarInfoPanel(true);
+          }}
+          onEditingDarClose={() => setEditingDar(null)}
+        />
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
             {activeEmployees.map((employee, empIdx) => {
               const assignment = assignments[employee.id] || {};
@@ -655,18 +593,18 @@ export default function ScheduleGrid({
               );
             })}
           </tbody>
-        </table>
-      </div>
-
-          {activeEmployees.length === 0 && (
-            <div className="text-center py-16 text-slate-500 dark:text-slate-400">
-              <Calendar className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
-              <p className="text-lg font-medium">No employees found</p>
-              <p className="text-sm mt-1">Add employees first to create a schedule.</p>
-            </div>
-          )}
-        </div>
-      </div>
+        {activeEmployees.length === 0 && (
+          <tbody>
+            <tr>
+              <td colSpan="100" className="text-center py-16 text-slate-500 dark:text-slate-400">
+                <Calendar className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+                <p className="text-lg font-medium">No employees found</p>
+                <p className="text-sm mt-1">Add employees first to create a schedule.</p>
+              </td>
+            </tr>
+          </tbody>
+        )}
+      </ScheduleTable>
 
       {/* Save Button - Modern floating style */}
       {!readOnly && hasChanges && (
