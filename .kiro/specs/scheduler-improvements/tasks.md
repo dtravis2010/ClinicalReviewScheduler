@@ -401,13 +401,13 @@
 ## Phase 4: Code Refactoring & Performance
 
 - [ ] 16. Refactor ScheduleGrid component
-- [ ] 16.1 Extract ScheduleHeader component
+- [x] 16.1 Extract ScheduleHeader component
   - Create src/components/schedule/ScheduleHeader.jsx
   - Move action buttons and status indicators
   - Props: onSave, onExport, onHistory, status, hasChanges
   - _Requirements: 9.1_
 
-- [ ] 16.2 Extract ScheduleDateBanner component
+- [x] 16.2 Extract ScheduleDateBanner component
   - Create src/components/schedule/ScheduleDateBanner.jsx
   - Move schedule name and date editing
   - Props: name, startDate, endDate, onChange, readOnly

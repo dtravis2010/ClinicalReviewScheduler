@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
-import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Minus, Calendar, Info, Undo, Redo } from 'lucide-react';
+import { Save, Calendar, Info } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
 import DarInfoPanel from './DarInfoPanel';
-import AutoSaveIndicator from './AutoSaveIndicator';
 import ConflictBanner from './schedule/ConflictBanner';
 import WorkloadIndicator from './schedule/WorkloadIndicator';
+import ScheduleHeader from './schedule/ScheduleHeader';
+import ScheduleDateBanner from './schedule/ScheduleDateBanner';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useConflictDetection } from '../hooks/useConflictDetection';
@@ -271,186 +272,42 @@ export default function ScheduleGrid({
 
   return (
     <div className="space-y-0 flex flex-col animate-fade-in-up" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
-      {/* Header Section - Modern THR styling */}
-      <div className="bg-white dark:bg-slate-800 px-4 sm:px-6 py-3 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-soft">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-h3 text-slate-900 dark:text-slate-100">Schedule Builder</h1>
-            <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 hidden sm:block">Click any cell to assign • Click DAR info icon for history</p>
-            <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 sm:hidden">Tap to assign</p>
-          </div>
+      {/* Header Section */}
+      <ScheduleHeader
+        readOnly={readOnly}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+        autoSaveError={autoSaveError}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={undo}
+        onRedo={redo}
+        onCreateNewSchedule={onCreateNewSchedule}
+        onShowHistory={() => setShowHistoryModal(true)}
+        onExport={exportToExcel}
+        scheduleStatus={schedule?.status}
+      />
 
-          {!readOnly && (
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              {/* Auto-save indicator */}
-              <AutoSaveIndicator 
-                isSaving={isSaving}
-                lastSaved={lastSaved}
-                error={autoSaveError}
-              />
-
-              {/* Undo/Redo buttons */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={undo}
-                  disabled={!canUndo}
-                  className={`btn-pill flex items-center gap-1.5 shadow-soft transition-all ${
-                    canUndo
-                      ? 'bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:shadow-soft-md'
-                      : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-600 cursor-not-allowed'
-                  }`}
-                  aria-label="Undo (Ctrl+Z)"
-                  title="Undo (Ctrl+Z)"
-                >
-                  <Undo className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Undo</span>
-                </button>
-                <button
-                  onClick={redo}
-                  disabled={!canRedo}
-                  className={`btn-pill flex items-center gap-1.5 shadow-soft transition-all ${
-                    canRedo
-                      ? 'bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:shadow-soft-md'
-                      : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-600 cursor-not-allowed'
-                  }`}
-                  aria-label="Redo (Ctrl+Y)"
-                  title="Redo (Ctrl+Y)"
-                >
-                  <Redo className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Redo</span>
-                </button>
-              </div>
-              
-              {onCreateNewSchedule && (
-                <button
-                  className="btn-pill bg-thr-green-500 hover:bg-thr-green-600 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
-                  aria-label="Create new schedule"
-                  onClick={onCreateNewSchedule}
-                >
-                  <Plus className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">New Schedule</span>
-                  <span className="sm:hidden">New</span>
-                </button>
-              )}
-              <button
-                onClick={() => setShowHistoryModal(true)}
-                className="btn-pill bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
-                aria-label="Show history"
-              >
-                <History className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Show History</span>
-              </button>
-              <button
-                className="btn-pill bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
-                aria-label="Configuration"
-              >
-                <Settings className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Config</span>
-              </button>
-
-              <button
-                onClick={exportToExcel}
-                className="btn-pill bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
-                aria-label="Export to Excel"
-              >
-                <FileDown className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Export</span>
-              </button>
-
-              {/* Status indicators */}
-              <div className={`btn-pill flex items-center gap-1.5 cursor-default ${
-                schedule?.status === 'published'
-                  ? 'bg-thr-green-500 text-white'
-                  : 'bg-orange-500 text-white'
-              }`}>
-                <Eye className="w-4 h-4" aria-hidden="true" />
-                <span>{schedule?.status === 'published' ? 'Published' : 'Unpublish (Draft)'}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Date Header - THR Blue Gradient Banner with inline date editing */}
-      <div className="header-gradient px-4 sm:px-6 py-3 text-white flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <button
-            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50"
-            aria-label="Previous schedule"
-          >
-            <ChevronLeft className="w-5 h-5" aria-hidden="true" />
-          </button>
-
-          <div className="text-center flex-1 px-2">
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <Calendar className="w-5 h-5 text-white/80" aria-hidden="true" />
-              {!readOnly ? (
-                <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
-                  <span className="text-white font-semibold">✓</span>
-                  <input
-                    type="text"
-                    value={scheduleName}
-                    onChange={(e) => {
-                      setScheduleName(e.target.value);
-                      setHasChanges(true);
-                    }}
-                    className="bg-transparent text-white font-semibold text-sm text-center focus:outline-none placeholder:text-white/60 w-auto min-w-[120px]"
-                    placeholder="Schedule name"
-                    style={{ width: `${Math.max(120, (scheduleName?.length || 12) * 8)}px` }}
-                  />
-                  <span className="text-white/90 text-sm">
-                    ({startDate || 'start'} to {endDate || 'end'})
-                  </span>
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
-                  <span className="text-white font-semibold">✓</span>
-                  <span className="font-semibold text-sm text-white">
-                    {scheduleName || 'Schedule'} ({formatDateRange(startDate, endDate) || 'No dates'})
-                  </span>
-                </div>
-              )}
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-soft ${schedule?.status === 'published' ? 'bg-thr-green-500' : 'bg-orange-500'}`}>
-                {schedule?.status === 'published' ? 'LIVE' : 'DRAFT'}
-              </span>
-            </div>
-            {!readOnly && (
-              <div className="flex items-center justify-center gap-2 mt-2 text-white/80 text-sm">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value);
-                      setHasChanges(true);
-                    }}
-                    className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/30 text-white text-xs font-medium focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-soft transition-all duration-200 cursor-pointer hover:bg-white/25 [color-scheme:dark]"
-                    style={{ colorScheme: 'dark' }}
-                  />
-                  <span className="text-white/80 text-xs font-medium">to</span>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => {
-                      setEndDate(e.target.value);
-                      setHasChanges(true);
-                    }}
-                    className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/30 text-white text-xs font-medium focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-soft transition-all duration-200 cursor-pointer hover:bg-white/25 [color-scheme:dark]"
-                    style={{ colorScheme: 'dark' }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <button
-            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50"
-            aria-label="Next schedule"
-          >
-            <ChevronRight className="w-5 h-5" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+      {/* Date Banner */}
+      <ScheduleDateBanner
+        scheduleName={scheduleName}
+        startDate={startDate}
+        endDate={endDate}
+        scheduleStatus={schedule?.status}
+        readOnly={readOnly}
+        onScheduleNameChange={(value) => {
+          setScheduleName(value);
+          setHasChanges(true);
+        }}
+        onStartDateChange={(value) => {
+          setStartDate(value);
+          setHasChanges(true);
+        }}
+        onEndDateChange={(value) => {
+          setEndDate(value);
+          setHasChanges(true);
+        }}
+      />
 
       {/* Conflict Banner */}
       {!readOnly && hasIssues && (
