@@ -180,7 +180,7 @@
 ## Phase 3: UX Improvements (Auto-save, Undo/Redo, Conflicts)
 
 - [ ] 9. Implement auto-save functionality
-- [ ] 9.1 Create useAutoSave hook
+- [x] 9.1 Create useAutoSave hook
   - Create src/hooks/useAutoSave.js
   - Implement debouncing (2 second delay)
   - Track saving state (isSaving, lastSaved, error)
@@ -188,39 +188,39 @@
   - Detect data changes using JSON comparison
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 9.2 Create AutoSaveIndicator component
+- [x] 9.2 Create AutoSaveIndicator component
   - Create src/components/AutoSaveIndicator.jsx
   - Show "Saving..." when saving
   - Show "Saved at [time]" when complete
   - Show error message on failure
   - _Requirements: 5.2, 5.3, 5.4_
 
-- [ ] 9.3 Integrate auto-save into ScheduleGrid
+- [x] 9.3 Integrate auto-save into ScheduleGrid
   - Add useAutoSave hook to ScheduleGrid
   - Pass schedule data and save function
   - Display AutoSaveIndicator in header
   - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 9.4 Add unsaved changes warning on navigation
+- [x] 9.4 Add unsaved changes warning on navigation
   - Add beforeunload event listener
   - Prompt user if unsaved changes exist
   - _Requirements: 5.5_
 
-- [ ] 9.5 Write unit tests for auto-save
+- [x] 9.5 Write unit tests for auto-save
   - Test debouncing behavior
   - Test save success/failure
   - Test forceSave
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
 - [ ] 10. Implement undo/redo system
-- [ ] 10.1 Create UndoRedoManager class
+- [x] 10.1 Create UndoRedoManager class
   - Create src/utils/undoRedoManager.js
   - Implement addChange, undo, redo methods
   - Implement canUndo, canRedo methods
   - Implement stack size limits (50 items)
   - _Requirements: 6.1, 6.2, 6.3, 6.6_
 
-- [ ] 10.2 Create useUndoRedo hook
+- [x] 10.2 Create useUndoRedo hook
   - Create src/hooks/useUndoRedo.js
   - Wrap UndoRedoManager in React hook
   - Provide state, setState, undo, redo, canUndo, canRedo
@@ -238,7 +238,7 @@
   - Clear history only on explicit user action or page reload
   - _Requirements: 6.7_
 
-- [ ] 10.5 Write property tests for undo/redo
+- [x] 10.5 Write property tests for undo/redo
   - **Property 18: Undo stack growth**
   - **Validates: Requirements 6.1**
   - **Property 19: Undo operation correctness**

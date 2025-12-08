@@ -7,6 +7,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
 import DarInfoPanel from './DarInfoPanel';
+import AutoSaveIndicator from './AutoSaveIndicator';
+import { useAutoSave } from '../hooks/useAutoSave';
 
 export default function ScheduleGrid({
   schedule,
@@ -31,6 +33,22 @@ export default function ScheduleGrid({
   const [selectedDarIndex, setSelectedDarIndex] = useState(null);
   // State for editing assignment cells (New Incoming, Cross-Training)
   const [editingCell, setEditingCell] = useState(null); // { employeeId, field }
+
+  // Auto-save functionality
+  const scheduleData = {
+    name: scheduleName,
+    startDate,
+    endDate,
+    assignments,
+    darEntities,
+    darCount
+  };
+
+  const { isSaving, lastSaved, error: autoSaveError, hasUnsavedChanges: autoSaveHasChanges } = useAutoSave(
+    scheduleData,
+    onSave,
+    { delay: 2000, enabled: !readOnly && !!schedule }
+  );
 
   // Generate DAR columns dynamically based on count
   const darColumns = Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`);
@@ -216,17 +234,24 @@ export default function ScheduleGrid({
 
   function handleSave() {
     if (onSave) {
-      onSave({
-        name: scheduleName,
-        startDate,
-        endDate,
-        assignments,
-        darEntities,
-        darCount
-      });
+      onSave(scheduleData);
       setHasChanges(false);
     }
   }
+
+  // Add beforeunload warning for unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasChanges || autoSaveHasChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges, autoSaveHasChanges]);
 
   function exportToExcel() {
     const data = employees.filter(e => !e.archived).map(employee => {
@@ -338,6 +363,13 @@ export default function ScheduleGrid({
 
           {!readOnly && (
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              {/* Auto-save indicator */}
+              <AutoSaveIndicator 
+                isSaving={isSaving}
+                lastSaved={lastSaved}
+                error={autoSaveError}
+              />
+              
               {onCreateNewSchedule && (
                 <button
                   className="btn-pill bg-thr-green-500 hover:bg-thr-green-600 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
