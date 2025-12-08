@@ -10,6 +10,8 @@ import ThemeToggle from '../components/ThemeToggle';
 
 export default function UserView() {
   const [schedule, setSchedule] = useState(null);
+  const [employees, setEmployees] = useState([]);
+  const [entities, setEntities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -40,7 +42,7 @@ export default function UserView() {
       };
     }
 
-    async function fetchSchedule() {
+    async function fetchData() {
       if (!db) {
         if (isMounted) {
           setError('Database connection not available');
@@ -50,6 +52,17 @@ export default function UserView() {
       }
 
       try {
+        // Fetch employees and entities in parallel with schedule
+        const [employeesSnapshot, entitiesSnapshot] = await Promise.all([
+          getDocs(collection(db, 'employees')),
+          getDocs(collection(db, 'entities'))
+        ]);
+
+        if (isMounted) {
+          setEmployees(employeesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+          setEntities(entitiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        }
+
         const schedulesRef = collection(db, 'schedules');
         let snapshot = null;
 
@@ -125,7 +138,7 @@ export default function UserView() {
       }
     }
 
-    fetchSchedule();
+    fetchData();
 
     return () => {
       isMounted = false;
@@ -204,7 +217,12 @@ export default function UserView() {
               </div>
             </div>
 
-            <ScheduleGrid schedule={schedule} readOnly={true} />
+            <ScheduleGrid 
+              schedule={schedule} 
+              employees={employees}
+              entities={entities}
+              readOnly={true} 
+            />
           </div>
         ) : (
           <div className="card dark:bg-gray-800 dark:border-gray-700 text-center py-12">
