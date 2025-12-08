@@ -226,14 +226,14 @@
   - Provide state, setState, undo, redo, canUndo, canRedo
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
 
-- [ ] 10.3 Integrate undo/redo into ScheduleGrid
+- [x] 10.3 Integrate undo/redo into ScheduleGrid
   - Replace useState with useUndoRedo for assignments
   - Add Undo/Redo buttons to header
   - Add keyboard shortcuts (Ctrl+Z, Ctrl+Y)
   - Disable buttons when stacks are empty
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 10.4 Preserve undo/redo history on save
+- [x] 10.4 Preserve undo/redo history on save
   - Store history in component state (not persisted to DB)
   - Clear history only on explicit user action or page reload
   - _Requirements: 6.7_
@@ -255,20 +255,20 @@
   - **Validates: Requirements 6.7**
 
 - [ ] 11. Implement conflict detection system
-- [ ] 11.1 Create conflict detection utilities
+- [x] 11.1 Create conflict detection utilities
   - Create src/utils/conflictDetection.js
   - Implement detectConflicts function
   - Implement calculateWorkload function
   - Implement detectWorkloadImbalances function
   - _Requirements: 2.1, 2.2, 2.3, 7.1, 7.2, 7.4_
 
-- [ ] 11.2 Create useConflictDetection hook
+- [x] 11.2 Create useConflictDetection hook
   - Create src/hooks/useConflictDetection.js
   - Memoize conflict detection results
   - Return conflicts, warnings, workloadMap, hasIssues
   - _Requirements: 2.2, 2.3, 7.1, 7.2, 7.4_
 
-- [ ] 11.3 Create ConflictBanner component
+- [x] 11.3 Create ConflictBanner component
   - Create src/components/schedule/ConflictBanner.jsx
   - Display conflict count
   - Show list of conflicts with details
@@ -276,19 +276,19 @@
   - Allow dismissing warnings
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 11.4 Integrate conflict detection into ScheduleGrid
+- [x] 11.4 Integrate conflict detection into ScheduleGrid
   - Add useConflictDetection hook
   - Display ConflictBanner when conflicts exist
   - Highlight conflicting cells
   - _Requirements: 7.1, 7.2, 7.4, 7.5_
 
-- [ ] 11.5 Add validation before save
+- [x] 11.5 Add validation before save
   - Run conflict detection before save
   - Show warnings but allow save to proceed
   - Log validation results
   - _Requirements: 2.4, 2.5_
 
-- [ ] 11.6 Write property tests for conflict detection
+- [x] 11.6 Write property tests for conflict detection
   - **Property 1: Skill-based assignment validity**
   - **Validates: Requirements 2.1**
   - **Property 2: Multiple entity warning generation**

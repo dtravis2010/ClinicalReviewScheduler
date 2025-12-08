@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
-import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Minus, Calendar, Info } from 'lucide-react';
+import { Save, Download, History, Edit2, ChevronLeft, ChevronRight, Settings, Eye, Upload, FileDown, Plus, Minus, Calendar, Info, Undo, Redo } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
 import DarInfoPanel from './DarInfoPanel';
 import AutoSaveIndicator from './AutoSaveIndicator';
+import ConflictBanner from './schedule/ConflictBanner';
 import { useAutoSave } from '../hooks/useAutoSave';
+import { useUndoRedo } from '../hooks/useUndoRedo';
+import { useConflictDetection } from '../hooks/useConflictDetection';
 
 export default function ScheduleGrid({
   schedule,
@@ -19,7 +22,16 @@ export default function ScheduleGrid({
   onCreateNewSchedule,
   schedules = []
 }) {
-  const [assignments, setAssignments] = useState({});
+  // Use undo/redo for assignments
+  const {
+    state: assignments,
+    setState: setAssignments,
+    undo,
+    redo,
+    canUndo,
+    canRedo
+  } = useUndoRedo({}, { limit: 50 });
+
   const [scheduleName, setScheduleName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -50,6 +62,14 @@ export default function ScheduleGrid({
     { delay: 2000, enabled: !readOnly && !!schedule }
   );
 
+  // Conflict detection
+  const {
+    conflicts,
+    warnings,
+    workloadImbalances,
+    hasIssues
+  } = useConflictDetection(assignments, employees, darEntities);
+
   // Generate DAR columns dynamically based on count
   const darColumns = Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`);
 
@@ -71,6 +91,8 @@ export default function ScheduleGrid({
 
   useEffect(() => {
     if (schedule) {
+      // Initialize assignments without adding to undo history
+      // We do this by directly setting the state, not through setState
       setAssignments(schedule.assignments || {});
       setScheduleName(schedule.name || '');
       setStartDate(schedule.startDate || '');
@@ -80,7 +102,7 @@ export default function ScheduleGrid({
     } else {
       loadDefaultDarConfig();
     }
-  }, [schedule]);
+  }, [schedule, setAssignments]);
 
   async function loadDefaultDarConfig() {
     try {
@@ -253,6 +275,32 @@ export default function ScheduleGrid({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasChanges, autoSaveHasChanges]);
 
+  // Add keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ctrl+Z or Cmd+Z for undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo && !readOnly) {
+          undo();
+        }
+      }
+      // Ctrl+Y or Cmd+Shift+Z for redo
+      if (((e.ctrlKey || e.metaKey) && e.key === 'y') || 
+          ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z')) {
+        e.preventDefault();
+        if (canRedo && !readOnly) {
+          redo();
+        }
+      }
+    };
+
+    if (!readOnly) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [canUndo, canRedo, undo, redo, readOnly]);
+
   function exportToExcel() {
     const data = employees.filter(e => !e.archived).map(employee => {
       const assignment = assignments[employee.id] || {};
@@ -369,6 +417,38 @@ export default function ScheduleGrid({
                 lastSaved={lastSaved}
                 error={autoSaveError}
               />
+
+              {/* Undo/Redo buttons */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={undo}
+                  disabled={!canUndo}
+                  className={`btn-pill flex items-center gap-1.5 shadow-soft transition-all ${
+                    canUndo
+                      ? 'bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:shadow-soft-md'
+                      : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-600 cursor-not-allowed'
+                  }`}
+                  aria-label="Undo (Ctrl+Z)"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo className="w-4 h-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Undo</span>
+                </button>
+                <button
+                  onClick={redo}
+                  disabled={!canRedo}
+                  className={`btn-pill flex items-center gap-1.5 shadow-soft transition-all ${
+                    canRedo
+                      ? 'bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:shadow-soft-md'
+                      : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-600 cursor-not-allowed'
+                  }`}
+                  aria-label="Redo (Ctrl+Y)"
+                  title="Redo (Ctrl+Y)"
+                >
+                  <Redo className="w-4 h-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Redo</span>
+                </button>
+              </div>
               
               {onCreateNewSchedule && (
                 <button
@@ -500,6 +580,17 @@ export default function ScheduleGrid({
           </button>
         </div>
       </div>
+
+      {/* Conflict Banner */}
+      {!readOnly && hasIssues && (
+        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-900">
+          <ConflictBanner
+            conflicts={conflicts}
+            warnings={warnings}
+            workloadImbalances={workloadImbalances}
+          />
+        </div>
+      )}
 
       {/* Schedule Table - Modern styling with rounded corners and shadows */}
       <div className="bg-slate-50 dark:bg-slate-900 flex-1 overflow-auto p-3">
