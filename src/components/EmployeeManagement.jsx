@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { logger } from '../utils/logger';
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { AuditService } from '../services/auditService';
+import { useAuth } from '../hooks/useAuth';
 import { Plus, Edit2, Archive, Save, UserPlus, Check, Loader2 } from 'lucide-react';
 import Modal from './Modal';
 import ConfirmDialog from './ConfirmDialog';
@@ -9,6 +11,7 @@ import { useFormValidation, validationPresets } from '../hooks/useFormValidation
 import { useToast } from '../hooks/useToast';
 
 export default function EmployeeManagement({ employees, onUpdate }) {
+  const { currentUser } = useAuth();
   const { showSuccess, showError } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
@@ -87,18 +90,40 @@ export default function EmployeeManagement({ employees, onUpdate }) {
     try {
       if (editingEmployee) {
         // Update existing employee
+        const changes = AuditService.detectChanges(editingEmployee, formData);
         const employeeRef = doc(db, 'employees', editingEmployee.id);
         await updateDoc(employeeRef, {
           ...formData,
           updatedAt: serverTimestamp()
         });
+
+        // Log audit trail
+        await AuditService.log({
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          action: 'employee.update',
+          resourceType: 'employee',
+          resourceId: editingEmployee.id,
+          changes: changes,
+          metadata: { employeeName: formData.name }
+        });
       } else {
         // Add new employee
-        await addDoc(collection(db, 'employees'), {
+        const docRef = await addDoc(collection(db, 'employees'), {
           ...formData,
           archived: false,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
+        });
+
+        // Log audit trail
+        await AuditService.log({
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          action: 'employee.create',
+          resourceType: 'employee',
+          resourceId: docRef.id,
+          metadata: { employeeName: formData.name, skills: formData.skills }
         });
       }
 
@@ -122,6 +147,16 @@ export default function EmployeeManagement({ employees, onUpdate }) {
         archived: true,
         archivedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
+      });
+
+      // Log audit trail
+      await AuditService.log({
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        action: 'employee.archive',
+        resourceType: 'employee',
+        resourceId: employeeToArchive.id,
+        metadata: { employeeName: employeeToArchive.name }
       });
 
       setEmployeeToArchive(null);

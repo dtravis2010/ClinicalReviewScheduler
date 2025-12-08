@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { logger } from '../utils/logger';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { AuditService } from '../services/auditService';
+import { useAuth } from '../hooks/useAuth';
 import { Plus, Edit2, Trash2, Save, Building2, Check, Loader2 } from 'lucide-react';
 import Modal from './Modal';
 import { useFormValidation, validationPresets } from '../hooks/useFormValidation';
 import { useToast } from '../hooks/useToast';
 
 export default function EntityManagement({ entities, onUpdate }) {
+  const { currentUser } = useAuth();
   const { showSuccess, showError, showConfirm } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEntity, setEditingEntity] = useState(null);
@@ -68,17 +71,39 @@ export default function EntityManagement({ entities, onUpdate }) {
     try {
       if (editingEntity) {
         // Update existing entity
+        const changes = AuditService.detectChanges(editingEntity, formData);
         const entityRef = doc(db, 'entities', editingEntity.id);
         await updateDoc(entityRef, {
           ...formData,
           updatedAt: serverTimestamp()
         });
+
+        // Log audit trail
+        await AuditService.log({
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          action: 'entity.update',
+          resourceType: 'entity',
+          resourceId: editingEntity.id,
+          changes: changes,
+          metadata: { entityName: formData.name }
+        });
       } else {
         // Add new entity
-        await addDoc(collection(db, 'entities'), {
+        const docRef = await addDoc(collection(db, 'entities'), {
           ...formData,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
+        });
+
+        // Log audit trail
+        await AuditService.log({
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          action: 'entity.create',
+          resourceType: 'entity',
+          resourceId: docRef.id,
+          metadata: { entityName: formData.name }
         });
       }
 
@@ -105,6 +130,17 @@ export default function EntityManagement({ entities, onUpdate }) {
     setIsDeleting(true);
     try {
       await deleteDoc(doc(db, 'entities', entity.id));
+
+      // Log audit trail
+      await AuditService.log({
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        action: 'entity.delete',
+        resourceType: 'entity',
+        resourceId: entity.id,
+        metadata: { entityName: entity.name }
+      });
+
       onUpdate();
       showSuccess('Entity deleted successfully!');
     } catch (error) {

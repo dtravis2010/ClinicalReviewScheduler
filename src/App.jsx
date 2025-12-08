@@ -5,7 +5,7 @@ import LoginPage from './pages/LoginPage';
 import SupervisorDashboard from './pages/SupervisorDashboard';
 import UserView from './pages/UserView';
 import ConfigurationError from './components/ConfigurationError';
-import ErrorBoundary from './components/ErrorBoundary';
+import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import ToastProvider from './components/ToastProvider';
 import './App.css';
@@ -40,14 +40,14 @@ function AppContent() {
 
 function App() {
   return (
-    <ErrorBoundary>
+    <EnhancedErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
           <AppContent />
           <ToastProvider />
         </AuthProvider>
       </ThemeProvider>
-    </ErrorBoundary>
+    </EnhancedErrorBoundary>
   );
 }
 

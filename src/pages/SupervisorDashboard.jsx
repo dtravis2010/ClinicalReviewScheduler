@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { logger } from '../utils/logger';
+import { AuditService } from '../services/auditService';
 import {
   collection,
   addDoc,
@@ -188,6 +189,19 @@ export default function SupervisorDashboard() {
       const created = { id: docRef.id, ...newSchedule };
       setCurrentSchedule(created);
       setSchedules((prev) => [created, ...prev]);
+
+      // Log audit trail
+      await AuditService.log({
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        action: 'schedule.create',
+        resourceType: 'schedule',
+        resourceId: docRef.id,
+        metadata: {
+          scheduleName: newSchedule.name,
+          darCount: newSchedule.darCount
+        }
+      });
     } catch (error) {
       logger.error('Error creating schedule:', error);
       showError('Failed to create new schedule');
@@ -200,6 +214,9 @@ export default function SupervisorDashboard() {
     if (!currentSchedule) return;
 
     try {
+      // Detect changes for audit log
+      const changes = AuditService.detectChanges(currentSchedule, scheduleData);
+
       const scheduleRef = doc(db, 'schedules', currentSchedule.id);
       await updateDoc(scheduleRef, {
         ...scheduleData,
@@ -214,6 +231,20 @@ export default function SupervisorDashboard() {
             : schedule
         )
       );
+
+      // Log audit trail with changes
+      await AuditService.log({
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        action: 'schedule.update',
+        resourceType: 'schedule',
+        resourceId: currentSchedule.id,
+        changes: changes,
+        metadata: {
+          scheduleName: scheduleData.name || currentSchedule.name
+        }
+      });
+
       showSuccess('Schedule saved successfully!');
     } catch (error) {
       logger.error('Error saving schedule:', error);
@@ -246,6 +277,19 @@ export default function SupervisorDashboard() {
             : schedule
         )
       );
+
+      // Log audit trail
+      await AuditService.log({
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        action: 'schedule.publish',
+        resourceType: 'schedule',
+        resourceId: currentSchedule.id,
+        metadata: {
+          scheduleName: currentSchedule.name
+        }
+      });
+
       showSuccess('Schedule published successfully!');
     } catch (error) {
       logger.error('Error publishing schedule:', error);
