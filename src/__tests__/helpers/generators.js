@@ -23,10 +23,10 @@ export const employeeArbitrary = fc.record({
       fc.constant('Garcia')
     ).map(last => `${first} ${last}`)
   ),
-  skills: fc.frequency(
-    { arbitrary: fc.constantFrom(['DAR'], ['CPOE'], ['Trace']), weight: 6 },
-    { arbitrary: fc.subarray(['DAR', 'CPOE', 'Trace'], { minLength: 2, maxLength: 3 }), weight: 3 },
-    { arbitrary: fc.constant(['Float']), weight: 1 }
+  skills: fc.oneof(
+    { weight: 6, arbitrary: fc.constantFrom(['DAR'], ['CPOE'], ['Trace']) },
+    { weight: 3, arbitrary: fc.subarray(['DAR', 'CPOE', 'Trace'], { minLength: 2, maxLength: 3 }) },
+    { weight: 1, arbitrary: fc.constant(['Float']) }
   ),
   email: fc.option(fc.emailAddress(), { nil: '' }),
   notes: fc.option(fc.lorem({ maxCount: 1 }), { nil: '' }),

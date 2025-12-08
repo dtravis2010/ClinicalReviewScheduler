@@ -55,7 +55,7 @@
   - Export all schemas for easy importing
   - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 3. Create validation service
+- [x] 3. Create validation service
 - [x] 3.1 Implement ValidationService class
   - Create src/services/validationService.js
   - Implement validateSchedule method
