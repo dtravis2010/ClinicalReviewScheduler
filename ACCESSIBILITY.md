@@ -147,6 +147,9 @@ Form validation provides accessible feedback:
 
 ### Manual Testing Checklist
 
+See [ACCESSIBILITY_TESTING_CHECKLIST.md](ACCESSIBILITY_TESTING_CHECKLIST.md) for the complete manual testing checklist.
+
+Quick checklist:
 - [ ] Navigate entire application with keyboard only
 - [ ] Test with screen reader (NVDA, JAWS, or VoiceOver)
 - [ ] Verify all interactive elements are reachable
