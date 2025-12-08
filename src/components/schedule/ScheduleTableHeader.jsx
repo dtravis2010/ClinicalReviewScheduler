@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Info } from 'lucide-react';
 import { formatEntityList, getEntityShortCode } from '../../utils/scheduleUtils';
@@ -7,7 +8,7 @@ import { getAvailableEntitiesForDar } from '../../utils/assignmentLogic';
  * ScheduleTableHeader component
  * Displays column headers and DAR entity configuration
  */
-export default function ScheduleTableHeader({
+function ScheduleTableHeader({
   darColumns,
   darEntities,
   entities,
@@ -110,3 +111,5 @@ ScheduleTableHeader.propTypes = {
   onDarInfoClick: PropTypes.func.isRequired,
   onEditingDarClose: PropTypes.func.isRequired
 };
+
+export default memo(ScheduleTableHeader);

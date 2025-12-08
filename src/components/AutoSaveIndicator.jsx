@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Check, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -5,7 +6,7 @@ import { Check, AlertCircle, Loader2 } from 'lucide-react';
  * Auto-save status indicator component
  * Shows saving state, last saved time, or error messages
  */
-export default function AutoSaveIndicator({ isSaving, lastSaved, error }) {
+function AutoSaveIndicator({ isSaving, lastSaved, error }) {
   const formatTime = (date) => {
     if (!date) return '';
     
@@ -54,3 +55,5 @@ AutoSaveIndicator.propTypes = {
   lastSaved: PropTypes.instanceOf(Date),
   error: PropTypes.string
 };
+
+export default memo(AutoSaveIndicator);

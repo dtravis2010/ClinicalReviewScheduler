@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
@@ -5,7 +6,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
  * Workload indicator component
  * Shows workload score with color-coding and tooltip
  */
-export default function WorkloadIndicator({ workload, avgWorkload, employeeName, assignment }) {
+function WorkloadIndicator({ workload, avgWorkload, employeeName, assignment }) {
   // Determine load level
   const ratio = avgWorkload > 0 ? workload / avgWorkload : 1;
   
@@ -118,6 +119,8 @@ WorkloadIndicator.propTypes = {
     specialProjects: PropTypes.string
   })
 };
+
+export default memo(WorkloadIndicator);
 
 WorkloadIndicator.defaultProps = {
   assignment: {}

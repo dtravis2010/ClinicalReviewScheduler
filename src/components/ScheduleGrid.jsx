@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
 import { Save, Calendar, Info } from 'lucide-react';
@@ -78,8 +78,8 @@ export default function ScheduleGrid({
     avgWorkload
   } = useConflictDetection(assignments, employees, darEntities);
 
-  // Generate DAR columns dynamically based on count
-  const darColumns = Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`);
+  // Generate DAR columns dynamically based on count (memoized)
+  const darColumns = useMemo(() => Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`), [darCount]);
 
   // Modern THR-inspired color palette for employee names
   const employeeColors = [
@@ -125,7 +125,7 @@ export default function ScheduleGrid({
     }
   }
 
-  function handleAssignmentChange(employeeId, field, value) {
+  const handleAssignmentChange = useCallback((employeeId, field, value) => {
     if (readOnly) return;
     setAssignments(prev => ({
       ...prev,
@@ -135,9 +135,9 @@ export default function ScheduleGrid({
       }
     }));
     setHasChanges(true);
-  }
+  }, [readOnly, setAssignments]);
 
-  function handleDARToggle(employeeId, darIndex) {
+  const handleDARToggle = useCallback((employeeId, darIndex) => {
     if (readOnly) return;
     if (!Array.isArray(employees)) return;
 
@@ -161,9 +161,9 @@ export default function ScheduleGrid({
       };
     });
     setHasChanges(true);
-  }
+  }, [readOnly, employees, setAssignments]);
 
-  function handleDarEntityToggle(darIndex, entityName) {
+  const handleDarEntityToggle = useCallback((darIndex, entityName) => {
     setDarEntities(prev => {
       const current = prev[darIndex] || [];
       const currentArray = Array.isArray(current) ? current : (current ? [current] : []);
@@ -177,9 +177,9 @@ export default function ScheduleGrid({
       };
     });
     setHasChanges(true);
-  }
+  }, []);
 
-  function handleAssignmentEntityToggle(employeeId, field, entityName) {
+  const handleAssignmentEntityToggle = useCallback((employeeId, field, entityName) => {
     setAssignments(prev => {
       const current = prev[employeeId]?.[field] || [];
       const currentArray = Array.isArray(current) ? current : (current ? [current] : []);
@@ -196,7 +196,7 @@ export default function ScheduleGrid({
       };
     });
     setHasChanges(true);
-  }
+  }, [setAssignments]);
 
   function handleDarCountChange(newCount) {
     // Limit between 3 and 8 DARs
@@ -252,7 +252,7 @@ export default function ScheduleGrid({
     }
   }, [canUndo, canRedo, undo, redo, readOnly]);
 
-  function exportToExcel() {
+  const exportToExcel = useCallback(() => {
     exportScheduleToExcel({
       scheduleName,
       startDate,
@@ -262,15 +262,15 @@ export default function ScheduleGrid({
       darEntities,
       avgWorkload
     });
-  }
+  }, [scheduleName, startDate, employees, assignments, darColumns, darEntities, avgWorkload]);
 
-  function showEmployeeHistory(employee) {
+  const showEmployeeHistory = useCallback((employee) => {
     setSelectedEmployee(employee);
     setShowHistoryModal(true);
-  }
+  }, []);
 
-  // Use utility function for active employees
-  const activeEmployees = getActiveEmployees(employees);
+  // Use utility function for active employees (memoized)
+  const activeEmployees = useMemo(() => getActiveEmployees(employees), [employees]);
 
   return (
     <div className="space-y-0 flex flex-col animate-fade-in-up" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>

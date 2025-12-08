@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { History, Settings, FileDown, Plus, Eye, Undo, Redo } from 'lucide-react';
 import AutoSaveIndicator from '../AutoSaveIndicator';
@@ -6,7 +7,7 @@ import AutoSaveIndicator from '../AutoSaveIndicator';
  * ScheduleHeader component
  * Displays action buttons, status indicators, and auto-save status
  */
-export default function ScheduleHeader({
+function ScheduleHeader({
   readOnly,
   isSaving,
   lastSaved,
@@ -142,3 +143,5 @@ ScheduleHeader.propTypes = {
   onExport: PropTypes.func.isRequired,
   scheduleStatus: PropTypes.oneOf(['draft', 'published'])
 };
+
+export default memo(ScheduleHeader);

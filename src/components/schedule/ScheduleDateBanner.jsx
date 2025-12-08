@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDateRange } from '../../utils/scheduleUtils';
@@ -6,7 +7,7 @@ import { formatDateRange } from '../../utils/scheduleUtils';
  * ScheduleDateBanner component
  * Displays schedule name, dates, and status with inline editing
  */
-export default function ScheduleDateBanner({
+function ScheduleDateBanner({
   scheduleName,
   startDate,
   endDate,
@@ -102,3 +103,5 @@ ScheduleDateBanner.propTypes = {
   onStartDateChange: PropTypes.func,
   onEndDateChange: PropTypes.func
 };
+
+export default memo(ScheduleDateBanner);
