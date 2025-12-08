@@ -7,9 +7,9 @@ import PropTypes from 'prop-types';
  */
 function ScheduleTable({ children, className = '' }) {
   return (
-    <div className={`bg-slate-50 dark:bg-slate-900 flex-1 overflow-auto p-3 ${className}`}>
-      <div className="h-full flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-card overflow-auto border border-slate-100 dark:border-slate-700">
-        <div className="overflow-auto flex-1">
+    <div className={`bg-slate-50 dark:bg-slate-900 p-3 ${className}`}>
+      <div className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-card border border-slate-100 dark:border-slate-700">
+        <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-max" role="grid" aria-label="Schedule assignments">
             {children}
           </table>

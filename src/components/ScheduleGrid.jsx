@@ -351,7 +351,7 @@ export default function ScheduleGrid({
   const activeEmployees = useMemo(() => getActiveEmployees(employees), [employees]);
 
   return (
-    <div className="space-y-0 flex flex-col animate-fade-in-up" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
+    <div className="space-y-0 flex flex-col animate-fade-in-up">
       {/* Header Section */}
       <ScheduleHeader
         readOnly={readOnly}
