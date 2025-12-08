@@ -247,6 +247,7 @@ export default function ScheduleGrid({
       });
 
       const formatField = (val) => Array.isArray(val) ? val.join(', ') : (val || '');
+      row['CPOE'] = assignment.cpoe ? 'CPOE' : '';
       row['New Incoming Items'] = formatField(assignment.newIncoming);
       row['Cross-Training'] = formatField(assignment.crossTraining);
       row['Special Projects/Assignments'] = formatField(assignment.specialProjects);
@@ -295,7 +296,34 @@ export default function ScheduleGrid({
     return parts[0];
   }
 
-  const activeEmployees = employees.filter(e => !e.archived);
+  // Filter out archived employees and deduplicate by name (keep most recent)
+  const activeEmployees = (() => {
+    const filtered = employees.filter(e => !e.archived);
+    const seen = new Map();
+
+    // Group by normalized name (case-insensitive, trimmed)
+    filtered.forEach(emp => {
+      const normalizedName = emp.name?.trim().toLowerCase();
+      if (!normalizedName) return;
+
+      const existing = seen.get(normalizedName);
+      if (!existing) {
+        seen.set(normalizedName, emp);
+      } else {
+        // Keep the one with most recent updatedAt or createdAt
+        const existingDate = existing.updatedAt?.toDate?.() || existing.createdAt?.toDate?.() || new Date(0);
+        const currentDate = emp.updatedAt?.toDate?.() || emp.createdAt?.toDate?.() || new Date(0);
+        if (currentDate > existingDate) {
+          seen.set(normalizedName, emp);
+        }
+      }
+    });
+
+    // Return deduplicated list sorted by name
+    return Array.from(seen.values()).sort((a, b) =>
+      (a.name || '').localeCompare(b.name || '')
+    );
+  })();
 
   return (
     <div className="space-y-0 flex flex-col animate-fade-in-up" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
@@ -312,7 +340,7 @@ export default function ScheduleGrid({
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {onCreateNewSchedule && (
                 <button
-                  className="btn-pill bg-thr-green-500 hover:bg-thr-green-600 text-white flex items-center gap-1.5"
+                  className="btn-pill bg-thr-green-500 hover:bg-thr-green-600 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
                   aria-label="Create new schedule"
                   onClick={onCreateNewSchedule}
                 >
@@ -321,74 +349,40 @@ export default function ScheduleGrid({
                   <span className="sm:hidden">New</span>
                 </button>
               )}
-              <button 
-                onClick={() => setShowHistoryModal(true)} 
-                className="btn-pill bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 flex items-center gap-1.5" 
+              <button
+                onClick={() => setShowHistoryModal(true)}
+                className="btn-pill bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
                 aria-label="Show history"
               >
                 <History className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">History</span>
+                <span className="hidden sm:inline">Show History</span>
               </button>
-              <button 
-                className="btn-pill bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white flex items-center gap-1.5" 
+              <button
+                className="btn-pill bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
                 aria-label="Configuration"
               >
                 <Settings className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Config</span>
               </button>
-              
-              {/* DAR Count Controls */}
-              <div className="flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full px-2 py-1">
-                <span className="text-xs text-slate-600 dark:text-slate-300 mr-1 hidden sm:inline">DARs:</span>
-                <button
-                  onClick={() => handleDarCountChange(darCount - 1)}
-                  disabled={darCount <= 3}
-                  className={`p-1 rounded-full transition-colors ${
-                    darCount <= 3 
-                      ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed' 
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600'
-                  }`}
-                  aria-label="Remove DAR column"
-                >
-                  <Minus className="w-3.5 h-3.5" />
-                </button>
-                <span className="w-5 text-center text-sm font-semibold text-slate-900 dark:text-slate-100">{darCount}</span>
-                <button
-                  onClick={() => handleDarCountChange(darCount + 1)}
-                  disabled={darCount >= 8}
-                  className={`p-1 rounded-full transition-colors ${
-                    darCount >= 8 
-                      ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed' 
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600'
-                  }`}
-                  aria-label="Add DAR column"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              
-              <button 
-                onClick={exportToExcel} 
-                className="btn-pill bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1.5" 
+
+              <button
+                onClick={exportToExcel}
+                className="btn-pill bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
                 aria-label="Export to Excel"
               >
                 <FileDown className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Export</span>
               </button>
-              <button 
-                className="btn-pill bg-thr-green-500 hover:bg-thr-green-600 text-white hidden sm:flex items-center gap-1.5" 
-                aria-label="View published schedules"
-              >
+
+              {/* Status indicators */}
+              <div className={`btn-pill flex items-center gap-1.5 cursor-default ${
+                schedule?.status === 'published'
+                  ? 'bg-thr-green-500 text-white'
+                  : 'bg-orange-500 text-white'
+              }`}>
                 <Eye className="w-4 h-4" aria-hidden="true" />
-                Published
-              </button>
-              <button 
-                className="btn-pill bg-orange-500 hover:bg-orange-600 text-white hidden sm:flex items-center gap-1.5" 
-                aria-label="Unpublish schedule"
-              >
-                <Upload className="w-4 h-4" aria-hidden="true" />
-                Draft
-              </button>
+                <span>{schedule?.status === 'published' ? 'Published' : 'Unpublish (Draft)'}</span>
+              </div>
             </div>
           )}
         </div>
@@ -397,8 +391,8 @@ export default function ScheduleGrid({
       {/* Date Header - THR Blue Gradient Banner with inline date editing */}
       <div className="header-gradient px-4 sm:px-6 py-3 text-white flex-shrink-0">
         <div className="flex items-center justify-between">
-          <button 
-            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50" 
+          <button
+            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50"
             aria-label="Previous schedule"
           >
             <ChevronLeft className="w-5 h-5" aria-hidden="true" />
@@ -406,22 +400,30 @@ export default function ScheduleGrid({
 
           <div className="text-center flex-1 px-2">
             <div className="flex items-center justify-center gap-2 flex-wrap">
+              <Calendar className="w-5 h-5 text-white/80" aria-hidden="true" />
               {!readOnly ? (
-                <input
-                  type="text"
-                  value={scheduleName}
-                  onChange={(e) => {
-                    setScheduleName(e.target.value);
-                    setHasChanges(true);
-                  }}
-                  className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/20 text-white font-semibold text-sm text-center focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 placeholder:text-white/60"
-                  placeholder="Schedule name"
-                />
+                <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
+                  <span className="text-white font-semibold">✓</span>
+                  <input
+                    type="text"
+                    value={scheduleName}
+                    onChange={(e) => {
+                      setScheduleName(e.target.value);
+                      setHasChanges(true);
+                    }}
+                    className="bg-transparent text-white font-semibold text-sm text-center focus:outline-none placeholder:text-white/60 w-auto min-w-[120px]"
+                    placeholder="Schedule name"
+                    style={{ width: `${Math.max(120, (scheduleName?.length || 12) * 8)}px` }}
+                  />
+                  <span className="text-white/90 text-sm">
+                    ({startDate || 'start'} to {endDate || 'end'})
+                  </span>
+                </div>
               ) : (
-                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20">
-                  <div className="w-2 h-2 rounded-full bg-thr-green-400 animate-pulse-subtle" />
-                  <span className="font-semibold text-sm">
-                    {scheduleName || 'Schedule'}
+                <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
+                  <span className="text-white font-semibold">✓</span>
+                  <span className="font-semibold text-sm text-white">
+                    {scheduleName || 'Schedule'} ({formatDateRange() || 'No dates'})
                   </span>
                 </div>
               )}
@@ -429,9 +431,9 @@ export default function ScheduleGrid({
                 {schedule?.status === 'published' ? 'LIVE' : 'DRAFT'}
               </span>
             </div>
-            {!readOnly ? (
-              <div className="flex items-center justify-center gap-2 mt-2">
-                <div className="relative">
+            {!readOnly && (
+              <div className="flex items-center justify-center gap-2 mt-2 text-white/80 text-sm">
+                <div className="flex items-center gap-2">
                   <input
                     type="date"
                     value={startDate}
@@ -442,9 +444,7 @@ export default function ScheduleGrid({
                     className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/30 text-white text-xs font-medium focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-soft transition-all duration-200 cursor-pointer hover:bg-white/25 [color-scheme:dark]"
                     style={{ colorScheme: 'dark' }}
                   />
-                </div>
-                <span className="text-white/80 text-xs font-medium px-1">to</span>
-                <div className="relative">
+                  <span className="text-white/80 text-xs font-medium">to</span>
                   <input
                     type="date"
                     value={endDate}
@@ -457,15 +457,11 @@ export default function ScheduleGrid({
                   />
                 </div>
               </div>
-            ) : (
-              <p className="text-white/80 text-sm mt-1">
-                {formatDateRange() || 'No date range set'}
-              </p>
             )}
           </div>
 
-          <button 
-            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50" 
+          <button
+            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50"
             aria-label="Next schedule"
           >
             <ChevronRight className="w-5 h-5" aria-hidden="true" />
@@ -547,7 +543,8 @@ export default function ScheduleGrid({
                   </div>
                 </th>
               ))}
-              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">New<br/>Incoming</th>
+              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[70px]">CPOE</th>
+              <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">New Incoming<br/>Items</th>
               <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">Cross-<br/>Training</th>
               <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px]">Special<br/>Projects</th>
             </tr>
@@ -616,8 +613,42 @@ export default function ScheduleGrid({
                     );
                   })}
 
+                  {/* CPOE Column - Toggleable like DAR columns */}
+                  <td
+                    className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
+                      !employee.skills?.includes('CPOE')
+                        ? 'bg-slate-100 dark:bg-slate-700/50'
+                        : assignment.cpoe
+                          ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                          : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                    }`}
+                    onClick={() => employee.skills?.includes('CPOE') && !readOnly && handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe)}
+                    onKeyPress={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && employee.skills?.includes('CPOE') && !readOnly) {
+                        e.preventDefault();
+                        handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe);
+                      }
+                    }}
+                    tabIndex={employee.skills?.includes('CPOE') && !readOnly ? 0 : -1}
+                    role="gridcell"
+                    aria-label={`${assignment.cpoe ? 'Remove' : 'Assign'} ${employee.name} to CPOE`}
+                    aria-pressed={assignment.cpoe}
+                  >
+                    {employee.skills?.includes('CPOE') ? (
+                      assignment.cpoe ? (
+                        <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
+                          CPOE
+                        </div>
+                      ) : (
+                        <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                      )
+                    ) : (
+                      <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                    )}
+                  </td>
+
                   {/* New Incoming Items - Clickable cell with popup */}
-                  <td 
+                  <td
                     className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
                       (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0)
                         ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
