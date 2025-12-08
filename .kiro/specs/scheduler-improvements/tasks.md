@@ -458,7 +458,7 @@
   - _Requirements: 9.3_
 
 - [ ] 17. Extract business logic to utilities
-- [ ] 17.1 Create assignment logic utilities
+- [x] 17.1 Create assignment logic utilities
   - Create src/utils/assignmentLogic.js
   - Extract canAssignDAR function
   - Extract getAvailableEntitiesForDar function
@@ -466,7 +466,7 @@
   - Add JSDoc comments
   - _Requirements: 9.2, 9.4_
 
-- [ ] 17.2 Create schedule utilities
+- [x] 17.2 Create schedule utilities
   - Create src/utils/scheduleUtils.js
   - Extract formatEntityList function
   - Extract getEntityShortCode function
@@ -480,20 +480,20 @@
   - Add JSDoc comments
   - _Requirements: 9.2, 9.4_
 
-- [ ] 17.4 Write unit tests for utility functions
+- [x] 17.4 Write unit tests for utility functions
   - Test assignment logic utilities
   - Test schedule utilities
   - Test export utilities
   - _Requirements: 9.2_
 
 - [ ] 18. Add JSDoc comments
-- [ ] 18.1 Add JSDoc to all services
+- [x] 18.1 Add JSDoc to all services
   - Document ValidationService
   - Document AuditService
   - Document TemplateService
   - _Requirements: 9.4_
 
-- [ ] 18.2 Add JSDoc to all utilities
+- [x] 18.2 Add JSDoc to all utilities
   - Document errorHandler
   - Document conflictDetection
   - Document undoRedoManager
@@ -501,7 +501,7 @@
   - Document scheduleUtils
   - _Requirements: 9.4_
 
-- [ ] 18.3 Add JSDoc to all hooks
+- [x] 18.3 Add JSDoc to all hooks
   - Document useAutoSave
   - Document useUndoRedo
   - Document useConflictDetection
