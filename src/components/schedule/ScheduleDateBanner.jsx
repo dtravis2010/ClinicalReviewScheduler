@@ -39,6 +39,7 @@ function ScheduleDateBanner({
                   onChange={(e) => onScheduleNameChange(e.target.value)}
                   className="bg-transparent text-white font-semibold text-sm text-center focus:outline-none placeholder:text-white/60 w-auto min-w-[120px]"
                   placeholder="Schedule name"
+                  aria-label="Schedule name"
                   style={{ width: `${Math.max(120, (scheduleName?.length || 12) * 8)}px` }}
                 />
                 <span className="text-white/90 text-sm">
@@ -67,6 +68,7 @@ function ScheduleDateBanner({
                   value={startDate}
                   onChange={(e) => onStartDateChange(e.target.value)}
                   className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/30 text-white text-xs font-medium focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-soft transition-all duration-200 cursor-pointer hover:bg-white/25 [color-scheme:dark]"
+                  aria-label="Schedule start date"
                   style={{ colorScheme: 'dark' }}
                 />
                 <span className="text-white/80 text-xs font-medium">to</span>
@@ -75,6 +77,7 @@ function ScheduleDateBanner({
                   value={endDate}
                   onChange={(e) => onEndDateChange(e.target.value)}
                   className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/30 text-white text-xs font-medium focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-soft transition-all duration-200 cursor-pointer hover:bg-white/25 [color-scheme:dark]"
+                  aria-label="Schedule end date"
                   style={{ colorScheme: 'dark' }}
                 />
               </div>
