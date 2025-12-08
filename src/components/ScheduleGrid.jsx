@@ -775,19 +775,96 @@ export default function ScheduleGrid({
                     )}
                   </td>
 
-                  {/* Special Projects/Assignments */}
-                  <td className="px-2 py-2 text-center" role="gridcell">
+                  {/* Special Projects/Assignments - Dropdown with predefined options */}
+                  <td
+                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
+                      assignment.specialProjects
+                        ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                        : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                    }`}
+                    onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'specialProjects' })}
+                    onKeyPress={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
+                        e.preventDefault();
+                        setEditingCell({ employeeId: employee.id, field: 'specialProjects' });
+                      }
+                    }}
+                    tabIndex={!readOnly ? 0 : -1}
+                    role="gridcell"
+                    aria-label={`Special projects for ${employee.name}: ${assignment.specialProjects || 'None'}`}
+                  >
                     {readOnly ? (
-                      <span className="text-slate-600 dark:text-slate-400 text-sm">{formatEntityList(assignment.specialProjects)}</span>
+                      <span className="text-slate-600 dark:text-slate-400 text-sm">{assignment.specialProjects || ''}</span>
                     ) : (
-                      <input
-                        type="text"
-                        value={formatEntityList(assignment.specialProjects)}
-                        onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
-                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 text-center bg-white dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
-                        placeholder=""
-                        aria-label={`Special projects for ${employee.name}`}
-                      />
+                      <>
+                        {assignment.specialProjects ? (
+                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight truncate max-w-[90px]" title={assignment.specialProjects}>
+                            {assignment.specialProjects}
+                          </div>
+                        ) : (
+                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                        )}
+                        {editingCell?.employeeId === employee.id && editingCell?.field === 'specialProjects' && (
+                          <div
+                            className="absolute top-full right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 min-w-[200px] border border-slate-200 dark:border-slate-600"
+                            role="dialog"
+                            aria-label="Select special project assignment"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="space-y-1 mb-2">
+                              {['3:01 Email', '3:01 Email Back Up', 'Float'].map(option => (
+                                <button
+                                  key={option}
+                                  onClick={() => {
+                                    handleAssignmentChange(employee.id, 'specialProjects', assignment.specialProjects === option ? '' : option);
+                                    setEditingCell(null);
+                                  }}
+                                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                                    assignment.specialProjects === option
+                                      ? 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-700 dark:text-thr-blue-300 font-medium'
+                                      : 'hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'
+                                  }`}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mt-2">
+                              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                                Special Project (custom):
+                              </label>
+                              <input
+                                type="text"
+                                value={!['3:01 Email', '3:01 Email Back Up', 'Float', ''].includes(assignment.specialProjects) ? assignment.specialProjects : ''}
+                                onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
+                                placeholder="Enter custom project..."
+                                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                            <div className="flex gap-2 mt-3">
+                              {assignment.specialProjects && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAssignmentChange(employee.id, 'specialProjects', '');
+                                    setEditingCell(null);
+                                  }}
+                                  className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                                >
+                                  Clear
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
+                                className="flex-1 px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
+                              >
+                                Done
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </td>
                 </tr>
