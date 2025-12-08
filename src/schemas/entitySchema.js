@@ -7,7 +7,10 @@ import { z } from 'zod';
 export const entitySchema = z.object({
   name: z.string()
     .min(1, 'Entity name is required')
-    .max(200, 'Entity name is too long'),
+    .max(200, 'Entity name is too long')
+    .refine(val => val.trim().length > 0, {
+      message: 'Entity name cannot be only whitespace'
+    }),
   createdAt: z.any().optional(),
   updatedAt: z.any().optional()
 });

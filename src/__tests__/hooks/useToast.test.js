@@ -4,19 +4,17 @@ import toast from 'react-hot-toast';
 import { useToast } from '../../hooks/useToast.jsx';
 
 // Mock react-hot-toast
-vi.mock('react-hot-toast', () => ({
-  default: {
-    success: vi.fn(),
-    error: vi.fn(),
-    loading: vi.fn(() => 'toast-id'),
-    dismiss: vi.fn(),
-    __esModule: true
-  }
-}));
-
-// Add the base toast function
-toast.default = vi.fn();
-Object.assign(toast, toast.default);
+vi.mock('react-hot-toast', () => {
+  const mockToast = vi.fn();
+  mockToast.success = vi.fn();
+  mockToast.error = vi.fn();
+  mockToast.loading = vi.fn(() => 'toast-id');
+  mockToast.dismiss = vi.fn();
+  
+  return {
+    default: mockToast
+  };
+});
 
 describe('useToast', () => {
   beforeEach(() => {

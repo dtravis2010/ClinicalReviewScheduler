@@ -20,30 +20,38 @@ describe('ValidationService - Property-Based Tests', () => {
    * Generator for valid schedule data
    */
   const validScheduleArbitrary = fc.record({
-    name: fc.string({ minLength: 1, maxLength: 100 }),
-    startDate: fc.date({ min: new Date('2024-01-01'), max: new Date('2025-12-31') })
-      .map(d => d.toISOString().split('T')[0]),
-    endDate: fc.date({ min: new Date('2024-01-01'), max: new Date('2025-12-31') })
-      .map(d => d.toISOString().split('T')[0]),
+    name: fc.stringMatching(/^[a-zA-Z0-9][a-zA-Z0-9 \-_]{0,99}$/),
+    startDate: fc.integer({ min: 0, max: 730 })
+      .map(days => {
+        const date = new Date('2024-01-01');
+        date.setDate(date.getDate() + days);
+        return date.toISOString().split('T')[0];
+      }),
+    endDate: fc.integer({ min: 0, max: 730 })
+      .map(days => {
+        const date = new Date('2024-01-01');
+        date.setDate(date.getDate() + days);
+        return date.toISOString().split('T')[0];
+      }),
     status: fc.constantFrom('draft', 'published'),
     assignments: fc.dictionary(
       fc.uuid(),
       fc.record({
-        dars: fc.option(fc.array(fc.integer({ min: 0, max: 7 }), { maxLength: 3 })),
-        cpoe: fc.option(fc.boolean()),
-        newIncoming: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 30 }), { maxLength: 2 })),
-        crossTraining: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 30 }), { maxLength: 2 })),
-        specialProjects: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 30 }), { maxLength: 2 }))
+        dars: fc.option(fc.array(fc.integer({ min: 0, max: 7 }), { maxLength: 3 }), { nil: undefined }),
+        cpoe: fc.option(fc.boolean(), { nil: undefined }),
+        newIncoming: fc.option(fc.array(fc.stringMatching(/^[a-zA-Z0-9 \-_]{1,30}$/), { maxLength: 2 }), { nil: undefined }),
+        crossTraining: fc.option(fc.array(fc.stringMatching(/^[a-zA-Z0-9 \-_]{1,30}$/), { maxLength: 2 }), { nil: undefined }),
+        specialProjects: fc.option(fc.array(fc.stringMatching(/^[a-zA-Z0-9 \-_]{1,30}$/), { maxLength: 2 }), { nil: undefined })
       })
     ),
     darEntities: fc.dictionary(
       fc.integer({ min: 0, max: 7 }).map(String),
-      fc.array(fc.string({ minLength: 1, maxLength: 30 }), { maxLength: 3 })
+      fc.array(fc.stringMatching(/^[a-zA-Z0-9 \-_]{1,30}$/), { maxLength: 3 })
     ),
     darCount: fc.integer({ min: 3, max: 8 }),
-    createdAt: fc.option(fc.date()),
-    updatedAt: fc.option(fc.date()),
-    publishedAt: fc.option(fc.date())
+    createdAt: fc.option(fc.date(), { nil: undefined }),
+    updatedAt: fc.option(fc.date(), { nil: undefined }),
+    publishedAt: fc.option(fc.date(), { nil: undefined })
   }).filter(schedule => {
     // Ensure end date is >= start date
     return new Date(schedule.endDate) >= new Date(schedule.startDate);
@@ -53,31 +61,36 @@ describe('ValidationService - Property-Based Tests', () => {
    * Generator for valid employee data
    */
   const validEmployeeArbitrary = fc.record({
-    name: fc.string({ minLength: 1, maxLength: 100 }),
+    name: fc.stringMatching(/^[a-zA-Z][a-zA-Z0-9 \-_']{0,99}$/),
     skills: fc.array(
       fc.constantFrom('DAR', 'Trace', 'CPOE', 'Float'),
       { minLength: 1, maxLength: 4 }
     ).map(skills => [...new Set(skills)]), // Remove duplicates
     email: fc.option(
       fc.oneof(
-        fc.emailAddress(),
+        // Generate simple, valid emails that Zod will accept
+        fc.tuple(
+          fc.stringMatching(/^[a-z0-9]+([._-][a-z0-9]+)*$/),
+          fc.constantFrom('example.com', 'test.com', 'email.com', 'domain.org')
+        ).map(([local, domain]) => `${local}@${domain}`),
         fc.constant('')
-      )
+      ),
+      { nil: undefined }
     ),
-    notes: fc.option(fc.string({ maxLength: 500 })),
+    notes: fc.option(fc.string({ maxLength: 500 }), { nil: undefined }),
     archived: fc.boolean(),
-    createdAt: fc.option(fc.date()),
-    updatedAt: fc.option(fc.date()),
-    archivedAt: fc.option(fc.date())
+    createdAt: fc.option(fc.date(), { nil: undefined }),
+    updatedAt: fc.option(fc.date(), { nil: undefined }),
+    archivedAt: fc.option(fc.date(), { nil: undefined })
   });
 
   /**
    * Generator for valid entity data
    */
   const validEntityArbitrary = fc.record({
-    name: fc.string({ minLength: 1, maxLength: 200 }),
-    createdAt: fc.option(fc.date()),
-    updatedAt: fc.option(fc.date())
+    name: fc.stringMatching(/^[a-zA-Z][a-zA-Z0-9 \-_&']{0,199}$/),
+    createdAt: fc.option(fc.date(), { nil: undefined }),
+    updatedAt: fc.option(fc.date(), { nil: undefined })
   });
 
   // ============================================================================

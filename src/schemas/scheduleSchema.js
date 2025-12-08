@@ -16,7 +16,9 @@ export const assignmentSchema = z.object({
  * Validates all schedule data including assignments and DAR entities
  */
 export const scheduleSchema = z.object({
-  name: z.string().min(1, 'Schedule name is required'),
+  name: z.string().min(1, 'Schedule name is required').refine(val => val.trim().length > 0, {
+    message: 'Schedule name cannot be only whitespace'
+  }),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)'),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)'),
   status: z.enum(['draft', 'published'], {

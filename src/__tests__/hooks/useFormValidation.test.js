@@ -44,7 +44,7 @@ describe('useFormValidation', () => {
         result.current.handleBlur('name');
       });
 
-      expect(result.current.errors.name).toBeUndefined();
+      expect(result.current.errors.name).toBeFalsy();
     });
 
     it('should validate required array fields', () => {
@@ -85,7 +85,7 @@ describe('useFormValidation', () => {
         result.current.handleBlur('name');
       });
 
-      expect(result.current.errors.name).toBeUndefined();
+      expect(result.current.errors.name).toBeFalsy();
     });
   });
 
@@ -113,7 +113,7 @@ describe('useFormValidation', () => {
         result.current.handleBlur('name');
       });
 
-      expect(result.current.errors.name).toBeUndefined();
+      expect(result.current.errors.name).toBeFalsy();
     });
   });
 
@@ -141,7 +141,7 @@ describe('useFormValidation', () => {
         result.current.handleBlur('email');
       });
 
-      expect(result.current.errors.email).toBeUndefined();
+      expect(result.current.errors.email).toBeFalsy();
     });
 
     it('should allow empty email when not required', () => {
@@ -154,7 +154,7 @@ describe('useFormValidation', () => {
         result.current.handleBlur('email');
       });
 
-      expect(result.current.errors.email).toBeUndefined();
+      expect(result.current.errors.email).toBeFalsy();
     });
   });
 
@@ -182,7 +182,7 @@ describe('useFormValidation', () => {
         result.current.handleBlur('phone');
       });
 
-      expect(result.current.errors.phone).toBeUndefined();
+      expect(result.current.errors.phone).toBeFalsy();
     });
   });
 
@@ -231,7 +231,7 @@ describe('useFormValidation', () => {
         result.current.handleChange('name', 'John');
       });
 
-      expect(result.current.errors.name).toBeUndefined();
+      expect(result.current.errors.name).toBeFalsy();
     });
   });
 

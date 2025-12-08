@@ -10,7 +10,9 @@ const VALID_SKILLS = ['DAR', 'Trace', 'CPOE', 'Float'];
  * Validates employee data including skills and optional fields
  */
 export const employeeSchema = z.object({
-  name: z.string().min(1, 'Employee name is required').max(100, 'Name is too long'),
+  name: z.string().min(1, 'Employee name is required').max(100, 'Name is too long').refine(val => val.trim().length > 0, {
+    message: 'Employee name cannot be only whitespace'
+  }),
   skills: z.array(
     z.enum(['DAR', 'Trace', 'CPOE', 'Float'], {
       errorMap: () => ({ message: `Skill must be one of: ${VALID_SKILLS.join(', ')}` })

@@ -20,11 +20,11 @@ export class ValidationService {
         return { success: true, data: result.data };
       }
       
-      const errors = result.error.errors.map(err => ({
+      const errors = result.error?.issues?.map(err => ({
         field: err.path.join('.'),
         message: err.message,
         code: err.code
-      }));
+      })) || [];
       
       logger.warn('Schedule validation failed', { errors });
       
@@ -59,11 +59,11 @@ export class ValidationService {
         return { success: true, data: result.data };
       }
       
-      const errors = result.error.errors.map(err => ({
+      const errors = result.error?.issues?.map(err => ({
         field: err.path.join('.'),
         message: err.message,
         code: err.code
-      }));
+      })) || [];
       
       logger.warn('Employee validation failed', { errors });
       
@@ -98,11 +98,11 @@ export class ValidationService {
         return { success: true, data: result.data };
       }
       
-      const errors = result.error.errors.map(err => ({
+      const errors = result.error?.issues?.map(err => ({
         field: err.path.join('.'),
         message: err.message,
         code: err.code
-      }));
+      })) || [];
       
       logger.warn('Entity validation failed', { errors });
       
@@ -137,7 +137,7 @@ export class ValidationService {
         return { success: true, data: result.data };
       }
       
-      const errors = result.error.errors.map(err => ({
+      const errors = result.error.issues.map(err => ({
         field: err.path.join('.'),
         message: err.message,
         code: err.code

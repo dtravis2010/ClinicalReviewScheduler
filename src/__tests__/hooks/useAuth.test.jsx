@@ -35,13 +35,14 @@ describe('useAuth', () => {
 
       await waitFor(() => {
         expect(result.current).toBeDefined();
+        expect(result.current).not.toBeUndefined();
       });
 
-      expect(result.current).toHaveProperty('currentUser');
-      expect(result.current).toHaveProperty('loginAsSupervisor');
-      expect(result.current).toHaveProperty('logout');
-      expect(result.current).toHaveProperty('isSupervisor');
-      expect(result.current).toHaveProperty('isFirebaseConfigured');
+      expect(result.current.currentUser).toBeDefined();
+      expect(result.current.loginAsSupervisor).toBeDefined();
+      expect(result.current.logout).toBeDefined();
+      expect(result.current.isSupervisor).toBeDefined();
+      expect(result.current.isFirebaseConfigured).toBeDefined();
     });
 
     it('should initialize with null currentUser', async () => {
