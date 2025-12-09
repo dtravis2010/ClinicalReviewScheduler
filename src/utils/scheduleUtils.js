@@ -85,6 +85,40 @@ export function getEntityShortCode(entityList) {
 }
 
 /**
+ * Check if specialProjects has any value
+ * Handles object format { threePEmail, threePBackupEmail, float, other },
+ * array format, and string format
+ * @param {Object|Array|string} specialProjects - Special projects data
+ * @returns {boolean} True if there are any special projects assigned
+ */
+export function hasSpecialProjects(specialProjects) {
+  if (!specialProjects) return false;
+  
+  // Handle object format (new format)
+  if (typeof specialProjects === 'object' && !Array.isArray(specialProjects)) {
+    // Check if any boolean field is true or if 'other' has a value
+    return !!(
+      specialProjects.threePEmail || 
+      specialProjects.threePBackupEmail || 
+      specialProjects.float || 
+      (specialProjects.other && typeof specialProjects.other === 'string' && specialProjects.other.trim())
+    );
+  }
+  
+  // Handle array format (backward compatibility)
+  if (Array.isArray(specialProjects)) {
+    return specialProjects.length > 0;
+  }
+  
+  // Handle string format (backward compatibility)
+  if (typeof specialProjects === 'string') {
+    return specialProjects.trim().length > 0;
+  }
+  
+  return false;
+}
+
+/**
  * Filter and deduplicate employees
  * Removes archived employees and keeps most recent version of duplicates
  * @param {Array} employees - List of employees

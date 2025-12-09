@@ -3,6 +3,8 @@
  * Detects skill mismatches, workload imbalances, and assignment conflicts
  */
 
+import { hasSpecialProjects } from './scheduleUtils.js';
+
 /**
  * Detect all conflicts in a schedule
  * @param {Object} assignments - Employee assignments { employeeId: { dars: [], cpoe: bool, ... } }
@@ -146,7 +148,7 @@ export function calculateWorkload(assignment, darEntities = {}) {
   }
 
   // Special Projects: 1 point if assigned
-  if (assignment.specialProjects && assignment.specialProjects.trim()) {
+  if (hasSpecialProjects(assignment.specialProjects)) {
     workload += 1;
   }
 
