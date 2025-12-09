@@ -628,16 +628,17 @@ export default function ScheduleGrid({
                           <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
                         )}
                         {editingCell?.employeeId === employee.id && editingCell?.field === 'newIncoming' && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for New Incoming">
-                            <div className="space-y-1">
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for New Incoming">
+                            <div className="space-y-1 mb-3">
                               {getAvailableEntitiesForAssignment(employee.id, 'newIncoming', assignments, darEntities, entities).map(entity => {
                                 const currentList = assignment.newIncoming || [];
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                                 const isSelected = currentArray.includes(entity.name);
                                 const history = entityHistory[entity.name];
+                                const abbrev = getEntityShortCode([entity.name]);
 
                                 return (
-                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" title={entity.name}>
                                     <input
                                       type="checkbox"
                                       checked={isSelected}
@@ -646,12 +647,9 @@ export default function ScheduleGrid({
                                       aria-label={`Assign ${entity.name} to New Incoming`}
                                     />
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                          {getEntityShortCode([entity.name])}
-                                        </span>
-                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{entity.name}</span>
-                                      </div>
+                                      <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
+                                        {abbrev}
+                                      </span>
                                       {history?.employeeName && (
                                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                           Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
@@ -662,9 +660,20 @@ export default function ScheduleGrid({
                                 );
                               })}
                             </div>
+                            {/* Entity Legend */}
+                            <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mb-2">
+                              <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Legend:</div>
+                              <div className="space-y-0.5 max-h-32 overflow-y-auto">
+                                {entities.map(entity => (
+                                  <div key={entity.id} className="text-xs text-slate-600 dark:text-slate-400">
+                                    <span className="font-bold text-thr-blue-600 dark:text-thr-blue-400">{getEntityShortCode([entity.name])}</span> = {entity.name}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
-                              className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
+                              className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
                               aria-label="Close entity selection"
                             >
                               Done
@@ -711,16 +720,17 @@ export default function ScheduleGrid({
                           <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
                         )}
                         {editingCell?.employeeId === employee.id && editingCell?.field === 'crossTraining' && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for Cross-Training">
-                            <div className="space-y-1">
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for Cross-Training">
+                            <div className="space-y-1 mb-3">
                               {getAvailableEntitiesForAssignment(employee.id, 'crossTraining', assignments, darEntities, entities).map(entity => {
                                 const currentList = assignment.crossTraining || [];
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                                 const isSelected = currentArray.includes(entity.name);
                                 const history = entityHistory[entity.name];
+                                const abbrev = getEntityShortCode([entity.name]);
 
                                 return (
-                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" title={entity.name}>
                                     <input
                                       type="checkbox"
                                       checked={isSelected}
@@ -729,12 +739,9 @@ export default function ScheduleGrid({
                                       aria-label={`Assign ${entity.name} to Cross-Training`}
                                     />
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                          {getEntityShortCode([entity.name])}
-                                        </span>
-                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{entity.name}</span>
-                                      </div>
+                                      <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
+                                        {abbrev}
+                                      </span>
                                       {history?.employeeName && (
                                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                           Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
@@ -745,9 +752,20 @@ export default function ScheduleGrid({
                                 );
                               })}
                             </div>
+                            {/* Entity Legend */}
+                            <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mb-2">
+                              <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Legend:</div>
+                              <div className="space-y-0.5 max-h-32 overflow-y-auto">
+                                {entities.map(entity => (
+                                  <div key={entity.id} className="text-xs text-slate-600 dark:text-slate-400">
+                                    <span className="font-bold text-thr-blue-600 dark:text-thr-blue-400">{getEntityShortCode([entity.name])}</span> = {entity.name}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
-                              className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
+                              className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
                               aria-label="Close entity selection"
                             >
                               Done
