@@ -397,7 +397,7 @@ export default function ScheduleGrid({
 
   // Calculate entity history for showing who last had each entity (memoized)
   const entityHistory = useMemo(() => 
-    getLastEntityAssignments(schedules, employees, entities),
+    getLastEntityAssignments(schedules || [], employees || [], entities || []),
     [schedules, employees, entities]
   );
 

@@ -11,23 +11,30 @@
  * @param {Array} entities - Array of entity objects
  * @returns {Object} Map of entity names to last assignment info
  */
-export function getLastEntityAssignments(schedules, employees, entities) {
+export function getLastEntityAssignments(schedules = [], employees = [], entities = []) {
   const entityLastAssigned = {};
+
+  // Safety check for inputs
+  if (!Array.isArray(schedules) || !Array.isArray(employees) || !Array.isArray(entities)) {
+    return entityLastAssigned;
+  }
 
   // Initialize all entities
   entities.forEach(entity => {
-    entityLastAssigned[entity.name] = {
-      employeeName: null,
-      employeeId: null,
-      scheduleName: null,
-      startDate: null,
-      assignmentType: null // 'newIncoming', 'crossTraining', or 'entity'
-    };
+    if (entity && entity.name) {
+      entityLastAssigned[entity.name] = {
+        employeeName: null,
+        employeeId: null,
+        scheduleName: null,
+        startDate: null,
+        assignmentType: null // 'newIncoming', 'crossTraining', or 'entity'
+      };
+    }
   });
 
   // Sort schedules by start date (most recent first)
   const sortedSchedules = [...schedules]
-    .filter(s => s.status === 'published' && s.startDate)
+    .filter(s => s && s.status === 'published' && s.startDate)
     .sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 
   // Find the most recent assignment for each entity
@@ -91,15 +98,22 @@ export function getLastEntityAssignments(schedules, employees, entities) {
  * @param {Array} entities - Array of entity objects
  * @returns {Object} Map of entity names to assignment frequency data
  */
-export function getEntityAssignmentFrequency(schedules, employees, entities) {
+export function getEntityAssignmentFrequency(schedules = [], employees = [], entities = []) {
   const entityFrequency = {};
+
+  // Safety check for inputs
+  if (!Array.isArray(schedules) || !Array.isArray(employees) || !Array.isArray(entities)) {
+    return entityFrequency;
+  }
 
   // Initialize all entities
   entities.forEach(entity => {
-    entityFrequency[entity.name] = {
-      totalAssignments: 0,
-      employeeAssignments: {} // Map of employeeId to count
-    };
+    if (entity && entity.name) {
+      entityFrequency[entity.name] = {
+        totalAssignments: 0,
+        employeeAssignments: {} // Map of employeeId to count
+      };
+    }
   });
 
   // Count assignments across all published schedules
