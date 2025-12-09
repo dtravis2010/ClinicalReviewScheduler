@@ -320,6 +320,45 @@ describe('Conflict Detection', () => {
       expect(workload).toBe(13);
     });
 
+    it('should calculate workload with specialProjects object format', () => {
+      const assignment = {
+        dars: [0, 1], // 6 points
+        cpoe: true, // 2 points
+        newIncoming: ['Entity1'], // 2 points
+        crossTraining: ['Entity2', 'Entity3'], // 2 points
+        specialProjects: { threePEmail: true, threePBackupEmail: false, float: false, other: '' } // 1 point
+      };
+
+      const workload = calculateWorkload(assignment, {});
+      expect(workload).toBe(13);
+    });
+
+    it('should calculate workload with empty specialProjects object', () => {
+      const assignment = {
+        dars: [0, 1], // 6 points
+        cpoe: true, // 2 points
+        newIncoming: ['Entity1'], // 2 points
+        crossTraining: ['Entity2', 'Entity3'], // 2 points
+        specialProjects: { threePEmail: false, threePBackupEmail: false, float: false, other: '' } // 0 points
+      };
+
+      const workload = calculateWorkload(assignment, {});
+      expect(workload).toBe(12);
+    });
+
+    it('should calculate workload with specialProjects array format', () => {
+      const assignment = {
+        dars: [0, 1], // 6 points
+        cpoe: true, // 2 points
+        newIncoming: ['Entity1'], // 2 points
+        crossTraining: ['Entity2', 'Entity3'], // 2 points
+        specialProjects: ['Project1', 'Project2'] // 1 point (regardless of count)
+      };
+
+      const workload = calculateWorkload(assignment, {});
+      expect(workload).toBe(13);
+    });
+
     it('should handle empty assignments', () => {
       const result = detectConflicts({}, [], {});
       expect(result.conflicts).toHaveLength(0);
