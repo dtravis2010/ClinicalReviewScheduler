@@ -101,7 +101,7 @@ export function hasSpecialProjects(specialProjects) {
       specialProjects.threePEmail || 
       specialProjects.threePBackupEmail || 
       specialProjects.float || 
-      (specialProjects.other && specialProjects.other.trim())
+      (specialProjects.other && typeof specialProjects.other === 'string' && specialProjects.other.trim())
     );
   }
   

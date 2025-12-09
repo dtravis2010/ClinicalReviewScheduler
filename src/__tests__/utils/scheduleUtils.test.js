@@ -196,5 +196,13 @@ describe('Schedule Utilities', () => {
     it('should return true for object with multiple fields set', () => {
       expect(hasSpecialProjects({ threePEmail: true, threePBackupEmail: true, float: false, other: 'Test' })).toBe(true);
     });
+
+    it('should return false for object with other field containing non-string value', () => {
+      expect(hasSpecialProjects({ threePEmail: false, threePBackupEmail: false, float: false, other: 123 })).toBe(false);
+    });
+
+    it('should return false for object with other field containing null', () => {
+      expect(hasSpecialProjects({ threePEmail: false, threePBackupEmail: false, float: false, other: null })).toBe(false);
+    });
   });
 });
