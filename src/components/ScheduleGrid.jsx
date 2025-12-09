@@ -20,6 +20,7 @@ import { calculateWorkload } from '../utils/conflictDetection';
 import { exportToExcel as exportScheduleToExcel } from '../utils/exportUtils';
 import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees } from '../utils/scheduleUtils';
 import { canAssignDAR, getAvailableEntitiesForDar, getAvailableEntitiesForAssignment } from '../utils/assignmentLogic';
+import { getLastEntityAssignments, formatHistoryDate } from '../utils/entityHistory';
 
 export default function ScheduleGrid({
   schedule,
@@ -394,6 +395,12 @@ export default function ScheduleGrid({
   // Use utility function for active employees (memoized)
   const activeEmployees = useMemo(() => getActiveEmployees(employees), [employees]);
 
+  // Calculate entity history for showing who last had each entity (memoized)
+  const entityHistory = useMemo(() => 
+    getLastEntityAssignments(schedules, employees, entities),
+    [schedules, employees, entities]
+  );
+
   return (
     <div className="space-y-0 flex flex-col animate-fade-in-up">
       {/* Header Section */}
@@ -627,17 +634,25 @@ export default function ScheduleGrid({
                                 const currentList = assignment.newIncoming || [];
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                                 const isSelected = currentArray.includes(entity.name);
+                                const history = entityHistory[entity.name];
 
                                 return (
-                                  <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
                                     <input
                                       type="checkbox"
                                       checked={isSelected}
                                       onChange={() => handleAssignmentEntityToggle(employee.id, 'newIncoming', entity.name)}
-                                      className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                                      className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
                                       aria-label={`Assign ${entity.name} to New Incoming`}
                                     />
-                                    <span className="text-sm">{entity.name}</span>
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-sm font-medium">{entity.name}</span>
+                                      {history?.employeeName && (
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                          Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
+                                        </div>
+                                      )}
+                                    </div>
                                   </label>
                                 );
                               })}
@@ -697,17 +712,25 @@ export default function ScheduleGrid({
                                 const currentList = assignment.crossTraining || [];
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                                 const isSelected = currentArray.includes(entity.name);
+                                const history = entityHistory[entity.name];
 
                                 return (
-                                  <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
                                     <input
                                       type="checkbox"
                                       checked={isSelected}
                                       onChange={() => handleAssignmentEntityToggle(employee.id, 'crossTraining', entity.name)}
-                                      className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                                      className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
                                       aria-label={`Assign ${entity.name} to Cross-Training`}
                                     />
-                                    <span className="text-sm">{entity.name}</span>
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-sm font-medium">{entity.name}</span>
+                                      {history?.employeeName && (
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                          Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
+                                        </div>
+                                      )}
+                                    </div>
                                   </label>
                                 );
                               })}
