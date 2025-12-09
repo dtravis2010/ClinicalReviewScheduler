@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees } from '../../utils/scheduleUtils';
+import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees, hasSpecialProjects } from '../../utils/scheduleUtils';
 
 describe('Schedule Utilities', () => {
   describe('formatEntityList', () => {
@@ -137,6 +137,64 @@ describe('Schedule Utilities', () => {
       const result = getActiveEmployees(employees);
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('Alice');
+    });
+  });
+
+  describe('hasSpecialProjects', () => {
+    it('should return true for object with threePEmail set to true', () => {
+      expect(hasSpecialProjects({ threePEmail: true, threePBackupEmail: false, float: false, other: '' })).toBe(true);
+    });
+
+    it('should return true for object with threePBackupEmail set to true', () => {
+      expect(hasSpecialProjects({ threePEmail: false, threePBackupEmail: true, float: false, other: '' })).toBe(true);
+    });
+
+    it('should return true for object with float set to true', () => {
+      expect(hasSpecialProjects({ threePEmail: false, threePBackupEmail: false, float: true, other: '' })).toBe(true);
+    });
+
+    it('should return true for object with other field containing text', () => {
+      expect(hasSpecialProjects({ threePEmail: false, threePBackupEmail: false, float: false, other: 'Custom project' })).toBe(true);
+    });
+
+    it('should return false for object with all fields false or empty', () => {
+      expect(hasSpecialProjects({ threePEmail: false, threePBackupEmail: false, float: false, other: '' })).toBe(false);
+    });
+
+    it('should return false for object with other field containing only whitespace', () => {
+      expect(hasSpecialProjects({ threePEmail: false, threePBackupEmail: false, float: false, other: '   ' })).toBe(false);
+    });
+
+    it('should return true for array with items', () => {
+      expect(hasSpecialProjects(['Project1', 'Project2'])).toBe(true);
+    });
+
+    it('should return false for empty array', () => {
+      expect(hasSpecialProjects([])).toBe(false);
+    });
+
+    it('should return true for non-empty string', () => {
+      expect(hasSpecialProjects('Special Project')).toBe(true);
+    });
+
+    it('should return false for empty string', () => {
+      expect(hasSpecialProjects('')).toBe(false);
+    });
+
+    it('should return false for string with only whitespace', () => {
+      expect(hasSpecialProjects('   ')).toBe(false);
+    });
+
+    it('should return false for null', () => {
+      expect(hasSpecialProjects(null)).toBe(false);
+    });
+
+    it('should return false for undefined', () => {
+      expect(hasSpecialProjects(undefined)).toBe(false);
+    });
+
+    it('should return true for object with multiple fields set', () => {
+      expect(hasSpecialProjects({ threePEmail: true, threePBackupEmail: true, float: false, other: 'Test' })).toBe(true);
     });
   });
 });

@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { hasSpecialProjects } from '../../utils/scheduleUtils.js';
 
 /**
  * Workload indicator component
@@ -46,7 +47,7 @@ function WorkloadIndicator({ workload, avgWorkload, employeeName, assignment }) 
       parts.push(`${count} Cross-Training (${count} pt${count !== 1 ? 's' : ''})`);
     }
     
-    if (assignment.specialProjects && assignment.specialProjects.trim()) {
+    if (hasSpecialProjects(assignment.specialProjects)) {
       parts.push('Special Project (1 pt)');
     }
 
