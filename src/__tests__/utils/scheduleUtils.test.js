@@ -43,16 +43,24 @@ describe('Schedule Utilities', () => {
   });
 
   describe('getEntityShortCode', () => {
-    it('should extract first part before / for single entity', () => {
-      expect(getEntityShortCode('Entity1/Details')).toBe('Entity1');
+    it('should extract abbreviation from entity name with capitals', () => {
+      expect(getEntityShortCode('Texas Health Allen')).toBe('THA');
     });
 
-    it('should extract first part for each entity in array', () => {
-      expect(getEntityShortCode(['Entity1/Details', 'Entity2/Info'])).toBe('Entity1/Entity2');
+    it('should extract abbreviation for each entity in array', () => {
+      expect(getEntityShortCode(['Texas Health Allen', 'Medical City Dallas'])).toBe('THA/MCD');
     });
 
-    it('should return entity as-is if no /', () => {
-      expect(getEntityShortCode('Entity1')).toBe('Entity1');
+    it('should handle entity names with / separator', () => {
+      expect(getEntityShortCode('Texas Health Allen/Details')).toBe('THA');
+    });
+    
+    it('should handle single word entities', () => {
+      expect(getEntityShortCode('Entity')).toBe('E');
+    });
+    
+    it('should handle lowercase entity names', () => {
+      expect(getEntityShortCode('texas health allen')).toBe('THA');
     });
 
     it('should return empty string for null', () => {

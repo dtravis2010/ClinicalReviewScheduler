@@ -45,22 +45,38 @@ export function formatDateRange(startDate, endDate, monthYearOnly = false) {
 
 /**
  * Get short entity code for display in cells
- * Extracts first part before '/' for compact display
+ * Extracts abbreviation from entity name (e.g., "Texas Health Allen" -> "THA")
  * @param {Array|string} entityList - Entity or list of entities
  * @returns {string} Short entity code
  */
 export function getEntityShortCode(entityList) {
   if (!entityList) return '';
   
+  // Helper function to extract abbreviation from a single entity name
+  const getAbbreviation = (entityName) => {
+    if (!entityName) return '';
+    
+    // Split by '/' first (in case entity name contains it)
+    const parts = entityName.split('/');
+    const mainPart = parts[0].trim();
+    
+    // Extract capital letters to form abbreviation
+    // e.g., "Texas Health Allen" -> "THA"
+    const capitals = mainPart.match(/[A-Z]/g);
+    if (capitals && capitals.length > 0) {
+      return capitals.join('');
+    }
+    
+    // Fallback: take first letter of each word
+    const words = mainPart.split(/\s+/);
+    return words.map(word => word.charAt(0).toUpperCase()).join('');
+  };
+  
   if (Array.isArray(entityList)) {
-    return entityList.map(e => {
-      const parts = e.split('/');
-      return parts[0];
-    }).join('/');
+    return entityList.map(e => getAbbreviation(e)).join('/');
   }
   
-  const parts = entityList.split('/');
-  return parts[0];
+  return getAbbreviation(entityList);
 }
 
 /**
