@@ -646,7 +646,12 @@ export default function ScheduleGrid({
                                       aria-label={`Assign ${entity.name} to New Incoming`}
                                     />
                                     <div className="flex-1 min-w-0">
-                                      <span className="text-sm font-medium">{entity.name}</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
+                                          {getEntityShortCode([entity.name])}
+                                        </span>
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{entity.name}</span>
+                                      </div>
                                       {history?.employeeName && (
                                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                           Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
@@ -724,7 +729,12 @@ export default function ScheduleGrid({
                                       aria-label={`Assign ${entity.name} to Cross-Training`}
                                     />
                                     <div className="flex-1 min-w-0">
-                                      <span className="text-sm font-medium">{entity.name}</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
+                                          {getEntityShortCode([entity.name])}
+                                        </span>
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{entity.name}</span>
+                                      </div>
                                       {history?.employeeName && (
                                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                           Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
