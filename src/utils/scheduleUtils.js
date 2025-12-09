@@ -52,9 +52,14 @@ export function formatDateRange(startDate, endDate, monthYearOnly = false) {
 export function getEntityShortCode(entityList) {
   if (!entityList) return '';
   
+  // Skip if it's an object (like new specialProjects format)
+  if (typeof entityList === 'object' && !Array.isArray(entityList)) {
+    return '';
+  }
+  
   // Helper function to extract abbreviation from a single entity name
   const getAbbreviation = (entityName) => {
-    if (!entityName) return '';
+    if (!entityName || typeof entityName !== 'string') return '';
     
     // Split by '/' first (in case entity name contains it)
     const parts = entityName.split('/');
