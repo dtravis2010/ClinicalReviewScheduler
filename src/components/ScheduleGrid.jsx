@@ -86,6 +86,9 @@ export default function ScheduleGrid({
   // Generate DAR columns dynamically based on count (memoized)
   const darColumns = useMemo(() => Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`), [darCount]);
 
+  // Use utility function for active employees (memoized) - defined early for use in callbacks
+  const activeEmployees = useMemo(() => getActiveEmployees(employees), [employees]);
+
   // Modern THR-inspired color palette for employee names
   const employeeColors = [
     'text-thr-blue-600 dark:text-thr-blue-400', 
@@ -391,9 +394,6 @@ export default function ScheduleGrid({
     setSelectedEmployee(employee);
     setShowHistoryModal(true);
   }, []);
-
-  // Use utility function for active employees (memoized)
-  const activeEmployees = useMemo(() => getActiveEmployees(employees), [employees]);
 
   // Calculate entity history for showing who last had each entity (memoized)
   const entityHistory = useMemo(() => 
