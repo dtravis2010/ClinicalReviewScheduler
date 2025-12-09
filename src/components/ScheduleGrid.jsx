@@ -202,6 +202,50 @@ export default function ScheduleGrid({
     setHasChanges(true);
   }, [setAssignments]);
 
+  const handleSpecialProjectToggle = useCallback((employeeId, field) => {
+    setAssignments(prev => {
+      const current = prev[employeeId]?.specialProjects || {};
+      // Normalize to object format
+      const currentObj = typeof current === 'object' && !Array.isArray(current) 
+        ? current 
+        : { threePEmail: false, threePBackupEmail: false, float: false, other: '' };
+
+      return {
+        ...prev,
+        [employeeId]: {
+          ...prev[employeeId],
+          specialProjects: {
+            ...currentObj,
+            [field]: !currentObj[field]
+          }
+        }
+      };
+    });
+    setHasChanges(true);
+  }, [setAssignments]);
+
+  const handleSpecialProjectOtherChange = useCallback((employeeId, value) => {
+    setAssignments(prev => {
+      const current = prev[employeeId]?.specialProjects || {};
+      // Normalize to object format
+      const currentObj = typeof current === 'object' && !Array.isArray(current) 
+        ? current 
+        : { threePEmail: false, threePBackupEmail: false, float: false, other: '' };
+
+      return {
+        ...prev,
+        [employeeId]: {
+          ...prev[employeeId],
+          specialProjects: {
+            ...currentObj,
+            other: value
+          }
+        }
+      };
+    });
+    setHasChanges(true);
+  }, [setAssignments]);
+
   function handleDarCountChange(newCount) {
     // Limit between 3 and 8 DARs
     const count = Math.max(3, Math.min(8, newCount));
@@ -682,26 +726,154 @@ export default function ScheduleGrid({
                   </td>
 
                   {/* Special Projects/Assignments */}
-                  <td className="px-2 py-2 text-center" role="gridcell">
+                  <td
+                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
+                      readOnly ? '' : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                    }`}
+                    onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'specialProjects' })}
+                    onKeyPress={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
+                        e.preventDefault();
+                        setEditingCell({ employeeId: employee.id, field: 'specialProjects' });
+                      }
+                    }}
+                    tabIndex={!readOnly ? 0 : -1}
+                    role="gridcell"
+                    aria-label={`Special projects for ${employee.name}`}
+                  >
                     {readOnly ? (
-                      (Array.isArray(assignment.specialProjects) && assignment.specialProjects.length > 0) ? (
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-                          {getEntityShortCode(assignment.specialProjects)}
-                        </div>
-                      ) : assignment.specialProjects ? (
-                        <span className="text-xs text-slate-700 dark:text-slate-300">{assignment.specialProjects}</span>
-                      ) : (
-                        <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
-                      )
+                      (() => {
+                        const sp = assignment.specialProjects;
+                        // Handle old format (array or string)
+                        if (Array.isArray(sp) && sp.length > 0) {
+                          return (
+                            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
+                              {getEntityShortCode(sp)}
+                            </div>
+                          );
+                        }
+                        if (typeof sp === 'string' && sp) {
+                          return <span className="text-xs text-slate-700 dark:text-slate-300">{sp}</span>;
+                        }
+                        // Handle new format (object)
+                        if (sp && typeof sp === 'object' && !Array.isArray(sp)) {
+                          const badges = [];
+                          if (sp.threePEmail) badges.push('3P');
+                          if (sp.threePBackupEmail) badges.push('3P-B');
+                          if (sp.float) badges.push('Float');
+                          if (sp.other) badges.push(sp.other);
+                          
+                          if (badges.length > 0) {
+                            return (
+                              <div className="flex flex-wrap gap-1 justify-center">
+                                {badges.map((badge, idx) => (
+                                  <span key={idx} className="px-1.5 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                                    {badge}
+                                  </span>
+                                ))}
+                              </div>
+                            );
+                          }
+                        }
+                        return <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>;
+                      })()
                     ) : (
-                      <input
-                        type="text"
-                        value={formatEntityList(assignment.specialProjects)}
-                        onChange={(e) => handleAssignmentChange(employee.id, 'specialProjects', e.target.value)}
-                        className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 text-center bg-white dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
-                        placeholder=""
-                        aria-label={`Special projects for ${employee.name}`}
-                      />
+                      <>
+                        {(() => {
+                          const sp = assignment.specialProjects;
+                          // Normalize to object format for display
+                          const spObj = (sp && typeof sp === 'object' && !Array.isArray(sp)) 
+                            ? sp 
+                            : { threePEmail: false, threePBackupEmail: false, float: false, other: '' };
+                          
+                          const badges = [];
+                          if (spObj.threePEmail) badges.push('3P');
+                          if (spObj.threePBackupEmail) badges.push('3P-B');
+                          if (spObj.float) badges.push('Float');
+                          if (spObj.other) badges.push(spObj.other);
+                          
+                          if (badges.length > 0) {
+                            return (
+                              <div className="flex flex-wrap gap-1 justify-center">
+                                {badges.map((badge, idx) => (
+                                  <span key={idx} className="px-1.5 py-0.5 text-xs font-medium rounded bg-thr-green-100 text-thr-green-700 dark:bg-thr-green-900/30 dark:text-thr-green-300">
+                                    {badge}
+                                  </span>
+                                ))}
+                              </div>
+                            );
+                          }
+                          return <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>;
+                        })()}
+                        {editingCell?.employeeId === employee.id && editingCell?.field === 'specialProjects' && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select special projects">
+                            <div className="space-y-3">
+                              {(() => {
+                                const sp = assignment.specialProjects;
+                                const spObj = (sp && typeof sp === 'object' && !Array.isArray(sp)) 
+                                  ? sp 
+                                  : { threePEmail: false, threePBackupEmail: false, float: false, other: '' };
+                                
+                                return (
+                                  <>
+                                    <label className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                      <input
+                                        type="checkbox"
+                                        checked={spObj.threePEmail || false}
+                                        onChange={() => handleSpecialProjectToggle(employee.id, 'threePEmail')}
+                                        className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                                        aria-label="3P Email"
+                                      />
+                                      <span className="text-sm">3P Email</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                      <input
+                                        type="checkbox"
+                                        checked={spObj.threePBackupEmail || false}
+                                        onChange={() => handleSpecialProjectToggle(employee.id, 'threePBackupEmail')}
+                                        className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                                        aria-label="3P Backup Email"
+                                      />
+                                      <span className="text-sm">3P Backup Email</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                                      <input
+                                        type="checkbox"
+                                        checked={spObj.float || false}
+                                        onChange={() => handleSpecialProjectToggle(employee.id, 'float')}
+                                        className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                                        aria-label="Float"
+                                      />
+                                      <span className="text-sm">Float</span>
+                                    </label>
+                                    <div>
+                                      <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        Other
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={spObj.other || ''}
+                                        onChange={(e) => handleSpecialProjectOtherChange(employee.id, e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 focus:border-thr-blue-500 bg-white dark:bg-slate-700 dark:text-slate-100"
+                                        placeholder="Enter other project..."
+                                        aria-label="Other special project"
+                                      />
+                                    </div>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
+                              className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
+                              aria-label="Close special projects selection"
+                            >
+                              Done
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </td>
                 </tr>
