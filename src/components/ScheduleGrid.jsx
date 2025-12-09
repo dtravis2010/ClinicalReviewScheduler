@@ -6,6 +6,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
 import DarInfoPanel from './DarInfoPanel';
+import CpoeInfoPanel from './schedule/CpoeInfoPanel';
+import EntityInfoPanel from './schedule/EntityInfoPanel';
+import SpecialProjectsInfoPanel from './schedule/SpecialProjectsInfoPanel';
 import ConflictBanner from './schedule/ConflictBanner';
 import WorkloadIndicator from './schedule/WorkloadIndicator';
 import ScheduleHeader from './schedule/ScheduleHeader';
@@ -52,6 +55,11 @@ export default function ScheduleGrid({
   const [hasChanges, setHasChanges] = useState(false);
   const [showDarInfoPanel, setShowDarInfoPanel] = useState(false);
   const [selectedDarIndex, setSelectedDarIndex] = useState(null);
+  // State for new info panels
+  const [showCpoeInfoPanel, setShowCpoeInfoPanel] = useState(false);
+  const [showNewIncomingInfoPanel, setShowNewIncomingInfoPanel] = useState(false);
+  const [showCrossTrainingInfoPanel, setShowCrossTrainingInfoPanel] = useState(false);
+  const [showSpecialProjectsInfoPanel, setShowSpecialProjectsInfoPanel] = useState(false);
   // State for editing assignment cells (New Incoming, Cross-Training)
   const [editingCell, setEditingCell] = useState(null); // { employeeId, field }
   // State for bulk assignment
@@ -466,6 +474,43 @@ export default function ScheduleGrid({
           onDarInfoClick={(idx) => {
             setSelectedDarIndex(idx);
             setShowDarInfoPanel(true);
+            // Close other panels
+            setShowCpoeInfoPanel(false);
+            setShowNewIncomingInfoPanel(false);
+            setShowCrossTrainingInfoPanel(false);
+            setShowSpecialProjectsInfoPanel(false);
+          }}
+          onCpoeInfoClick={() => {
+            setShowCpoeInfoPanel(true);
+            // Close other panels
+            setShowDarInfoPanel(false);
+            setShowNewIncomingInfoPanel(false);
+            setShowCrossTrainingInfoPanel(false);
+            setShowSpecialProjectsInfoPanel(false);
+          }}
+          onNewIncomingInfoClick={() => {
+            setShowNewIncomingInfoPanel(true);
+            // Close other panels
+            setShowDarInfoPanel(false);
+            setShowCpoeInfoPanel(false);
+            setShowCrossTrainingInfoPanel(false);
+            setShowSpecialProjectsInfoPanel(false);
+          }}
+          onCrossTrainingInfoClick={() => {
+            setShowCrossTrainingInfoPanel(true);
+            // Close other panels
+            setShowDarInfoPanel(false);
+            setShowCpoeInfoPanel(false);
+            setShowNewIncomingInfoPanel(false);
+            setShowSpecialProjectsInfoPanel(false);
+          }}
+          onSpecialProjectsInfoClick={() => {
+            setShowSpecialProjectsInfoPanel(true);
+            // Close other panels
+            setShowDarInfoPanel(false);
+            setShowCpoeInfoPanel(false);
+            setShowNewIncomingInfoPanel(false);
+            setShowCrossTrainingInfoPanel(false);
           }}
           onEditingDarClose={() => setEditingDar(null)}
           showBulkSelect={!readOnly}
@@ -985,6 +1030,46 @@ export default function ScheduleGrid({
           }}
         />
       )}
+
+      {/* CPOE Info Panel */}
+      <CpoeInfoPanel
+        isOpen={showCpoeInfoPanel}
+        onClose={() => setShowCpoeInfoPanel(false)}
+        employees={employees}
+        currentAssignments={assignments}
+        schedules={schedules}
+      />
+
+      {/* New Incoming Info Panel */}
+      <EntityInfoPanel
+        isOpen={showNewIncomingInfoPanel}
+        onClose={() => setShowNewIncomingInfoPanel(false)}
+        assignmentType="newIncoming"
+        entities={entities}
+        employees={employees}
+        currentAssignments={assignments}
+        schedules={schedules}
+      />
+
+      {/* Cross-Training Info Panel */}
+      <EntityInfoPanel
+        isOpen={showCrossTrainingInfoPanel}
+        onClose={() => setShowCrossTrainingInfoPanel(false)}
+        assignmentType="crossTraining"
+        entities={entities}
+        employees={employees}
+        currentAssignments={assignments}
+        schedules={schedules}
+      />
+
+      {/* Special Projects Info Panel */}
+      <SpecialProjectsInfoPanel
+        isOpen={showSpecialProjectsInfoPanel}
+        onClose={() => setShowSpecialProjectsInfoPanel(false)}
+        employees={employees}
+        currentAssignments={assignments}
+        schedules={schedules}
+      />
 
       {/* Bulk Assignment Modal */}
       <BulkAssignmentModal

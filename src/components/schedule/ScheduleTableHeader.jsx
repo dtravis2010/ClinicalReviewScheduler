@@ -18,6 +18,10 @@ function ScheduleTableHeader({
   onDarEntityToggle,
   onDarInfoClick,
   onEditingDarClose,
+  onCpoeInfoClick,
+  onNewIncomingInfoClick,
+  onCrossTrainingInfoClick,
+  onSpecialProjectsInfoClick,
   showBulkSelect = false,
   allSelected = false,
   onSelectAll
@@ -103,10 +107,78 @@ function ScheduleTableHeader({
             </div>
           </th>
         ))}
-        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[70px]">CPOE</th>
-        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">New Incoming<br/>Items</th>
-        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">Cross-<br/>Training</th>
-        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px]">Special<br/>Projects</th>
+        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[70px]">
+          <div className="flex items-center justify-center gap-1">
+            <span>CPOE</span>
+            {!readOnly && onCpoeInfoClick && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCpoeInfoClick();
+                }}
+                className="p-0.5 rounded hover:bg-white/20 transition-colors"
+                aria-label="View CPOE history"
+                title="View CPOE history"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </th>
+        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">
+          <div className="flex items-center justify-center gap-1">
+            <span>New Incoming<br/>Items</span>
+            {!readOnly && onNewIncomingInfoClick && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNewIncomingInfoClick();
+                }}
+                className="p-0.5 rounded hover:bg-white/20 transition-colors"
+                aria-label="View New Incoming history"
+                title="View New Incoming history"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </th>
+        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">
+          <div className="flex items-center justify-center gap-1">
+            <span>Cross-<br/>Training</span>
+            {!readOnly && onCrossTrainingInfoClick && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCrossTrainingInfoClick();
+                }}
+                className="p-0.5 rounded hover:bg-white/20 transition-colors"
+                aria-label="View Cross-Training history"
+                title="View Cross-Training history"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </th>
+        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px]">
+          <div className="flex items-center justify-center gap-1">
+            <span>Special<br/>Projects</span>
+            {!readOnly && onSpecialProjectsInfoClick && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSpecialProjectsInfoClick();
+                }}
+                className="p-0.5 rounded hover:bg-white/20 transition-colors"
+                aria-label="View Special Projects history"
+                title="View Special Projects history"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </th>
       </tr>
     </thead>
   );
@@ -125,6 +197,10 @@ ScheduleTableHeader.propTypes = {
   onDarEntityToggle: PropTypes.func.isRequired,
   onDarInfoClick: PropTypes.func.isRequired,
   onEditingDarClose: PropTypes.func.isRequired,
+  onCpoeInfoClick: PropTypes.func,
+  onNewIncomingInfoClick: PropTypes.func,
+  onCrossTrainingInfoClick: PropTypes.func,
+  onSpecialProjectsInfoClick: PropTypes.func,
   showBulkSelect: PropTypes.bool,
   allSelected: PropTypes.bool,
   onSelectAll: PropTypes.func
