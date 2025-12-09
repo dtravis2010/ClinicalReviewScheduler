@@ -117,7 +117,11 @@ WorkloadIndicator.propTypes = {
     cpoe: PropTypes.bool,
     newIncoming: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
     crossTraining: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
-    specialProjects: PropTypes.string
+    specialProjects: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.array,
+      PropTypes.string
+    ])
   })
 };
 
