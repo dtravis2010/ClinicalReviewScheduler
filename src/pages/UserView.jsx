@@ -73,7 +73,8 @@ export default function UserView() {
           const publishedQuery = query(
             schedulesRef,
             where('status', '==', 'published'),
-            orderBy('createdAt', 'desc')
+            orderBy('createdAt', 'desc'),
+            limit(50) // Limit to most recent 50 published schedules
           );
 
           const timeout = createTimeoutPromise();
