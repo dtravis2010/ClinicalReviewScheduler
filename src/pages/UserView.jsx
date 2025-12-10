@@ -173,6 +173,9 @@ export default function UserView() {
     }
   };
 
+  const isOldestSchedule = currentScheduleIndex >= publishedSchedules.length - 1;
+  const isNewestSchedule = currentScheduleIndex <= 0;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -238,9 +241,9 @@ export default function UserView() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={handlePreviousSchedule}
-                        disabled={currentScheduleIndex >= publishedSchedules.length - 1}
+                        disabled={isOldestSchedule}
                         className={`p-2 rounded-lg transition-colors ${
-                          currentScheduleIndex >= publishedSchedules.length - 1
+                          isOldestSchedule
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                             : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
                         }`}
@@ -254,9 +257,9 @@ export default function UserView() {
                       </span>
                       <button
                         onClick={handleNextSchedule}
-                        disabled={currentScheduleIndex <= 0}
+                        disabled={isNewestSchedule}
                         className={`p-2 rounded-lg transition-colors ${
-                          currentScheduleIndex <= 0
+                          isNewestSchedule
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                             : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
                         }`}
