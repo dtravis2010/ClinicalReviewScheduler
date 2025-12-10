@@ -89,7 +89,7 @@ export default function UserView() {
           const fallbackQuery = query(
             schedulesRef,
             orderBy('createdAt', 'desc'),
-            limit(100) // Get more schedules for better user experience
+            limit(50) // Get recent schedules for navigation
           );
 
           const fallbackTimeout = createTimeoutPromise();
