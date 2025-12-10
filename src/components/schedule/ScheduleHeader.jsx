@@ -28,12 +28,16 @@ function ScheduleHeader({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-h3 text-slate-900 dark:text-slate-100">Schedule Builder</h1>
-          <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 hidden sm:block">
-            Click any cell to assign • Click DAR info icon for history
-          </p>
-          <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 sm:hidden">
-            Tap to assign
-          </p>
+          {!readOnly && (
+            <>
+              <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 hidden sm:block">
+                Click any cell to assign • Click DAR info icon for history
+              </p>
+              <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 sm:hidden">
+                Tap to assign
+              </p>
+            </>
+          )}
         </div>
 
         {!readOnly && (
