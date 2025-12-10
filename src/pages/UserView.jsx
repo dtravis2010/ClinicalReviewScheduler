@@ -243,8 +243,8 @@ export default function UserView() {
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                             : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
                         }`}
-                        aria-label="Previous schedule"
-                        title="Previous schedule"
+                        aria-label="Previous (older) schedule"
+                        title="Previous (older) schedule"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </button>
@@ -259,8 +259,8 @@ export default function UserView() {
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                             : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
                         }`}
-                        aria-label="Next schedule"
-                        title="Next schedule"
+                        aria-label="Next (newer) schedule"
+                        title="Next (newer) schedule"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>
