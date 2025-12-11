@@ -29,6 +29,18 @@ describe('Schedule Utilities', () => {
       expect(formatDateRange('2024-01-01', '2024-01-07')).toBe('2024-01-01 to 2024-01-07');
     });
 
+    it('should format date range with month and year only when monthYearOnly is true', () => {
+      expect(formatDateRange('2025-03-01', '2025-09-30', true)).toBe('March 2025 - September 2025');
+    });
+
+    it('should format date range with month and year for different years', () => {
+      expect(formatDateRange('2024-12-01', '2025-02-28', true)).toBe('December 2024 - February 2025');
+    });
+
+    it('should format date range with month and year for same month', () => {
+      expect(formatDateRange('2025-01-01', '2025-01-31', true)).toBe('January 2025 - January 2025');
+    });
+
     it('should return empty string when start date missing', () => {
       expect(formatDateRange('', '2024-01-07')).toBe('');
     });
@@ -39,6 +51,10 @@ describe('Schedule Utilities', () => {
 
     it('should return empty string when both dates missing', () => {
       expect(formatDateRange('', '')).toBe('');
+    });
+
+    it('should return empty string when monthYearOnly is true but dates are missing', () => {
+      expect(formatDateRange('', '', true)).toBe('');
     });
   });
 
