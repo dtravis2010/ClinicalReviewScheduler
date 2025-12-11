@@ -341,31 +341,28 @@ export default function ScheduleGrid({
   }
 
   // Schedule navigation handlers
+  const currentScheduleIndex = useMemo(() => {
+    if (!schedules || schedules.length === 0 || !schedule) return -1;
+    return schedules.findIndex(s => s.id === schedule.id);
+  }, [schedules, schedule]);
+
   const handlePreviousSchedule = useCallback(() => {
-    if (!schedules || schedules.length === 0 || !schedule || !onScheduleChange) return;
+    if (currentScheduleIndex === -1 || currentScheduleIndex >= schedules.length - 1 || !onScheduleChange) return;
     
-    const currentIndex = schedules.findIndex(s => s.id === schedule.id);
-    if (currentIndex !== -1 && currentIndex < schedules.length - 1) {
-      const previousSchedule = schedules[currentIndex + 1];
-      onScheduleChange(previousSchedule);
-    }
-  }, [schedules, schedule, onScheduleChange]);
+    const previousSchedule = schedules[currentScheduleIndex + 1];
+    onScheduleChange(previousSchedule);
+  }, [currentScheduleIndex, schedules, onScheduleChange]);
 
   const handleNextSchedule = useCallback(() => {
-    if (!schedules || schedules.length === 0 || !schedule || !onScheduleChange) return;
+    if (currentScheduleIndex <= 0 || !onScheduleChange) return;
     
-    const currentIndex = schedules.findIndex(s => s.id === schedule.id);
-    if (currentIndex > 0) {
-      const nextSchedule = schedules[currentIndex - 1];
-      onScheduleChange(nextSchedule);
-    }
-  }, [schedules, schedule, onScheduleChange]);
+    const nextSchedule = schedules[currentScheduleIndex - 1];
+    onScheduleChange(nextSchedule);
+  }, [currentScheduleIndex, schedules, onScheduleChange]);
 
   // Check if navigation is possible
-  const canGoPrevious = schedules && schedules.length > 0 && schedule && 
-    schedules.findIndex(s => s.id === schedule.id) < schedules.length - 1;
-  const canGoNext = schedules && schedules.length > 0 && schedule && 
-    schedules.findIndex(s => s.id === schedule.id) > 0;
+  const canGoPrevious = currentScheduleIndex !== -1 && currentScheduleIndex < schedules.length - 1;
+  const canGoNext = currentScheduleIndex > 0;
 
   // Add beforeunload warning for unsaved changes
   useEffect(() => {

@@ -4,6 +4,20 @@ import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDateRange } from '../../utils/scheduleUtils';
 
 /**
+ * Check if a schedule is current based on its end date
+ * @param {string} endDate - Schedule end date (YYYY-MM-DD)
+ * @returns {boolean} True if schedule is current or future
+ */
+function isScheduleCurrent(endDate) {
+  if (!endDate) return true; // Default to current if no end date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset to start of day
+  const scheduleEndDate = new Date(endDate);
+  scheduleEndDate.setHours(0, 0, 0, 0);
+  return scheduleEndDate >= today;
+}
+
+/**
  * ScheduleDateBanner component
  * Displays formatted date range and schedule status with date editing (supervisor mode)
  * 
@@ -35,17 +49,7 @@ function ScheduleDateBanner({
   canGoPrevious,
   canGoNext
 }) {
-  // Determine if schedule is current or past
-  const isScheduleCurrent = () => {
-    if (!endDate) return true; // Default to current if no end date
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset to start of day
-    const scheduleEndDate = new Date(endDate);
-    scheduleEndDate.setHours(0, 0, 0, 0);
-    return scheduleEndDate >= today;
-  };
-
-  const isCurrent = isScheduleCurrent();
+  const isCurrent = isScheduleCurrent(endDate);
   const headerColorClass = isCurrent ? 'header-gradient' : 'header-gradient-past';
   return (
     <div className={`${headerColorClass} px-4 sm:px-6 py-3 text-white flex-shrink-0`}>
