@@ -94,6 +94,7 @@ export default function Settings({ employees = [], onUpdate }) {
         const value = darConfig[key];
         if (typeof value === 'string' && value.trim()) {
           // Split by '/' and trim each entity code
+          // Filter out empty strings to avoid saving invalid entity codes
           configToSave[key] = value.split('/').map(code => code.trim()).filter(code => code);
         } else if (Array.isArray(value)) {
           configToSave[key] = value;

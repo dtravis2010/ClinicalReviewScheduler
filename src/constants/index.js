@@ -61,5 +61,6 @@ export const VALIDATION = {
 export const UI = {
   TOAST_DURATION: 3000,
   DEBOUNCE_DELAY: 300,
-  ANIMATION_DURATION: 200
+  ANIMATION_DURATION: 200,
+  MAX_ENTITY_CODE_LENGTH: 6 // Maximum length for entity codes (e.g., "THDN", "THA")
 };

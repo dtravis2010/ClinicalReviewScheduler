@@ -1,3 +1,5 @@
+import { UI } from '../constants/index';
+
 /**
  * Schedule utility functions
  * Contains formatting and display logic for schedules
@@ -67,9 +69,9 @@ export function getEntityShortCode(entityList) {
     const parts = entityName.split('/');
     const mainPart = parts[0].trim();
     
-    // If the string has no spaces and is short (<=6 chars), treat it as an entity code
+    // If the string has no spaces and is short (<=MAX_ENTITY_CODE_LENGTH chars), treat it as an entity code
     // and return it uppercased (e.g., "thdn" -> "THDN")
-    if (!/\s/.test(mainPart) && mainPart.length <= 6) {
+    if (!/\s/.test(mainPart) && mainPart.length <= UI.MAX_ENTITY_CODE_LENGTH) {
       return mainPart.toUpperCase();
     }
     
