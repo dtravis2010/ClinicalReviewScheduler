@@ -5,15 +5,25 @@ import { formatDateRange } from '../../utils/scheduleUtils';
 
 /**
  * ScheduleDateBanner component
- * Displays schedule name, dates, and status with inline editing
+ * Displays formatted date range and schedule status with date editing (supervisor mode)
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.scheduleName - @deprecated No longer displayed, kept for backward compatibility
+ * @param {string} props.startDate - Schedule start date (YYYY-MM-DD)
+ * @param {string} props.endDate - Schedule end date (YYYY-MM-DD)
+ * @param {string} props.scheduleStatus - Schedule status ('draft' or 'published')
+ * @param {boolean} props.readOnly - If true, hides date editing controls
+ * @param {Function} props.onScheduleNameChange - @deprecated No longer used, kept for backward compatibility
+ * @param {Function} props.onStartDateChange - Callback for start date changes
+ * @param {Function} props.onEndDateChange - Callback for end date changes
  */
 function ScheduleDateBanner({
-  scheduleName,
+  scheduleName, // eslint-disable-line no-unused-vars
   startDate,
   endDate,
   scheduleStatus,
   readOnly,
-  onScheduleNameChange,
+  onScheduleNameChange, // eslint-disable-line no-unused-vars
   onStartDateChange,
   onEndDateChange
 }) {
@@ -30,30 +40,12 @@ function ScheduleDateBanner({
         <div className="text-center flex-1 px-2">
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <Calendar className="w-5 h-5 text-white/80" aria-hidden="true" />
-            {!readOnly ? (
-              <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
-                <span className="text-white font-semibold">✓</span>
-                <input
-                  type="text"
-                  value={scheduleName}
-                  onChange={(e) => onScheduleNameChange(e.target.value)}
-                  className="bg-transparent text-white font-semibold text-sm text-center focus:outline-none placeholder:text-white/60 w-auto min-w-[120px]"
-                  placeholder="Schedule name"
-                  aria-label="Schedule name"
-                  style={{ width: `${Math.max(120, (scheduleName?.length || 12) * 8)}px` }}
-                />
-                <span className="text-white/90 text-sm">
-                  ({startDate || 'start'} to {endDate || 'end'})
-                </span>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
-                <span className="text-white font-semibold">✓</span>
-                <span className="font-semibold text-sm text-white">
-                  {scheduleName || 'Schedule'} ({formatDateRange(startDate, endDate, true) || 'No dates'})
-                </span>
-              </div>
-            )}
+            <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
+              <span className="text-white font-semibold">✓</span>
+              <span className="font-semibold text-sm text-white">
+                {formatDateRange(startDate, endDate, true) || 'No dates'}
+              </span>
+            </div>
             <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-soft ${
               scheduleStatus === 'published' ? 'bg-thr-green-500' : 'bg-orange-500'
             }`}>
