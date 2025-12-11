@@ -30,30 +30,12 @@ function ScheduleDateBanner({
         <div className="text-center flex-1 px-2">
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <Calendar className="w-5 h-5 text-white/80" aria-hidden="true" />
-            {!readOnly ? (
-              <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
-                <span className="text-white font-semibold">✓</span>
-                <input
-                  type="text"
-                  value={scheduleName}
-                  onChange={(e) => onScheduleNameChange(e.target.value)}
-                  className="bg-transparent text-white font-semibold text-sm text-center focus:outline-none placeholder:text-white/60 w-auto min-w-[120px]"
-                  placeholder="Schedule name"
-                  aria-label="Schedule name"
-                  style={{ width: `${Math.max(120, (scheduleName?.length || 12) * 8)}px` }}
-                />
-                <span className="text-white/90 text-sm">
-                  ({startDate || 'start'} to {endDate || 'end'})
-                </span>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
-                <span className="text-white font-semibold">✓</span>
-                <span className="font-semibold text-sm text-white">
-                  {scheduleName || 'Schedule'} ({formatDateRange(startDate, endDate, true) || 'No dates'})
-                </span>
-              </div>
-            )}
+            <div className="inline-flex items-center gap-2 bg-thr-green-600/90 backdrop-blur-sm px-4 py-2 rounded-xl">
+              <span className="text-white font-semibold">✓</span>
+              <span className="font-semibold text-sm text-white">
+                {formatDateRange(startDate, endDate, true) || 'No dates'}
+              </span>
+            </div>
             <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-soft ${
               scheduleStatus === 'published' ? 'bg-thr-green-500' : 'bg-orange-500'
             }`}>
