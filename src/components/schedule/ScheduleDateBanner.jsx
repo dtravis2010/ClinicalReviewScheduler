@@ -4,6 +4,20 @@ import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDateRange } from '../../utils/scheduleUtils';
 
 /**
+ * Check if a schedule is current based on its end date
+ * @param {string} endDate - Schedule end date (YYYY-MM-DD)
+ * @returns {boolean} True if schedule is current or future
+ */
+function isScheduleCurrent(endDate) {
+  if (!endDate) return true; // Default to current if no end date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset to start of day
+  const scheduleEndDate = new Date(endDate);
+  scheduleEndDate.setHours(0, 0, 0, 0);
+  return scheduleEndDate >= today;
+}
+
+/**
  * ScheduleDateBanner component
  * Displays formatted date range and schedule status with date editing (supervisor mode)
  * 
@@ -16,6 +30,10 @@ import { formatDateRange } from '../../utils/scheduleUtils';
  * @param {Function} props.onScheduleNameChange - @deprecated No longer used, kept for backward compatibility
  * @param {Function} props.onStartDateChange - Callback for start date changes
  * @param {Function} props.onEndDateChange - Callback for end date changes
+ * @param {Function} props.onPreviousSchedule - Callback for previous schedule navigation
+ * @param {Function} props.onNextSchedule - Callback for next schedule navigation
+ * @param {boolean} props.canGoPrevious - Whether previous schedule navigation is available
+ * @param {boolean} props.canGoNext - Whether next schedule navigation is available
  */
 function ScheduleDateBanner({
   scheduleName, // eslint-disable-line no-unused-vars
@@ -25,14 +43,27 @@ function ScheduleDateBanner({
   readOnly,
   onScheduleNameChange, // eslint-disable-line no-unused-vars
   onStartDateChange,
-  onEndDateChange
+  onEndDateChange,
+  onPreviousSchedule,
+  onNextSchedule,
+  canGoPrevious,
+  canGoNext
 }) {
+  const isCurrent = isScheduleCurrent(endDate);
+  const headerColorClass = isCurrent ? 'header-gradient' : 'header-gradient-past';
   return (
-    <div className="header-gradient px-4 sm:px-6 py-3 text-white flex-shrink-0">
+    <div className={`${headerColorClass} px-4 sm:px-6 py-3 text-white flex-shrink-0`}>
       <div className="flex items-center justify-between">
         <button
-          className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50"
+          onClick={onPreviousSchedule}
+          disabled={!canGoPrevious || !onPreviousSchedule}
+          className={`p-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50 ${
+            canGoPrevious && onPreviousSchedule
+              ? 'hover:bg-white/10 cursor-pointer'
+              : 'opacity-30 cursor-not-allowed'
+          }`}
           aria-label="Previous schedule"
+          title="Previous schedule"
         >
           <ChevronLeft className="w-5 h-5" aria-hidden="true" />
         </button>
@@ -78,8 +109,15 @@ function ScheduleDateBanner({
         </div>
 
         <button
-          className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50"
+          onClick={onNextSchedule}
+          disabled={!canGoNext || !onNextSchedule}
+          className={`p-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-white/50 ${
+            canGoNext && onNextSchedule
+              ? 'hover:bg-white/10 cursor-pointer'
+              : 'opacity-30 cursor-not-allowed'
+          }`}
           aria-label="Next schedule"
+          title="Next schedule"
         >
           <ChevronRight className="w-5 h-5" aria-hidden="true" />
         </button>
@@ -96,7 +134,11 @@ ScheduleDateBanner.propTypes = {
   readOnly: PropTypes.bool,
   onScheduleNameChange: PropTypes.func,
   onStartDateChange: PropTypes.func,
-  onEndDateChange: PropTypes.func
+  onEndDateChange: PropTypes.func,
+  onPreviousSchedule: PropTypes.func,
+  onNextSchedule: PropTypes.func,
+  canGoPrevious: PropTypes.bool,
+  canGoNext: PropTypes.bool
 };
 
 export default memo(ScheduleDateBanner);

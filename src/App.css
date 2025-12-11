@@ -145,6 +145,12 @@
   @apply shadow-soft-md;
 }
 
+/* Past schedule header - orange gradient */
+.header-gradient-past {
+  @apply bg-gradient-to-r from-orange-500 to-orange-600;
+  @apply shadow-soft-md;
+}
+
 /* ============================================
    SIDEBAR - Slide-out panel with glassmorphism
    ============================================ */

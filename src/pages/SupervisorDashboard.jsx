@@ -549,6 +549,7 @@ export default function SupervisorDashboard() {
                 onCreateNewSchedule={createNewSchedule}
                 readOnly={false}
                 schedules={schedules}
+                onScheduleChange={setCurrentSchedule}
               />
             ) : (
               <div className="card dark:bg-gray-800 dark:border-gray-700 text-center py-12">

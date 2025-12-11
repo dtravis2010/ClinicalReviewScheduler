@@ -32,7 +32,8 @@ export default function ScheduleGrid({
   onSave,
   readOnly = false,
   onCreateNewSchedule,
-  schedules = []
+  schedules = [],
+  onScheduleChange
 }) {
   // Use undo/redo for assignments
   const {
@@ -339,6 +340,30 @@ export default function ScheduleGrid({
     }
   }
 
+  // Schedule navigation handlers
+  const currentScheduleIndex = useMemo(() => {
+    if (!schedules || schedules.length === 0 || !schedule) return -1;
+    return schedules.findIndex(s => s.id === schedule.id);
+  }, [schedules, schedule]);
+
+  const handlePreviousSchedule = useCallback(() => {
+    if (currentScheduleIndex === -1 || currentScheduleIndex >= schedules.length - 1 || !onScheduleChange) return;
+    
+    const previousSchedule = schedules[currentScheduleIndex + 1];
+    onScheduleChange(previousSchedule);
+  }, [currentScheduleIndex, schedules, onScheduleChange]);
+
+  const handleNextSchedule = useCallback(() => {
+    if (currentScheduleIndex <= 0 || !onScheduleChange) return;
+    
+    const nextSchedule = schedules[currentScheduleIndex - 1];
+    onScheduleChange(nextSchedule);
+  }, [currentScheduleIndex, schedules, onScheduleChange]);
+
+  // Check if navigation is possible
+  const canGoPrevious = currentScheduleIndex !== -1 && currentScheduleIndex < schedules.length - 1;
+  const canGoNext = currentScheduleIndex > 0;
+
   // Add beforeunload warning for unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -448,6 +473,10 @@ export default function ScheduleGrid({
           setEndDate(value);
           setHasChanges(true);
         }}
+        onPreviousSchedule={handlePreviousSchedule}
+        onNextSchedule={handleNextSchedule}
+        canGoPrevious={canGoPrevious}
+        canGoNext={canGoNext}
       />
 
       {/* Conflict Banner */}
@@ -1108,5 +1137,6 @@ ScheduleGrid.propTypes = {
   onSave: PropTypes.func,
   readOnly: PropTypes.bool,
   onCreateNewSchedule: PropTypes.func,
-  schedules: PropTypes.array
+  schedules: PropTypes.array,
+  onScheduleChange: PropTypes.func
 };
