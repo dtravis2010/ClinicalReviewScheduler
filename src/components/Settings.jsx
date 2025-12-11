@@ -35,7 +35,19 @@ export default function Settings({ employees = [], onUpdate }) {
       const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
       if (configDoc.exists()) {
         const data = configDoc.data();
-        setDarConfig(data.config || {});
+        const config = data.config || {};
+        
+        // Convert array format to string format for display
+        const displayConfig = {};
+        Object.keys(config).forEach(key => {
+          if (Array.isArray(config[key])) {
+            displayConfig[key] = config[key].join('/');
+          } else {
+            displayConfig[key] = config[key] || '';
+          }
+        });
+        
+        setDarConfig(displayConfig);
         setDarCount(data.darCount || 5); // Default to 5 if not set
       }
     } catch (error) {
@@ -58,9 +70,11 @@ export default function Settings({ employees = [], onUpdate }) {
   }
 
   function handleDarConfigChange(darIndex, value) {
+    // Auto-uppercase entity codes for consistency
+    const uppercasedValue = value.toUpperCase();
     setDarConfig(prev => ({
       ...prev,
-      [darIndex]: value
+      [darIndex]: uppercasedValue
     }));
     setHasChanges(true);
   }
@@ -74,8 +88,22 @@ export default function Settings({ employees = [], onUpdate }) {
 
   async function saveDarConfig() {
     try {
+      // Convert string format to array format for storage
+      const configToSave = {};
+      Object.keys(darConfig).forEach(key => {
+        const value = darConfig[key];
+        if (typeof value === 'string' && value.trim()) {
+          // Split by '/' and trim each entity code
+          configToSave[key] = value.split('/').map(code => code.trim()).filter(code => code);
+        } else if (Array.isArray(value)) {
+          configToSave[key] = value;
+        } else {
+          configToSave[key] = [];
+        }
+      });
+      
       await setDoc(doc(db, 'settings', 'darConfig'), {
-        config: darConfig,
+        config: configToSave,
         darCount: darCount,
         updatedAt: new Date()
       });
@@ -165,10 +193,10 @@ export default function Settings({ employees = [], onUpdate }) {
                 value={darConfig[idx] || ''}
                 onChange={(e) => handleDarConfigChange(idx, e.target.value)}
                 className="input-field"
-                placeholder="e.g., THFR/FM/THFM"
+                placeholder="e.g., THDN/THD/THFM"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                Enter entity codes separated by slashes
+                Enter entity codes separated by slashes (e.g., THDN/THD)
               </p>
             </div>
           ))}
