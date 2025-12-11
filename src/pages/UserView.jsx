@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { logger } from '../utils/logger';
-import { Calendar, Lock } from 'lucide-react';
+import { Calendar, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import { ScheduleSkeleton } from '../components/Skeleton';
 import ThemeToggle from '../components/ThemeToggle';
 
 export default function UserView() {
   const [schedule, setSchedule] = useState(null);
+  const [publishedSchedules, setPublishedSchedules] = useState([]);
+  const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
   const [employees, setEmployees] = useState([]);
   const [entities, setEntities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export default function UserView() {
       }
 
       try {
-        // Fetch employees and entities in parallel with schedule
+        // Fetch employees and entities in parallel with schedules
         const [employeesSnapshot, entitiesSnapshot] = await Promise.all([
           getDocs(collection(db, 'employees')),
           getDocs(collection(db, 'entities'))
@@ -64,7 +66,7 @@ export default function UserView() {
         }
 
         const schedulesRef = collection(db, 'schedules');
-        let snapshot = null;
+        let allPublishedSchedules = [];
 
         // Try the optimized query first (requires composite index)
         try {
@@ -72,60 +74,63 @@ export default function UserView() {
             schedulesRef,
             where('status', '==', 'published'),
             orderBy('createdAt', 'desc'),
-            limit(1)
+            limit(50) // Limit to most recent 50 published schedules
           );
 
           const timeout = createTimeoutPromise();
-          snapshot = await Promise.race([getDocs(publishedQuery), timeout.promise]);
+          const snapshot = await Promise.race([getDocs(publishedQuery), timeout.promise]);
           timeout.clear();
+          
+          allPublishedSchedules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (indexError) {
           // If the composite index query fails, fall back to simpler query
           logger.warn('Composite index query failed, using fallback:', indexError.message);
 
-          // Fallback: get recent schedules and filter in memory (limited to avoid performance issues)
+          // Fallback: get recent schedules and filter in memory
           const fallbackQuery = query(
             schedulesRef,
             orderBy('createdAt', 'desc'),
-            limit(50) // Limit to recent schedules to avoid fetching too many documents
+            limit(50) // Get recent schedules for navigation
           );
 
           const fallbackTimeout = createTimeoutPromise();
           const allSnapshots = await Promise.race([getDocs(fallbackQuery), fallbackTimeout.promise]);
           fallbackTimeout.clear();
 
-          // Find the most recent published schedule
-          const publishedDocs = allSnapshots.docs.filter(doc => doc.data().status === 'published');
-          if (publishedDocs.length > 0) {
-            snapshot = { empty: false, docs: [publishedDocs[0]] };
-          } else {
-            snapshot = { empty: true, docs: [] };
-          }
+          // Find all published schedules
+          allPublishedSchedules = allSnapshots.docs
+            .filter(doc => doc.data().status === 'published')
+            .map(doc => ({ id: doc.id, ...doc.data() }));
         }
 
         // Fallback for schedules created before "status" was added
-        if (snapshot.empty) {
+        if (allPublishedSchedules.length === 0) {
           const legacyQuery = query(
             schedulesRef,
             orderBy('createdAt', 'desc'),
-            limit(1)
+            limit(10)
           );
 
           const legacyTimeout = createTimeoutPromise();
-          snapshot = await Promise.race([getDocs(legacyQuery), legacyTimeout.promise]);
+          const legacySnapshot = await Promise.race([getDocs(legacyQuery), legacyTimeout.promise]);
           legacyTimeout.clear();
+          
+          allPublishedSchedules = legacySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
 
         if (isMounted) {
-          if (!snapshot.empty && snapshot.docs?.[0]) {
-            setSchedule({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+          setPublishedSchedules(allPublishedSchedules);
+          if (allPublishedSchedules.length > 0) {
+            setSchedule(allPublishedSchedules[0]);
+            setCurrentScheduleIndex(0);
           } else {
             setSchedule(null);
           }
         }
       } catch (error) {
         if (isMounted) {
-          logger.error('Error loading schedule:', error);
-          setError(error.message || 'Failed to load schedule');
+          logger.error('Error loading schedules:', error);
+          setError(error.message || 'Failed to load schedules');
         }
       } finally {
         // Clear all timeouts
@@ -151,6 +156,25 @@ export default function UserView() {
   if (loading) {
     return <ScheduleSkeleton />;
   }
+
+  const handlePreviousSchedule = () => {
+    if (currentScheduleIndex < publishedSchedules.length - 1) {
+      const newIndex = currentScheduleIndex + 1;
+      setCurrentScheduleIndex(newIndex);
+      setSchedule(publishedSchedules[newIndex]);
+    }
+  };
+
+  const handleNextSchedule = () => {
+    if (currentScheduleIndex > 0) {
+      const newIndex = currentScheduleIndex - 1;
+      setCurrentScheduleIndex(newIndex);
+      setSchedule(publishedSchedules[newIndex]);
+    }
+  };
+
+  const isOldestSchedule = currentScheduleIndex >= publishedSchedules.length - 1;
+  const isNewestSchedule = currentScheduleIndex <= 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -209,10 +233,43 @@ export default function UserView() {
                     {schedule.startDate} - {schedule.endDate}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="flex items-center gap-3">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
                     Published
                   </span>
+                  {publishedSchedules.length > 1 && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handlePreviousSchedule}
+                        disabled={isOldestSchedule}
+                        className={`p-2 rounded-lg transition-colors ${
+                          isOldestSchedule
+                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                            : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
+                        }`}
+                        aria-label="Previous (older) schedule"
+                        title="Previous (older) schedule"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {currentScheduleIndex + 1} of {publishedSchedules.length}
+                      </span>
+                      <button
+                        onClick={handleNextSchedule}
+                        disabled={isNewestSchedule}
+                        className={`p-2 rounded-lg transition-colors ${
+                          isNewestSchedule
+                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                            : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
+                        }`}
+                        aria-label="Next (newer) schedule"
+                        title="Next (newer) schedule"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
