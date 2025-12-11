@@ -1,3 +1,5 @@
+import { UI } from '../constants/index';
+
 /**
  * Schedule utility functions
  * Contains formatting and display logic for schedules
@@ -45,7 +47,9 @@ export function formatDateRange(startDate, endDate, monthYearOnly = false) {
 
 /**
  * Get short entity code for display in cells
- * Extracts abbreviation from entity name (e.g., "Texas Health Allen" -> "THA")
+ * Handles both full entity names and entity codes:
+ * - Full names (e.g., "Texas Health Allen") -> Extract capitals "THA"
+ * - Short codes (e.g., "thdn", "THDN") -> Uppercase "THDN"
  * @param {Array|string} entityList - Entity or list of entities
  * @returns {string} Short entity code
  */
@@ -64,6 +68,12 @@ export function getEntityShortCode(entityList) {
     // Split by '/' first (in case entity name contains it)
     const parts = entityName.split('/');
     const mainPart = parts[0].trim();
+    
+    // If the string has no spaces and is short (<=MAX_ENTITY_CODE_LENGTH chars), treat it as an entity code
+    // and return it uppercased (e.g., "thdn" -> "THDN")
+    if (!/\s/.test(mainPart) && mainPart.length <= UI.MAX_ENTITY_CODE_LENGTH) {
+      return mainPart.toUpperCase();
+    }
     
     // Extract capital letters to form abbreviation
     // e.g., "Texas Health Allen" -> "THA"

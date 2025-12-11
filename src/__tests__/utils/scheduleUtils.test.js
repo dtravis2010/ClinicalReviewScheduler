@@ -56,11 +56,31 @@ describe('Schedule Utilities', () => {
     });
     
     it('should handle single word entities', () => {
-      expect(getEntityShortCode('Entity')).toBe('E');
+      expect(getEntityShortCode('Entity')).toBe('ENTITY');
     });
     
     it('should handle lowercase entity names', () => {
       expect(getEntityShortCode('texas health allen')).toBe('THA');
+    });
+
+    it('should handle short entity codes in uppercase', () => {
+      expect(getEntityShortCode('THDN')).toBe('THDN');
+    });
+
+    it('should handle short entity codes in lowercase', () => {
+      expect(getEntityShortCode('thdn')).toBe('THDN');
+    });
+
+    it('should handle short entity codes in mixed case', () => {
+      expect(getEntityShortCode('ThDn')).toBe('THDN');
+    });
+
+    it('should handle array of short entity codes', () => {
+      expect(getEntityShortCode(['thdn', 'thd', 'thfm'])).toBe('THDN/THD/THFM');
+    });
+
+    it('should handle array of mixed entity codes and names', () => {
+      expect(getEntityShortCode(['THDN', 'Texas Health Allen'])).toBe('THDN/THA');
     });
 
     it('should return empty string for null', () => {
