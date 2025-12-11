@@ -5,15 +5,25 @@ import { formatDateRange } from '../../utils/scheduleUtils';
 
 /**
  * ScheduleDateBanner component
- * Displays schedule name, dates, and status with inline editing
+ * Displays formatted date range and schedule status with date editing (supervisor mode)
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.scheduleName - @deprecated No longer displayed, kept for backward compatibility
+ * @param {string} props.startDate - Schedule start date (YYYY-MM-DD)
+ * @param {string} props.endDate - Schedule end date (YYYY-MM-DD)
+ * @param {string} props.scheduleStatus - Schedule status ('draft' or 'published')
+ * @param {boolean} props.readOnly - If true, hides date editing controls
+ * @param {Function} props.onScheduleNameChange - @deprecated No longer used, kept for backward compatibility
+ * @param {Function} props.onStartDateChange - Callback for start date changes
+ * @param {Function} props.onEndDateChange - Callback for end date changes
  */
 function ScheduleDateBanner({
-  scheduleName,
+  scheduleName, // eslint-disable-line no-unused-vars
   startDate,
   endDate,
   scheduleStatus,
   readOnly,
-  onScheduleNameChange,
+  onScheduleNameChange, // eslint-disable-line no-unused-vars
   onStartDateChange,
   onEndDateChange
 }) {
