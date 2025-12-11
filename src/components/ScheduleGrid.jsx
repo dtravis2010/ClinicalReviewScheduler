@@ -32,7 +32,8 @@ export default function ScheduleGrid({
   onSave,
   readOnly = false,
   onCreateNewSchedule,
-  schedules = []
+  schedules = [],
+  onScheduleChange
 }) {
   // Use undo/redo for assignments
   const {
@@ -339,6 +340,33 @@ export default function ScheduleGrid({
     }
   }
 
+  // Schedule navigation handlers
+  const handlePreviousSchedule = useCallback(() => {
+    if (!schedules || schedules.length === 0 || !schedule || !onScheduleChange) return;
+    
+    const currentIndex = schedules.findIndex(s => s.id === schedule.id);
+    if (currentIndex !== -1 && currentIndex < schedules.length - 1) {
+      const previousSchedule = schedules[currentIndex + 1];
+      onScheduleChange(previousSchedule);
+    }
+  }, [schedules, schedule, onScheduleChange]);
+
+  const handleNextSchedule = useCallback(() => {
+    if (!schedules || schedules.length === 0 || !schedule || !onScheduleChange) return;
+    
+    const currentIndex = schedules.findIndex(s => s.id === schedule.id);
+    if (currentIndex > 0) {
+      const nextSchedule = schedules[currentIndex - 1];
+      onScheduleChange(nextSchedule);
+    }
+  }, [schedules, schedule, onScheduleChange]);
+
+  // Check if navigation is possible
+  const canGoPrevious = schedules && schedules.length > 0 && schedule && 
+    schedules.findIndex(s => s.id === schedule.id) < schedules.length - 1;
+  const canGoNext = schedules && schedules.length > 0 && schedule && 
+    schedules.findIndex(s => s.id === schedule.id) > 0;
+
   // Add beforeunload warning for unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -448,6 +476,10 @@ export default function ScheduleGrid({
           setEndDate(value);
           setHasChanges(true);
         }}
+        onPreviousSchedule={handlePreviousSchedule}
+        onNextSchedule={handleNextSchedule}
+        canGoPrevious={canGoPrevious}
+        canGoNext={canGoNext}
       />
 
       {/* Conflict Banner */}
@@ -1108,5 +1140,6 @@ ScheduleGrid.propTypes = {
   onSave: PropTypes.func,
   readOnly: PropTypes.bool,
   onCreateNewSchedule: PropTypes.func,
-  schedules: PropTypes.array
+  schedules: PropTypes.array,
+  onScheduleChange: PropTypes.func
 };
