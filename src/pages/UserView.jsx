@@ -7,6 +7,7 @@ import { Calendar, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import { ScheduleSkeleton } from '../components/Skeleton';
 import ThemeToggle from '../components/ThemeToggle';
+import { formatDateRange } from '../utils/scheduleUtils';
 
 export default function UserView() {
   const [schedule, setSchedule] = useState(null);
@@ -230,7 +231,7 @@ export default function UserView() {
                     {schedule.name || 'Current Schedule'}
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {schedule.startDate} - {schedule.endDate}
+                    {formatDateRange(schedule.startDate, schedule.endDate, true)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -242,7 +243,7 @@ export default function UserView() {
                       <button
                         onClick={handlePreviousSchedule}
                         disabled={isOldestSchedule}
-                        className={`p-2 rounded-lg transition-colors ${
+                        className={`p-2 rounded-xl transition-colors ${
                           isOldestSchedule
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                             : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
@@ -258,7 +259,7 @@ export default function UserView() {
                       <button
                         onClick={handleNextSchedule}
                         disabled={isNewestSchedule}
-                        className={`p-2 rounded-lg transition-colors ${
+                        className={`p-2 rounded-xl transition-colors ${
                           isNewestSchedule
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                             : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
