@@ -5,7 +5,7 @@
 
 import * as XLSX from 'xlsx';
 import { calculateWorkload } from './conflictDetection';
-import { formatEntityList } from './scheduleUtils';
+import { formatEntityList, getEmployeeInitials } from './scheduleUtils';
 
 /**
  * Check if employee can be assigned to DAR
@@ -49,15 +49,17 @@ export function exportToExcel({
       const columnName = entityNames ? `${dar}\n${entityNames}` : dar;
 
       if (isDarTrained && assignment.dars?.includes(idx)) {
-        row[columnName] = entityNames;
+        row[columnName] = 'X';
       } else {
         row[columnName] = '';
       }
     });
 
     // Add other assignment columns
-    row['CPOE'] = assignment.cpoe ? 'CPOE' : '';
-    row['New Incoming Items'] = formatEntityList(assignment.newIncoming);
+    row['CPOE'] = assignment.cpoe ? 'X' : '';
+    row['New Incoming Items'] = (assignment.newIncoming && assignment.newIncoming.length > 0) 
+      ? getEmployeeInitials(employee.name)
+      : '';
     row['Cross-Training'] = formatEntityList(assignment.crossTraining);
     row['Special Projects/Assignments'] = formatEntityList(assignment.specialProjects);
     
