@@ -57,7 +57,7 @@ export function exportToExcel({
 
     // Add other assignment columns
     row['CPOE'] = assignment.cpoe ? 'X' : '';
-    row['New Incoming Items'] = (assignment.newIncoming && assignment.newIncoming.length > 0) 
+    row['New Incoming Items'] = (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) 
       ? getEmployeeInitials(employee.name)
       : '';
     row['Cross-Training'] = formatEntityList(assignment.crossTraining);

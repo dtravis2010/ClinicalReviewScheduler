@@ -162,6 +162,6 @@ export function getActiveEmployees(employees) {
 export function getEmployeeInitials(employeeName) {
   if (!employeeName || typeof employeeName !== 'string') return '';
   
-  const words = employeeName.trim().split(/\s+/);
+  const words = employeeName.trim().split(/\s+/).filter(word => word.length > 0);
   return words.map(word => word.charAt(0).toUpperCase()).join('');
 }
