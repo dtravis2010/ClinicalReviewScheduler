@@ -152,7 +152,7 @@ describe('exportUtils', () => {
       );
     });
 
-    it('should format DAR columns with entity names', () => {
+    it('should format DAR columns with entity names in header and X in cells', () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -172,9 +172,11 @@ describe('exportUtils', () => {
       const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
       const columnName = Object.keys(firstCall[0]).find(key => key.startsWith('DAR 1'));
       expect(columnName).toContain('Entity A/Entity B');
+      // Cell should contain 'X' instead of entity names
+      expect(firstCall[0][columnName]).toBe('X');
     });
 
-    it('should only show DAR assignments for trained employees', () => {
+    it('should only show X for DAR assignments for trained employees', () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -198,8 +200,50 @@ describe('exportUtils', () => {
       const untrainedRow = firstCall.find(row => row['TEAM MEMBER'] === 'Untrained');
       
       const columnName = Object.keys(trainedRow).find(key => key.startsWith('DAR 1'));
-      expect(trainedRow[columnName]).toBe('Entity A');
+      expect(trainedRow[columnName]).toBe('X');
       expect(untrainedRow[columnName]).toBe('');
+    });
+
+    it('should show X for CPOE assignments', () => {
+      const params = {
+        scheduleName: 'Test',
+        startDate: '2024-01-01',
+        employees: [
+          { id: '1', name: 'John Doe', skills: ['CPOE'], archived: false }
+        ],
+        assignments: {
+          '1': { cpoe: true }
+        },
+        darColumns: [],
+        darEntities: {},
+        avgWorkload: 0
+      };
+
+      exportToExcel(params);
+
+      const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
+      expect(firstCall[0]['CPOE']).toBe('X');
+    });
+
+    it('should show employee initials for New Incoming Items', () => {
+      const params = {
+        scheduleName: 'Test',
+        startDate: '2024-01-01',
+        employees: [
+          { id: '1', name: 'John Doe', skills: [], archived: false }
+        ],
+        assignments: {
+          '1': { newIncoming: ['Entity A', 'Entity B'] }
+        },
+        darColumns: [],
+        darEntities: {},
+        avgWorkload: 0
+      };
+
+      exportToExcel(params);
+
+      const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
+      expect(firstCall[0]['New Incoming Items']).toBe('JD');
     });
   });
 });

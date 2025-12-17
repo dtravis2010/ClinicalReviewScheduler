@@ -21,7 +21,7 @@ import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useConflictDetection } from '../hooks/useConflictDetection';
 import { calculateWorkload } from '../utils/conflictDetection';
 import { exportToExcel as exportScheduleToExcel } from '../utils/exportUtils';
-import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees } from '../utils/scheduleUtils';
+import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees, getEmployeeInitials } from '../utils/scheduleUtils';
 import { canAssignDAR, getAvailableEntitiesForDar, getAvailableEntitiesForAssignment } from '../utils/assignmentLogic';
 import { getLastEntityAssignments, formatHistoryDate } from '../utils/entityHistory';
 
@@ -620,7 +620,7 @@ export default function ScheduleGrid({
                         {isDarTrained ? (
                           isAssigned ? (
                             <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                              {entityCode || '✓'}
+                              X
                             </div>
                           ) : (
                             <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
@@ -656,7 +656,7 @@ export default function ScheduleGrid({
                     {employee.skills?.includes('CPOE') ? (
                       assignment.cpoe ? (
                         <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                          CPOE
+                          X
                         </div>
                       ) : (
                         <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
@@ -687,7 +687,7 @@ export default function ScheduleGrid({
                     {readOnly ? (
                       (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
                         <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-                          {getEntityShortCode(assignment.newIncoming)}
+                          {getEmployeeInitials(employee.name)}
                         </div>
                       ) : (
                         <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
@@ -696,7 +696,7 @@ export default function ScheduleGrid({
                       <>
                         {(Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
                           <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                            {getEntityShortCode(assignment.newIncoming)}
+                            {getEmployeeInitials(employee.name)}
                           </div>
                         ) : (
                           <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>

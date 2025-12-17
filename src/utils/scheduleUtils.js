@@ -153,3 +153,15 @@ export function getActiveEmployees(employees) {
     (a.name || '').localeCompare(b.name || '')
   );
 }
+
+/**
+ * Get employee initials from name
+ * @param {string} employeeName - Employee's full name
+ * @returns {string} Employee initials (e.g., "John Doe" -> "JD")
+ */
+export function getEmployeeInitials(employeeName) {
+  if (!employeeName || typeof employeeName !== 'string') return '';
+  
+  const words = employeeName.trim().split(/\s+/).filter(word => word.length > 0);
+  return words.map(word => word.charAt(0).toUpperCase()).join('');
+}
