@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees, hasSpecialProjects } from '../../utils/scheduleUtils';
+import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees, hasSpecialProjects, getEmployeeInitials } from '../../utils/scheduleUtils';
 
 describe('Schedule Utilities', () => {
   describe('formatEntityList', () => {
@@ -203,6 +203,40 @@ describe('Schedule Utilities', () => {
 
     it('should return false for object with other field containing null', () => {
       expect(hasSpecialProjects({ threePEmail: false, threePBackupEmail: false, float: false, other: null })).toBe(false);
+    });
+  });
+
+  describe('getEmployeeInitials', () => {
+    it('should get initials from two-word name', () => {
+      expect(getEmployeeInitials('John Doe')).toBe('JD');
+    });
+
+    it('should get initials from three-word name', () => {
+      expect(getEmployeeInitials('John Paul Jones')).toBe('JPJ');
+    });
+
+    it('should get initials from single-word name', () => {
+      expect(getEmployeeInitials('Madonna')).toBe('M');
+    });
+
+    it('should handle extra spaces', () => {
+      expect(getEmployeeInitials('  John   Doe  ')).toBe('JD');
+    });
+
+    it('should return empty string for empty string', () => {
+      expect(getEmployeeInitials('')).toBe('');
+    });
+
+    it('should return empty string for null', () => {
+      expect(getEmployeeInitials(null)).toBe('');
+    });
+
+    it('should return empty string for undefined', () => {
+      expect(getEmployeeInitials(undefined)).toBe('');
+    });
+
+    it('should handle lowercase names', () => {
+      expect(getEmployeeInitials('john doe')).toBe('JD');
     });
   });
 });
