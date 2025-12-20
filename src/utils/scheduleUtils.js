@@ -17,29 +17,51 @@ export function formatEntityList(entityList) {
 
 /**
  * Format date range for display
+ * Handles three display modes:
+ * - Same month: "January 2026"
+ * - Multi-month same year: "Jan–Feb 2026"
+ * - Year boundary: "Dec 2025–Jan 2026"
+ *
  * @param {string} startDate - Start date (YYYY-MM-DD format)
  * @param {string} endDate - End date (YYYY-MM-DD format)
- * @param {boolean} monthYearOnly - If true, show only month and year (e.g., "Jan 2026 - Feb 2026")
+ * @param {boolean} monthYearOnly - If true, show only month and year format
  * @returns {string} Formatted date range
  */
 export function formatDateRange(startDate, endDate, monthYearOnly = false) {
   if (!startDate || !endDate) return '';
-  
+
   if (monthYearOnly) {
     try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      
-      const startMonth = start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      const endMonth = end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      
-      return `${startMonth} - ${endMonth}`;
+      const start = new Date(startDate + 'T00:00:00');
+      const end = new Date(endDate + 'T00:00:00');
+
+      const startMonth = start.getMonth();
+      const endMonth = end.getMonth();
+      const startYear = start.getFullYear();
+      const endYear = end.getFullYear();
+
+      // Same month and year: "January 2026"
+      if (startMonth === endMonth && startYear === endYear) {
+        return start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      }
+
+      // Same year, different months: "Jan–Feb 2026"
+      if (startYear === endYear) {
+        const startMonthShort = start.toLocaleDateString('en-US', { month: 'short' });
+        const endMonthShort = end.toLocaleDateString('en-US', { month: 'short' });
+        return `${startMonthShort}–${endMonthShort} ${startYear}`;
+      }
+
+      // Different years: "Dec 2025–Jan 2026"
+      const startFormatted = start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      const endFormatted = end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return `${startFormatted}–${endFormatted}`;
     } catch (error) {
       // Fallback to original format if date parsing fails
       return `${startDate} to ${endDate}`;
     }
   }
-  
+
   return `${startDate} to ${endDate}`;
 }
 

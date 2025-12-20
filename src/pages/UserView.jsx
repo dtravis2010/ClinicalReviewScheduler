@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { logger } from '../utils/logger';
-import { Calendar, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Lock } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import { ScheduleSkeleton } from '../components/Skeleton';
 import ThemeToggle from '../components/ThemeToggle';
+import { formatDateRange } from '../utils/scheduleUtils';
 
 export default function UserView() {
   const [schedule, setSchedule] = useState(null);
@@ -157,24 +158,15 @@ export default function UserView() {
     return <ScheduleSkeleton />;
   }
 
-  const handlePreviousSchedule = () => {
-    if (currentScheduleIndex < publishedSchedules.length - 1) {
-      const newIndex = currentScheduleIndex + 1;
+  // Handle schedule navigation from ScheduleGrid's ScheduleDateBanner
+  const handleScheduleChange = useCallback((newSchedule) => {
+    if (!newSchedule) return;
+    const newIndex = publishedSchedules.findIndex(s => s.id === newSchedule.id);
+    if (newIndex !== -1) {
       setCurrentScheduleIndex(newIndex);
-      setSchedule(publishedSchedules[newIndex]);
+      setSchedule(newSchedule);
     }
-  };
-
-  const handleNextSchedule = () => {
-    if (currentScheduleIndex > 0) {
-      const newIndex = currentScheduleIndex - 1;
-      setCurrentScheduleIndex(newIndex);
-      setSchedule(publishedSchedules[newIndex]);
-    }
-  };
-
-  const isOldestSchedule = currentScheduleIndex >= publishedSchedules.length - 1;
-  const isNewestSchedule = currentScheduleIndex <= 0;
+  }, [publishedSchedules]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -223,6 +215,7 @@ export default function UserView() {
           </div>
         ) : schedule ? (
           <div>
+            {/* Schedule info card - simplified, navigation is in ScheduleDateBanner */}
             <div className="mb-6 card dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
@@ -230,7 +223,7 @@ export default function UserView() {
                     {schedule.name || 'Current Schedule'}
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {schedule.startDate} - {schedule.endDate}
+                    {formatDateRange(schedule.startDate, schedule.endDate, true) || 'No dates set'}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -238,47 +231,21 @@ export default function UserView() {
                     Published
                   </span>
                   {publishedSchedules.length > 1 && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handlePreviousSchedule}
-                        disabled={isOldestSchedule}
-                        className={`p-2 rounded-lg transition-colors ${
-                          isOldestSchedule
-                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                            : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
-                        }`}
-                        aria-label="Previous (older) schedule"
-                        title="Previous (older) schedule"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {currentScheduleIndex + 1} of {publishedSchedules.length}
-                      </span>
-                      <button
-                        onClick={handleNextSchedule}
-                        disabled={isNewestSchedule}
-                        className={`p-2 rounded-lg transition-colors ${
-                          isNewestSchedule
-                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                            : 'bg-thr-blue-100 dark:bg-thr-blue-900/30 text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-200 dark:hover:bg-thr-blue-900/50'
-                        }`}
-                        aria-label="Next (newer) schedule"
-                        title="Next (newer) schedule"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {currentScheduleIndex + 1} of {publishedSchedules.length}
+                    </span>
                   )}
                 </div>
               </div>
             </div>
 
-            <ScheduleGrid 
-              schedule={schedule} 
+            <ScheduleGrid
+              schedule={schedule}
               employees={employees}
               entities={entities}
-              readOnly={true} 
+              readOnly={true}
+              schedules={publishedSchedules}
+              onScheduleChange={handleScheduleChange}
             />
           </div>
         ) : (

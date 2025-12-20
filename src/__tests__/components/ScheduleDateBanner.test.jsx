@@ -19,9 +19,10 @@ describe('ScheduleDateBanner', () => {
 
   it('should render the date range', () => {
     render(<ScheduleDateBanner {...defaultProps} />);
-    
-    // The component should display formatted date range
-    expect(screen.getByText(/Jan 2025 - Dec 2025/i)).toBeInTheDocument();
+
+    // The component should display formatted date range with em-dash
+    // For same-year multi-month: "Jan–Dec 2025"
+    expect(screen.getByText(/Jan–Dec 2025/i)).toBeInTheDocument();
   });
 
   it('should show current schedule with blue gradient', () => {
@@ -55,34 +56,34 @@ describe('ScheduleDateBanner', () => {
   it('should call onPreviousSchedule when previous button is clicked', async () => {
     const user = userEvent.setup();
     const onPreviousSchedule = vi.fn();
-    
+
     render(
       <ScheduleDateBanner
         {...defaultProps}
         onPreviousSchedule={onPreviousSchedule}
       />
     );
-    
-    const prevButton = screen.getByLabelText('Previous schedule');
+
+    const prevButton = screen.getByLabelText('Go to previous (older) schedule');
     await user.click(prevButton);
-    
+
     expect(onPreviousSchedule).toHaveBeenCalledTimes(1);
   });
 
   it('should call onNextSchedule when next button is clicked', async () => {
     const user = userEvent.setup();
     const onNextSchedule = vi.fn();
-    
+
     render(
       <ScheduleDateBanner
         {...defaultProps}
         onNextSchedule={onNextSchedule}
       />
     );
-    
-    const nextButton = screen.getByLabelText('Next schedule');
+
+    const nextButton = screen.getByLabelText('Go to next (newer) schedule');
     await user.click(nextButton);
-    
+
     expect(onNextSchedule).toHaveBeenCalledTimes(1);
   });
 
@@ -93,8 +94,8 @@ describe('ScheduleDateBanner', () => {
         canGoPrevious={false}
       />
     );
-    
-    const prevButton = screen.getByLabelText('Previous schedule');
+
+    const prevButton = screen.getByLabelText('Go to previous (older) schedule');
     expect(prevButton).toBeDisabled();
   });
 
@@ -105,8 +106,8 @@ describe('ScheduleDateBanner', () => {
         canGoNext={false}
       />
     );
-    
-    const nextButton = screen.getByLabelText('Next schedule');
+
+    const nextButton = screen.getByLabelText('Go to next (newer) schedule');
     expect(nextButton).toBeDisabled();
   });
 
