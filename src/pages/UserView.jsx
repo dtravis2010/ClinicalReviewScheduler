@@ -154,11 +154,8 @@ export default function UserView() {
     };
   }, []);
 
-  if (loading) {
-    return <ScheduleSkeleton />;
-  }
-
   // Handle schedule navigation from ScheduleGrid's ScheduleDateBanner
+  // Note: This hook must be called before any early returns to follow React's rules of hooks
   const handleScheduleChange = useCallback((newSchedule) => {
     if (!newSchedule) return;
     const newIndex = publishedSchedules.findIndex(s => s.id === newSchedule.id);
@@ -167,6 +164,10 @@ export default function UserView() {
       setSchedule(newSchedule);
     }
   }, [publishedSchedules]);
+
+  if (loading) {
+    return <ScheduleSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
