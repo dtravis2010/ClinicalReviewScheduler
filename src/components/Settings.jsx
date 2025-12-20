@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus } from 'lucide-react';
 import EntityManagement from './EntityManagement';
 import ProductivityImport from './ProductivityImport';
+import DarEntityConfig from './DarEntityConfig';
 
 export default function Settings({ employees = [], onUpdate }) {
   const [darConfig, setDarConfig] = useState({});
@@ -12,9 +13,6 @@ export default function Settings({ employees = [], onUpdate }) {
   const [entities, setEntities] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Generate DAR columns dynamically based on count
-  const darColumns = Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`);
 
   useEffect(() => {
     loadData();
@@ -57,13 +55,14 @@ export default function Settings({ employees = [], onUpdate }) {
     }
   }
 
-  function handleDarConfigChange(darIndex, value) {
+  // Handle DAR config change - accepts array of entity names
+  const handleDarConfigChange = useCallback((darIndex, entityNames) => {
     setDarConfig(prev => ({
       ...prev,
-      [darIndex]: value
+      [darIndex]: entityNames
     }));
     setHasChanges(true);
-  }
+  }, []);
 
   function handleDarCountChange(newCount) {
     // Limit between 3 and 8 DARs
@@ -154,24 +153,14 @@ export default function Settings({ employees = [], onUpdate }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-          {darColumns.map((dar, idx) => (
-            <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-600">
-              <label className="block text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                {dar}
-              </label>
-              <input
-                type="text"
-                value={darConfig[idx] || ''}
-                onChange={(e) => handleDarConfigChange(idx, e.target.value)}
-                className="input-field"
-                placeholder="e.g., THFR/FM/THFM"
-              />
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                Enter entity codes separated by slashes
-              </p>
-            </div>
-          ))}
+        {/* Entity-based DAR Configuration */}
+        <div className="mt-6">
+          <DarEntityConfig
+            darCount={darCount}
+            darConfig={darConfig}
+            entities={entities}
+            onConfigChange={handleDarConfigChange}
+          />
         </div>
 
         <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
