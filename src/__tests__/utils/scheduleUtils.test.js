@@ -25,20 +25,64 @@ describe('Schedule Utilities', () => {
   });
 
   describe('formatDateRange', () => {
-    it('should format date range correctly', () => {
-      expect(formatDateRange('2024-01-01', '2024-01-07')).toBe('2024-01-01 to 2024-01-07');
+    describe('default mode (full dates)', () => {
+      it('should format date range correctly', () => {
+        expect(formatDateRange('2024-01-01', '2024-01-07')).toBe('2024-01-01 to 2024-01-07');
+      });
+
+      it('should return empty string when start date missing', () => {
+        expect(formatDateRange('', '2024-01-07')).toBe('');
+      });
+
+      it('should return empty string when end date missing', () => {
+        expect(formatDateRange('2024-01-01', '')).toBe('');
+      });
+
+      it('should return empty string when both dates missing', () => {
+        expect(formatDateRange('', '')).toBe('');
+      });
     });
 
-    it('should return empty string when start date missing', () => {
-      expect(formatDateRange('', '2024-01-07')).toBe('');
-    });
+    describe('monthYearOnly mode', () => {
+      it('should show full month name for same month and year (e.g., "January 2026")', () => {
+        expect(formatDateRange('2026-01-01', '2026-01-31', true)).toBe('January 2026');
+      });
 
-    it('should return empty string when end date missing', () => {
-      expect(formatDateRange('2024-01-01', '')).toBe('');
-    });
+      it('should show abbreviated months for multi-month same year (e.g., "Jan–Feb 2026")', () => {
+        expect(formatDateRange('2026-01-01', '2026-02-28', true)).toBe('Jan–Feb 2026');
+      });
 
-    it('should return empty string when both dates missing', () => {
-      expect(formatDateRange('', '')).toBe('');
+      it('should show both years for year boundary (e.g., "Dec 2025–Jan 2026")', () => {
+        expect(formatDateRange('2025-12-01', '2026-01-31', true)).toBe('Dec 2025–Jan 2026');
+      });
+
+      it('should handle multi-month spans within same year', () => {
+        expect(formatDateRange('2026-03-01', '2026-06-30', true)).toBe('Mar–Jun 2026');
+      });
+
+      it('should handle full year span', () => {
+        expect(formatDateRange('2026-01-01', '2026-12-31', true)).toBe('Jan–Dec 2026');
+      });
+
+      it('should handle cross-year multi-month span', () => {
+        expect(formatDateRange('2025-11-01', '2026-02-28', true)).toBe('Nov 2025–Feb 2026');
+      });
+
+      it('should return empty string when start date missing', () => {
+        expect(formatDateRange('', '2026-01-31', true)).toBe('');
+      });
+
+      it('should return empty string when end date missing', () => {
+        expect(formatDateRange('2026-01-01', '', true)).toBe('');
+      });
+
+      it('should return empty string when both dates missing', () => {
+        expect(formatDateRange('', '', true)).toBe('');
+      });
+
+      it('should return empty string for null dates', () => {
+        expect(formatDateRange(null, null, true)).toBe('');
+      });
     });
   });
 
