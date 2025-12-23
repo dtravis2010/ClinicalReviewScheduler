@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
 import LoginPage from './pages/LoginPage';
 import SupervisorDashboard from './pages/SupervisorDashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
@@ -70,8 +71,10 @@ function App() {
     <EnhancedErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <AppContent />
-          <ToastProvider />
+          <UserPreferencesProvider>
+            <AppContent />
+            <ToastProvider />
+          </UserPreferencesProvider>
         </AuthProvider>
       </ThemeProvider>
     </EnhancedErrorBoundary>

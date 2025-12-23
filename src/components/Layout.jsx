@@ -15,6 +15,7 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import GlobalUXEnhancements from './GlobalUXEnhancements';
 
 /**
  * App Shell Layout with THR-blue gradient header and side navigation
@@ -24,7 +25,7 @@ import ThemeToggle from './ThemeToggle';
  * - Light THR green highlight for selected item
  * - Smooth slides and transitions
  */
-export default function Layout({ children, title, subtitle }) {
+export default function Layout({ children, title, subtitle, onSave, onNew, onExport, onUndo, onRedo }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -207,6 +208,15 @@ export default function Layout({ children, title, subtitle }) {
           {children}
         </main>
       </div>
+
+      {/* Global UX Enhancements - Keyboard shortcuts and notifications */}
+      <GlobalUXEnhancements
+        onSave={onSave}
+        onNew={onNew}
+        onExport={onExport}
+        onUndo={onUndo}
+        onRedo={onRedo}
+      />
     </div>
   );
 }
