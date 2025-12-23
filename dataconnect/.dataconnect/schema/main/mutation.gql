@@ -1,0 +1,552 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `Category` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  category_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Category_Data!
+  ): Category_KeyOutput! @fdc_generated(from: "Category", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Event` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  event_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Event_Data!
+  ): Event_KeyOutput! @fdc_generated(from: "Event", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Invitation` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  invitation_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Invitation_Data!
+  ): Invitation_KeyOutput! @fdc_generated(from: "Invitation", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Reminder` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  reminder_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Reminder_Data!
+  ): Reminder_KeyOutput! @fdc_generated(from: "Reminder", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `Category` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  category_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Category_Data!]!
+  ): [Category_KeyOutput!]! @fdc_generated(from: "Category", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Event` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  event_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Event_Data!]!
+  ): [Event_KeyOutput!]! @fdc_generated(from: "Event", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Invitation` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  invitation_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Invitation_Data!]!
+  ): [Invitation_KeyOutput!]! @fdc_generated(from: "Invitation", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Reminder` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  reminder_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Reminder_Data!]!
+  ): [Reminder_KeyOutput!]! @fdc_generated(from: "Reminder", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `Category` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Category`.
+  """
+  category_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Category_Data!
+  ): Category_KeyOutput! @fdc_generated(from: "Category", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Event` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Event`.
+  """
+  event_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Event_Data!
+  ): Event_KeyOutput! @fdc_generated(from: "Event", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Invitation` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Invitation`.
+  """
+  invitation_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Invitation_Data!
+  ): Invitation_KeyOutput! @fdc_generated(from: "Invitation", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Reminder` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Reminder`.
+  """
+  reminder_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Reminder_Data!
+  ): Reminder_KeyOutput! @fdc_generated(from: "Reminder", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `Category` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Category`.
+  """
+  category_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Category_Data!]!
+  ): [Category_KeyOutput!]! @fdc_generated(from: "Category", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Event` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Event`.
+  """
+  event_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Event_Data!]!
+  ): [Event_KeyOutput!]! @fdc_generated(from: "Event", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Invitation` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Invitation`.
+  """
+  invitation_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Invitation_Data!]!
+  ): [Invitation_KeyOutput!]! @fdc_generated(from: "Invitation", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Reminder` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Reminder`.
+  """
+  reminder_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Reminder_Data!]!
+  ): [Reminder_KeyOutput!]! @fdc_generated(from: "Reminder", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Category` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Category` or `null` if not found.
+  """
+  category_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Category_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Category_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Category_Data!
+  ): Category_KeyOutput @fdc_generated(from: "Category", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Event` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Event` or `null` if not found.
+  """
+  event_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Event_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Event_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Event_Data!
+  ): Event_KeyOutput @fdc_generated(from: "Event", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Invitation` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Invitation` or `null` if not found.
+  """
+  invitation_update(
+    """
+    The key used to identify the object.
+    """
+    key: Invitation_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Invitation_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Invitation_Data!
+  ): Invitation_KeyOutput @fdc_generated(from: "Invitation", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Reminder` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Reminder` or `null` if not found.
+  """
+  reminder_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Reminder_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Reminder_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Reminder_Data!
+  ): Reminder_KeyOutput @fdc_generated(from: "Reminder", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
+  """
+  user_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: User_Data!
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `Category` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  category_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Category_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Category_Data!
+  ): Int! @fdc_generated(from: "Category", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Event` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  event_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Event_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Event_Data!
+  ): Int! @fdc_generated(from: "Event", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Invitation` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  invitation_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Invitation_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Invitation_Data!
+  ): Int! @fdc_generated(from: "Invitation", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Reminder` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  reminder_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Reminder_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Reminder_Data!
+  ): Int! @fdc_generated(from: "Reminder", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  user_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: User_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: User_Data!
+  ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Category` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  category_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Category_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Category_FirstRow
+  ): Category_KeyOutput @fdc_generated(from: "Category", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Event` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  event_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Event_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Event_FirstRow
+  ): Event_KeyOutput @fdc_generated(from: "Event", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Invitation` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  invitation_delete(
+    """
+    The key used to identify the object.
+    """
+    key: Invitation_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Invitation_FirstRow
+  ): Invitation_KeyOutput @fdc_generated(from: "Invitation", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Reminder` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  reminder_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Reminder_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Reminder_FirstRow
+  ): Reminder_KeyOutput @fdc_generated(from: "Reminder", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  user_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `Category` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  category_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Category_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Category", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Event` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  event_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Event_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Event", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Invitation` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  invitation_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Invitation_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Invitation", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Reminder` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  reminder_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Reminder_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Reminder", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  user_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: User_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+}

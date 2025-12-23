@@ -1,0 +1,88 @@
+mutation PopulateDatabaseWithSeedData @transaction @auth(level: NO_ACCESS) {
+  user_insertMany(
+    data: [
+      {
+        id: "6b9b7a54-2b2b-4b1e-8b0a-4b7b6c1c7d8e"
+        createdAt: "2024-04-24T12:00:00Z"
+        displayName: "John Doe"
+        email: "john.doe@example.com"
+        timezone: "America/Los_Angeles"
+      }
+      {
+        id: "7c0c8b65-3c3c-4c2f-9c1b-5c8c7d2d8e9f"
+        createdAt: "2024-04-25T14:00:00Z"
+        displayName: "Jane Smith"
+        email: "jane.smith@example.com"
+        timezone: "Europe/London"
+      }
+    ]
+  )
+  category_insertMany(
+    data: [
+      {
+        id: "8d1d9c76-4d4d-4d30-ac2c-6d9d8e3e90ab"
+        userId: "6b9b7a54-2b2b-4b1e-8b0a-4b7b6c1c7d8e"
+        createdAt: "2024-04-26T10:00:00Z"
+        name: "Work"
+        color: "#FF0000"
+      }
+      {
+        id: "9e2e0d87-5e5e-4e41-bd3d-7e2e9f4f01cd"
+        userId: "7c0c8b65-3c3c-4c2f-9c1b-5c8c7d2d8e9f"
+        createdAt: "2024-04-27T09:00:00Z"
+        name: "Personal"
+        color: "#00FF00"
+      }
+    ]
+  )
+  event_insertMany(
+    data: [
+      {
+        id: "af3f1e98-6f6f-4f52-ce4e-8f3fa0a01de2"
+        organizerId: "6b9b7a54-2b2b-4b1e-8b0a-4b7b6c1c7d8e"
+        categoryId: "8d1d9c76-4d4d-4d30-ac2c-6d9d8e3e90ab"
+        createdAt: "2024-04-28T11:00:00Z"
+        startTime: "2024-05-01T09:00:00Z"
+        endTime: "2024-05-01T17:00:00Z"
+        title: "Meeting"
+        description: "Discuss project progress"
+        location: "Conference Room A"
+        isPublic: false
+      }
+      {
+        id: "bc4c2fa9-7a7a-4a63-df5f-9a4c8b5b2ef3"
+        organizerId: "7c0c8b65-3c3c-4c2f-9c1b-5c8c7d2d8e9f"
+        categoryId: "9e2e0d87-5e5e-4e41-bd3d-7e2e9f4f01cd"
+        createdAt: "2024-04-29T13:00:00Z"
+        startTime: "2024-05-03T19:00:00Z"
+        endTime: "2024-05-03T22:00:00Z"
+        title: "Dinner"
+        description: "Catch up with friends"
+        location: "Restaurant B"
+        isPublic: true
+      }
+    ]
+  )
+  invitation_insertMany(
+    data: [
+      {
+        eventId: "af3f1e98-6f6f-4f52-ce4e-8f3fa0a01de2"
+        inviteeId: "7c0c8b65-3c3c-4c2f-9c1b-5c8c7d2d8e9f"
+        createdAt: "2024-04-30T15:00:00Z"
+        status: "pending"
+      }
+    ]
+  )
+  reminder_insertMany(
+    data: [
+      {
+        id: "cd5d30ba-8b8b-4b74-ae6a-ab5d9c6c3104"
+        eventId: "af3f1e98-6f6f-4f52-ce4e-8f3fa0a01de2"
+        userId: "6b9b7a54-2b2b-4b1e-8b0a-4b7b6c1c7d8e"
+        createdAt: "2024-05-01T08:00:00Z"
+        reminderTime: "2024-05-01T08:30:00Z"
+        method: "email"
+      }
+    ]
+  )
+}

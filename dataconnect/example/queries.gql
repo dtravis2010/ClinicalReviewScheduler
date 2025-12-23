@@ -1,0 +1,59 @@
+mutation CreateNewEvent($title: String!, $description: String, $startTime: Timestamp!, $endTime: Timestamp!, $location: String, $isPublic: Boolean!, $categoryId: UUID) @auth(level: USER) {
+  event_insert(data: {
+    title: $title,
+    description: $description,
+    startTime: $startTime,
+    endTime: $endTime,
+    location: $location,
+    isPublic: $isPublic,
+    organizerId_expr: "auth.uid",
+    categoryId: $categoryId
+  })
+}
+
+query GetMyEvents @auth(level: USER) {
+  events(where: { organizerId: { eq_expr: "auth.uid" } }) {
+    id
+    title
+    description
+    startTime
+    endTime
+    location
+    isPublic
+    category {
+      id
+      name
+      color
+    }
+  }
+}
+
+mutation InviteUserToEvent($eventId: UUID!, $inviteeId: UUID!) @auth(level: USER) {
+  invitation_insert(data: {
+    eventId: $eventId,
+    inviteeId: $inviteeId,
+    status: "pending",
+    createdAt_expr: "request.time"
+  })
+}
+
+query GetPublicEvents @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  events(where: { isPublic: { eq: true } }) {
+    id
+    title
+    description
+    startTime
+    endTime
+    location
+    organizer {
+      id
+      displayName
+      email
+    }
+    category {
+      id
+      name
+      color
+    }
+  }
+}
