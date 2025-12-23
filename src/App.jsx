@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import { ThemeProvider } from './contexts/ThemeContext';
 import LoginPage from './pages/LoginPage';
 import SupervisorDashboard from './pages/SupervisorDashboard';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import UserView from './pages/UserView';
 import ConfigurationError from './components/ConfigurationError';
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
@@ -28,6 +29,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <SupervisorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <AnalyticsDashboard />
               </ProtectedRoute>
             }
           />
