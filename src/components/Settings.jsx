@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus, User } from 'lucide-react';
 import EntityManagement from './EntityManagement';
 import ProductivityImport from './ProductivityImport';
 import DarEntityConfig from './DarEntityConfig';
+import UserPreferencesPanel from './UserPreferencesPanel';
 
 export default function Settings({ employees = [], onUpdate }) {
   const [darConfig, setDarConfig] = useState({});
@@ -101,8 +102,26 @@ export default function Settings({ employees = [], onUpdate }) {
       <div>
         <h2 className="text-h2 text-slate-900 dark:text-slate-100">Settings</h2>
         <p className="text-body-sm text-slate-600 dark:text-slate-400 mt-1">
-          Configure DAR assignments and manage entities
+          Configure DAR assignments, manage entities, and customize your preferences
         </p>
+      </div>
+
+      {/* User Preferences */}
+      <div className="card">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-500/5 flex items-center justify-center">
+            <User className="w-5 h-5 text-purple-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              User Preferences
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Customize your display, notifications, and accessibility settings
+            </p>
+          </div>
+        </div>
+        <UserPreferencesPanel />
       </div>
 
       {/* DAR Configuration */}
