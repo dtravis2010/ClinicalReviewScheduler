@@ -47,14 +47,30 @@ export function UserPreferencesProvider({ children, userId = null }) {
         setPreferences((prev) => {
           const updated = { ...prev };
           const keys = key.split('.');
+          
+          // Guard against prototype pollution
+          const lastKey = keys[keys.length - 1];
+          if (lastKey === '__proto__' || lastKey === 'constructor' || lastKey === 'prototype') {
+            throw new Error('Invalid preference key');
+          }
+          
           let target = updated;
           
           for (let i = 0; i < keys.length - 1; i++) {
-            if (!target[keys[i]]) target[keys[i]] = {};
-            target = target[keys[i]];
+            const currentKey = keys[i];
+            
+            // Guard against prototype pollution
+            if (currentKey === '__proto__' || currentKey === 'constructor' || currentKey === 'prototype') {
+              throw new Error('Invalid preference key');
+            }
+            
+            if (!target[currentKey] || typeof target[currentKey] !== 'object') {
+              target[currentKey] = {};
+            }
+            target = target[currentKey];
           }
           
-          target[keys[keys.length - 1]] = value;
+          target[lastKey] = value;
           
           // Re-apply accessibility settings if changed
           if (key.startsWith('accessibility.')) {

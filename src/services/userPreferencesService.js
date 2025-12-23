@@ -171,10 +171,24 @@ class UserPreferencesService {
   setNestedValue(obj, path, value) {
     const keys = path.split('.');
     const lastKey = keys.pop();
+    
+    // Guard against prototype pollution
+    if (lastKey === '__proto__' || lastKey === 'constructor' || lastKey === 'prototype') {
+      throw new Error('Invalid preference key');
+    }
+    
     const target = keys.reduce((acc, key) => {
-      if (!acc[key]) acc[key] = {};
+      // Guard against prototype pollution
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        throw new Error('Invalid preference key');
+      }
+      
+      if (!acc[key] || typeof acc[key] !== 'object') {
+        acc[key] = {};
+      }
       return acc[key];
     }, obj);
+    
     target[lastKey] = value;
     return obj;
   }

@@ -89,6 +89,30 @@ describe('UserPreferencesService', () => {
       
       expect(result.level1.level2.level3.level4).toBe('deep');
     });
+
+    it('should prevent prototype pollution via __proto__', () => {
+      const obj = {};
+      
+      expect(() => {
+        userPreferencesService.setNestedValue(obj, '__proto__.polluted', 'bad');
+      }).toThrow('Invalid preference key');
+    });
+
+    it('should prevent prototype pollution via constructor', () => {
+      const obj = {};
+      
+      expect(() => {
+        userPreferencesService.setNestedValue(obj, 'constructor.polluted', 'bad');
+      }).toThrow('Invalid preference key');
+    });
+
+    it('should prevent prototype pollution via nested __proto__', () => {
+      const obj = {};
+      
+      expect(() => {
+        userPreferencesService.setNestedValue(obj, 'a.__proto__.polluted', 'bad');
+      }).toThrow('Invalid preference key');
+    });
   });
 
   describe('subscribe/notifyListeners', () => {
