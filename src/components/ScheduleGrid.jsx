@@ -1109,6 +1109,8 @@ export default function ScheduleGrid({
         employees={activeEmployees}
         entities={entities}
         darColumns={darColumns}
+        assignments={assignments}
+        darEntities={darEntities}
         onApply={handleApplyBulkAssignment}
       />
     </div>
