@@ -75,11 +75,11 @@ describe('Assignment Logic Utilities', () => {
       { id: '3', name: 'Entity3' }
     ];
 
-    it('should exclude entities assigned to DARs', () => {
+    it('should NOT exclude entities assigned to DARs (allowing all entities)', () => {
       const darEntities = { 0: ['Entity1'] };
       const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', {}, darEntities, entities);
-      expect(result).toHaveLength(2);
-      expect(result.find(e => e.name === 'Entity1')).toBeUndefined();
+      expect(result).toHaveLength(3); // All entities should be available
+      expect(result.find(e => e.name === 'Entity1')).toBeDefined(); // Entity1 should be available even though it's in a DAR
     });
 
     it('should exclude entities assigned to other employees', () => {
@@ -108,14 +108,15 @@ describe('Assignment Logic Utilities', () => {
       expect(result).toHaveLength(3);
     });
 
-    it('should handle multiple exclusions', () => {
-      const darEntities = { 0: ['Entity1'] };
+    it('should handle multiple exclusions (but not DAR exclusions)', () => {
+      const darEntities = { 0: ['Entity1'] }; // Entity1 is in a DAR but should NOT be excluded
       const assignments = {
-        emp1: { crossTraining: ['Entity2'] },
-        emp2: { newIncoming: ['Entity3'] }
+        emp1: { crossTraining: ['Entity2'] }, // Entity2 should be excluded (same employee, different field)
+        emp2: { newIncoming: ['Entity3'] }    // Entity3 should be excluded (different employee)
       };
       const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', assignments, darEntities, entities);
-      expect(result).toHaveLength(0);
+      expect(result).toHaveLength(1); // Only Entity1 should be available
+      expect(result.find(e => e.name === 'Entity1')).toBeDefined();
     });
   });
 });

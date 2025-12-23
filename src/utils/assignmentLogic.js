@@ -41,27 +41,20 @@ export function getAvailableEntitiesForDar(darIndex, darEntities, entities) {
 
 /**
  * Get available entities for employee assignment (newIncoming, crossTraining)
- * Excludes entities already assigned to DARs or to other employees
+ * Excludes entities already assigned to other employees
+ * Note: Does NOT exclude entities assigned to DARs to allow all entities to be available
  * @param {string} employeeId - ID of the employee
  * @param {string} field - Field being assigned ('newIncoming' or 'crossTraining')
  * @param {Object} assignments - All employee assignments
- * @param {Object} darEntities - DAR column entity assignments
+ * @param {Object} darEntities - DAR column entity assignments (not used for filtering)
  * @param {Array} entities - All available entities
  * @returns {Array} Available entities for this assignment
  */
 export function getAvailableEntitiesForAssignment(employeeId, field, assignments, darEntities, entities) {
   const assignedEntities = new Set();
   
-  // Add entities assigned to DARs
-  if (darEntities && typeof darEntities === 'object') {
-    Object.values(darEntities).forEach(entityList => {
-      if (Array.isArray(entityList)) {
-        entityList.forEach(e => assignedEntities.add(e));
-      } else if (entityList) {
-        assignedEntities.add(entityList);
-      }
-    });
-  }
+  // Note: We no longer exclude entities assigned to DARs
+  // This allows all entities to be available for New Incoming assignments
 
   // Add entities assigned to other employees or other fields of same employee
   if (assignments && typeof assignments === 'object') {
