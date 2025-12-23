@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { logger } from '../utils/logger';
 
 /**
@@ -8,10 +8,11 @@ import { logger } from '../utils/logger';
  * @param {Object} options - Configuration options
  * @param {number} options.delay - Debounce delay in milliseconds (default: 2000)
  * @param {boolean} options.enabled - Whether auto-save is enabled (default: true)
+ * @param {*} options.resetKey - Reset key to re-initialize auto-save state when changed
  * @returns {Object} Auto-save state and controls
  */
 export function useAutoSave(data, saveFunction, options = {}) {
-  const { delay = 2000, enabled = true } = options;
+  const { delay = 2000, enabled = true, resetKey } = options;
   
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
@@ -22,25 +23,45 @@ export function useAutoSave(data, saveFunction, options = {}) {
   const previousDataRef = useRef(null);
   const isMountedRef = useRef(true);
 
+  const serializedData = useMemo(() => {
+    if (!data) return null;
+    
+    try {
+      return JSON.stringify(data);
+    } catch (err) {
+      logger.error('Error serializing data for auto-save:', err);
+      return null;
+    }
+  }, [data]);
+
   // Initialize previous data on mount
   useEffect(() => {
-    if (previousDataRef.current === null && data) {
-      previousDataRef.current = JSON.stringify(data);
+    if (previousDataRef.current === null && serializedData !== null) {
+      previousDataRef.current = serializedData;
     }
-  }, []);
+  }, [serializedData]);
+
+  // Reset auto-save state when a reset key changes (e.g., switching schedules)
+  useEffect(() => {
+    if (resetKey === undefined) return;
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    previousDataRef.current = serializedData;
+    setIsSaving(false);
+    setLastSaved(null);
+    setError(null);
+    setHasUnsavedChanges(false);
+  }, [resetKey, serializedData]);
 
   // Detect data changes
   const hasChanged = useCallback(() => {
-    if (!data || previousDataRef.current === null) return false;
+    if (!serializedData || previousDataRef.current === null) return false;
     
-    try {
-      const currentData = JSON.stringify(data);
-      return currentData !== previousDataRef.current;
-    } catch (err) {
-      logger.error('Error comparing data for auto-save:', err);
-      return false;
-    }
-  }, [data]);
+    return serializedData !== previousDataRef.current;
+  }, [serializedData]);
 
   // Force save function
   const forceSave = useCallback(async () => {
@@ -55,7 +76,7 @@ export function useAutoSave(data, saveFunction, options = {}) {
       if (isMountedRef.current) {
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
-        previousDataRef.current = JSON.stringify(data);
+        previousDataRef.current = serializedData;
         logger.info('Auto-save completed successfully');
       }
     } catch (err) {
@@ -68,7 +89,7 @@ export function useAutoSave(data, saveFunction, options = {}) {
         setIsSaving(false);
       }
     }
-  }, [data, saveFunction]);
+  }, [data, saveFunction, serializedData]);
 
   // Auto-save effect with debouncing
   useEffect(() => {

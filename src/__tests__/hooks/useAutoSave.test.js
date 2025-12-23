@@ -220,6 +220,25 @@ describe('useAutoSave', () => {
     expect(saveFunction).toHaveBeenCalledTimes(1);
   });
 
+  it('should reset unsaved changes when resetKey changes', async () => {
+    const saveFunction = vi.fn().mockResolvedValue(undefined);
+    const { result, rerender } = renderHook(
+      ({ data, resetKey }) => useAutoSave(data, saveFunction, { delay: 100, resetKey }),
+      { initialProps: { data: { name: 'test1' }, resetKey: 'schedule-a' } }
+    );
+
+    rerender({ data: { name: 'test2' }, resetKey: 'schedule-a' });
+    expect(result.current.hasUnsavedChanges).toBe(true);
+
+    rerender({ data: { name: 'test3' }, resetKey: 'schedule-b' });
+    await waitFor(() => expect(result.current.hasUnsavedChanges).toBe(false));
+
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(saveFunction).not.toHaveBeenCalled();
+  });
+
   it('should cleanup timeout on unmount', () => {
     const saveFunction = vi.fn().mockResolvedValue(undefined);
     const { unmount, rerender } = renderHook(

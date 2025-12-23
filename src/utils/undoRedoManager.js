@@ -98,6 +98,16 @@ export class UndoRedoManager {
   }
 
   /**
+   * Reset the manager to a new state and clear history
+   * @param {*} newState - The new current state
+   */
+  reset(newState) {
+    this.currentState = newState;
+    this.undoStack = [];
+    this.redoStack = [];
+  }
+
+  /**
    * Clear all history
    */
   clear() {

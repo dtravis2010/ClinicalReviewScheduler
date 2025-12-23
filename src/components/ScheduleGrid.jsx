@@ -25,6 +25,21 @@ import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmploye
 import { canAssignDAR, getAvailableEntitiesForDar, getAvailableEntitiesForAssignment } from '../utils/assignmentLogic';
 import { getLastEntityAssignments, formatHistoryDate } from '../utils/entityHistory';
 
+const EMPLOYEE_COLORS = [
+  'text-thr-blue-600 dark:text-thr-blue-400', 
+  'text-thr-green-600 dark:text-thr-green-400', 
+  'text-purple-600 dark:text-purple-400',
+  'text-orange-600 dark:text-orange-400', 
+  'text-pink-600 dark:text-pink-400', 
+  'text-cyan-600 dark:text-cyan-400',
+  'text-rose-600 dark:text-rose-400', 
+  'text-indigo-600 dark:text-indigo-400',
+  'text-teal-600 dark:text-teal-400', 
+  'text-fuchsia-600 dark:text-fuchsia-400', 
+  'text-lime-600 dark:text-lime-400',
+  'text-amber-600 dark:text-amber-400',
+];
+
 export default function ScheduleGrid({
   schedule,
   employees = [],
@@ -39,6 +54,7 @@ export default function ScheduleGrid({
   const {
     state: assignments,
     setState: setAssignments,
+    resetState: resetAssignments,
     undo,
     redo,
     canUndo,
@@ -68,19 +84,19 @@ export default function ScheduleGrid({
   const [showBulkAssignmentModal, setShowBulkAssignmentModal] = useState(false);
 
   // Auto-save functionality
-  const scheduleData = {
+  const scheduleData = useMemo(() => ({
     name: scheduleName,
     startDate,
     endDate,
     assignments,
     darEntities,
     darCount
-  };
+  }), [scheduleName, startDate, endDate, assignments, darEntities, darCount]);
 
   const { isSaving, lastSaved, error: autoSaveError, hasUnsavedChanges: autoSaveHasChanges } = useAutoSave(
     scheduleData,
     onSave,
-    { delay: 2000, enabled: !readOnly && !!schedule }
+    { delay: 2000, enabled: !readOnly && !!schedule, resetKey: schedule?.id }
   );
 
   // Conflict detection
@@ -98,36 +114,21 @@ export default function ScheduleGrid({
   // Use utility function for active employees (memoized) - defined early for use in callbacks
   const activeEmployees = useMemo(() => getActiveEmployees(employees), [employees]);
 
-  // Modern THR-inspired color palette for employee names
-  const employeeColors = [
-    'text-thr-blue-600 dark:text-thr-blue-400', 
-    'text-thr-green-600 dark:text-thr-green-400', 
-    'text-purple-600 dark:text-purple-400',
-    'text-orange-600 dark:text-orange-400', 
-    'text-pink-600 dark:text-pink-400', 
-    'text-cyan-600 dark:text-cyan-400',
-    'text-rose-600 dark:text-rose-400', 
-    'text-indigo-600 dark:text-indigo-400',
-    'text-teal-600 dark:text-teal-400', 
-    'text-fuchsia-600 dark:text-fuchsia-400', 
-    'text-lime-600 dark:text-lime-400',
-    'text-amber-600 dark:text-amber-400',
-  ];
-
   useEffect(() => {
     if (schedule) {
       // Initialize assignments without adding to undo history
-      // We do this by directly setting the state, not through setState
-      setAssignments(schedule.assignments || {});
+      resetAssignments(schedule.assignments || {});
       setScheduleName(schedule.name || '');
       setStartDate(schedule.startDate || '');
       setEndDate(schedule.endDate || '');
       setDarEntities(schedule.darEntities || {});
       setDarCount(schedule.darCount || 5); // Load darCount from schedule
+      setHasChanges(false);
+      setSelectedEmployees(new Set());
     } else {
       loadDefaultDarConfig();
     }
-  }, [schedule, setAssignments]);
+  }, [schedule, resetAssignments]);
 
   async function loadDefaultDarConfig() {
     try {
@@ -550,7 +551,7 @@ export default function ScheduleGrid({
             {activeEmployees.map((employee, empIdx) => {
               const assignment = assignments[employee.id] || {};
               const isDarTrained = canAssignDAR(employee);
-              const colorClass = employeeColors[empIdx % employeeColors.length];
+              const colorClass = EMPLOYEE_COLORS[empIdx % EMPLOYEE_COLORS.length];
 
               return (
                 <tr 
