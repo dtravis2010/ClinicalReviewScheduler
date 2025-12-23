@@ -4,8 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Settings, Monitor, Moon, Sun, Volume2, VolumeX, Accessibility, Keyboard } from 'lucide-react';
-import PropTypes from 'prop-types';
+import { Monitor, Moon, Sun, Volume2, Accessibility, Keyboard } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -299,7 +298,3 @@ export default function UserPreferencesPanel() {
     </div>
   );
 }
-
-UserPreferencesPanel.propTypes = {
-  // No props needed
-};
