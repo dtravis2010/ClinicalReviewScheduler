@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import SupervisorDashboard from './pages/SupervisorDashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ProductivityDashboard from './pages/ProductivityDashboard';
+import InsightsDashboard from './pages/InsightsDashboard';
 import UserView from './pages/UserView';
 import ConfigurationError from './components/ConfigurationError';
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
@@ -46,6 +47,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <ProductivityDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/insights"
+            element={
+              <ProtectedRoute>
+                <InsightsDashboard />
               </ProtectedRoute>
             }
           />
