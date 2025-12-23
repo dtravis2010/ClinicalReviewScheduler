@@ -10,6 +10,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  BarChart3,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
@@ -29,6 +30,7 @@ export default function Layout({ children, title, subtitle }) {
 
   const navItems = [
     { id: 'schedule', label: 'Schedule', icon: Calendar, path: '/supervisor', group: 'main' },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics', group: 'main' },
     { id: 'employees', label: 'Employees', icon: Users, path: '/supervisor?tab=employees', group: 'main' },
     { id: 'entities', label: 'Entities', icon: Building2, path: '/supervisor?tab=entities', group: 'main' },
     { id: 'history', label: 'History', icon: History, path: '/supervisor?tab=history', group: 'secondary' },
