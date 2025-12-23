@@ -1,0 +1,268 @@
+# Clinical Review Scheduler - Historical Data Extraction Task
+
+You are helping extract and transform data from a messy Excel spreadsheet into a structured JSON format for import into a Firebase Firestore database.
+
+## YOUR TASK
+
+Extract historical schedule assignment data from the Excel file(s) I provide and output clean JSON that matches the schema below.
+
+## DATE HANDLING RULES
+
+1. If no specific dates are provided:
+   - Use the 1st of the month as the start date
+   - Use the last day of the month as the end date (28, 29, 30, or 31 depending on month/year)
+
+2. For multi-month schedules:
+   - Start date = 1st of the first month
+   - End date = last day of the final month
+   - Example: "Jan-Feb 2023" becomes startDate: "2023-01-01", endDate: "2023-02-28"
+   - Example: "Oct-Dec 2022" becomes startDate: "2022-10-01", endDate: "2022-12-31"
+
+3. Schedule ID format: YYYY-MM-DD_YYYY-MM-DD (startDate_endDate)
+   - Example: 2023-01-01_2023-02-28
+
+4. Handle leap years: February has 29 days in leap years (2020, 2024, etc.)
+
+## OUTPUT SCHEMA
+
+### Schedule Document
+
+{
+  "id": "2023-01-01_2023-02-28",
+  "name": "JAN AND FEB 2023",
+  "startDate": "2023-01-01",
+  "endDate": "2023-02-28",
+  "status": "published",
+  "darCount": 6,
+  "darEntities": {
+    "0": "ENTITY1/ENTITY2",
+    "1": "ENTITY3/ENTITY4/ENTITY5",
+    "2": "ENTITY6/ENTITY7",
+    "3": "ENTITY8/ENTITY9/ENTITY10",
+    "4": "ENTITY11/ENTITY12/ENTITY13",
+    "5": "ENTITY14/ENTITY15/ENTITY16"
+  },
+  "assignments": {
+    "EMPLOYEE_NAME_AS_KEY": {
+      "dars": [0, 2],
+      "newIncomingItems": "ENTITY_CODE",
+      "cpoe": "",
+      "crossTraining": "",
+      "backupNewIncoming": false,
+      "specialProjects": {
+        "float": false,
+        "threePEmail": false,
+        "threePBackupEmail": false,
+        "notes": ""
+      }
+    }
+  }
+}
+
+### Field Definitions
+
+id - string - Format: YYYY-MM-DD_YYYY-MM-DD
+name - string - Human readable name like "JAN AND FEB 2023"
+startDate - string - ISO date YYYY-MM-DD
+endDate - string - ISO date YYYY-MM-DD
+status - string - Always "published" for historical data
+darCount - number - Number of DAR groups (usually 6)
+darEntities - object - Map of DAR group index (0-5) to entity codes separated by /
+assignments - object - Map of employee name to their assignment details
+
+### Assignment Object Fields
+
+dars - array of integers - DAR group indices (0-5) assigned to employee. Empty array [] if none.
+newIncomingItems - string - Entity code(s) for new incoming items. Empty string "" if none.
+cpoe - string - "CPOE" if assigned, otherwise ""
+crossTraining - string - Cross training notes, or ""
+backupNewIncoming - boolean - true if backup for new incoming, else false
+specialProjects.float - boolean - true if employee is a float
+specialProjects.threePEmail - boolean - true if handles 3:01 PM email
+specialProjects.threePBackupEmail - boolean - true if backup for 3:01 PM email
+specialProjects.notes - string - Any special notes like "FLOAT", "3:01PM EMAIL", etc.
+
+## KNOWN ENTITY CODES
+
+Common entity codes you may encounter (use exactly as shown):
+THP, THPS, THSW, THAMH, THAL, THRW, THF, THS
+THDN, THFM, HEB, THFW, THAZ, THC, THWP
+THK, THD, THA, THB, RW, AMH, DN
+
+## EMPLOYEE EXTRACTION
+
+Also extract a list of unique employees. IMPORTANT: The source data will NOT contain skill information. You must INFER skills from what assignments you see:
+
+{
+  "employees": [
+    {
+      "name": "Erika Cuellar",
+      "skills": ["DAR", "Trace", "Float", "CPOE"],
+      "archived": false,
+      "notes": ""
+    }
+  ]
+}
+
+### Skill Detection Rules (INFER FROM ASSIGNMENTS):
+
+- If employee was assigned to ANY DAR group in ANY schedule -> add "DAR" skill
+- If employee had new incoming items assignment in ANY schedule -> add "Trace" skill
+- If employee was marked as FLOAT in ANY schedule -> add "Float" skill
+- If employee had CPOE assignment in ANY schedule -> add "CPOE" skill
+- Combine all skills across all schedules for each employee
+- If employee only appears in older schedules (before 2024), set "archived": true
+- Otherwise set "archived": false
+
+## OUTPUT FORMAT
+
+Provide the final output as a single JSON object:
+
+{
+  "schedules": [
+    { ...schedule1... },
+    { ...schedule2... }
+  ],
+  "employees": [
+    { ...employee1... },
+    { ...employee2... }
+  ]
+}
+
+## HANDLING MESSY DATA
+
+- Normalize employee names (consistent capitalization, remove extra spaces)
+- If data is ambiguous, make your best guess and add a note
+- Ignore completely empty rows
+- If an employee has no assignments in a period, still include them with empty values
+- Entity codes should be UPPERCASE
+- Employee names should be Title Case
+- Look for patterns like "DAR 1", "DAR1", "Group 1", "1st DAR" etc. to identify DAR groups
+- Look for "NI", "New Incoming", "Incoming", "Trace" to identify new incoming items assignments
+- Look for "Float", "FLOAT", "Floater" to identify float assignments
+- Look for "3pm", "3:01", "3PM Email", "Email" to identify 3PM email assignments
+- Look for "backup", "back up", "BU" to identify backup roles
+
+## EXAMPLE
+
+If the Excel shows something like:
+Jan-Feb 2023
+DAR 1: THP/THPS - Alyssa
+DAR 2: THRW - Maria
+New Incoming: Casey (THP), Jordan (THF)
+FLOAT: Trish
+3PM Email: Erika
+
+Output:
+{
+  "schedules": [
+    {
+      "id": "2023-01-01_2023-02-28",
+      "name": "JAN AND FEB 2023",
+      "startDate": "2023-01-01",
+      "endDate": "2023-02-28",
+      "status": "published",
+      "darCount": 6,
+      "darEntities": {
+        "0": "THP/THPS",
+        "1": "THRW",
+        "2": "",
+        "3": "",
+        "4": "",
+        "5": ""
+      },
+      "assignments": {
+        "Alyssa Norton": {
+          "dars": [0],
+          "newIncomingItems": "",
+          "cpoe": "",
+          "crossTraining": "",
+          "backupNewIncoming": false,
+          "specialProjects": {
+            "float": false,
+            "threePEmail": false,
+            "threePBackupEmail": false,
+            "notes": ""
+          }
+        },
+        "Maria Castillo": {
+          "dars": [1],
+          "newIncomingItems": "",
+          "cpoe": "",
+          "crossTraining": "",
+          "backupNewIncoming": false,
+          "specialProjects": {
+            "float": false,
+            "threePEmail": false,
+            "threePBackupEmail": false,
+            "notes": ""
+          }
+        },
+        "Casey Whipple": {
+          "dars": [],
+          "newIncomingItems": "THP",
+          "cpoe": "",
+          "crossTraining": "",
+          "backupNewIncoming": false,
+          "specialProjects": {
+            "float": false,
+            "threePEmail": false,
+            "threePBackupEmail": false,
+            "notes": ""
+          }
+        },
+        "Jordan Turner": {
+          "dars": [],
+          "newIncomingItems": "THF",
+          "cpoe": "",
+          "crossTraining": "",
+          "backupNewIncoming": false,
+          "specialProjects": {
+            "float": false,
+            "threePEmail": false,
+            "threePBackupEmail": false,
+            "notes": ""
+          }
+        },
+        "Trish Morin": {
+          "dars": [],
+          "newIncomingItems": "FLOAT",
+          "cpoe": "",
+          "crossTraining": "",
+          "backupNewIncoming": false,
+          "specialProjects": {
+            "float": true,
+            "threePEmail": false,
+            "threePBackupEmail": false,
+            "notes": "FLOAT"
+          }
+        },
+        "Erika Cuellar": {
+          "dars": [],
+          "newIncomingItems": "",
+          "cpoe": "",
+          "crossTraining": "",
+          "backupNewIncoming": false,
+          "specialProjects": {
+            "float": false,
+            "threePEmail": true,
+            "threePBackupEmail": false,
+            "notes": "3:01PM EMAIL"
+          }
+        }
+      }
+    }
+  ],
+  "employees": [
+    {"name": "Alyssa Norton", "skills": ["DAR"], "archived": false, "notes": ""},
+    {"name": "Maria Castillo", "skills": ["DAR"], "archived": false, "notes": ""},
+    {"name": "Casey Whipple", "skills": ["Trace"], "archived": false, "notes": ""},
+    {"name": "Jordan Turner", "skills": ["Trace"], "archived": false, "notes": ""},
+    {"name": "Trish Morin", "skills": ["Float"], "archived": false, "notes": ""},
+    {"name": "Erika Cuellar", "skills": [], "archived": false, "notes": ""}
+  ]
+}
+
+---
+
+Now please process the Excel data I am about to provide and output the structured JSON.
