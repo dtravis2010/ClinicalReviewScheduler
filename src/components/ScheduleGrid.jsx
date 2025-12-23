@@ -620,8 +620,8 @@ export default function ScheduleGrid({
                       >
                         {isDarTrained ? (
                           isAssigned ? (
-                            <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                              X
+                            <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight whitespace-nowrap">
+                              {entityCode || 'X'}
                             </div>
                           ) : (
                             <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
@@ -687,8 +687,8 @@ export default function ScheduleGrid({
                   >
                     {readOnly ? (
                       (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-                          {getEmployeeInitials(employee.name)}
+                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight whitespace-nowrap">
+                          {getEntityShortCode(assignment.newIncoming)}
                         </div>
                       ) : (
                         <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
@@ -696,8 +696,8 @@ export default function ScheduleGrid({
                     ) : (
                       <>
                         {(Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
-                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                            {getEmployeeInitials(employee.name)}
+                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight whitespace-nowrap">
+                            {getEntityShortCode(assignment.newIncoming)}
                           </div>
                         ) : (
                           <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
@@ -779,7 +779,7 @@ export default function ScheduleGrid({
                   >
                     {readOnly ? (
                       (Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
+                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight whitespace-nowrap">
                           {getEntityShortCode(assignment.crossTraining)}
                         </div>
                       ) : (
@@ -788,7 +788,7 @@ export default function ScheduleGrid({
                     ) : (
                       <>
                         {(Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
-                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
+                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight whitespace-nowrap">
                             {getEntityShortCode(assignment.crossTraining)}
                           </div>
                         ) : (

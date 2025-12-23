@@ -54,6 +54,48 @@ function getEmployeeId(jsonName) {
   return emp?.id || null;
 }
 
+// Entity code to full name mapping
+const ENTITY_CODE_MAP = {
+  'THA': 'Texas Health Allen',
+  'THAL': 'Texas Health Allen',
+  'THB': 'Texas Health Burleson',
+  'THC': 'Texas Health Cleburn',
+  'THD': 'Texas Health Dallas',
+  'THDN': 'Texas Health Denton',
+  'THFM': 'Texas Health Flowermound',
+  'THFW': 'Texas Health Fort Worth',
+  'THF': 'Texas Health Frisco',
+  'THH': 'Texas Health HEB',
+  'HEB': 'Texas Health HEB',
+  'THK': 'Texas Health Kaufman',
+  'THP': 'Texas Health Plano',
+  'THPS': 'Texas Health Prosper',
+  'THPR': 'Texas Health Prosper',
+  'THR': 'Texas Health Rockwall',
+  'THRW': 'Texas Health Rockwall',
+  'RW': 'Texas Health Rockwall',
+  'SW': 'Texas Health Southwest',
+  'THSW': 'Texas Health Southwest',
+  'THS': 'Texas Health Stephenville',
+  'THWP': 'Texas Health Willow Park',
+  'THAM': 'Texas Health Arlington Memorial',
+  'AM': 'Texas Health Arlington Memorial',
+  'AMH': 'Texas Health Arlington Memorial',
+  'THAZ': 'Texas Health Azle',
+  'THALL': 'Texas Health Alliance',
+  'DN': 'Texas Health Denton',
+};
+
+// Convert entity code string like "THC/THAL/THB" to array of full names
+function convertEntityString(entityStr) {
+  if (!entityStr || typeof entityStr !== 'string') return [];
+  if (entityStr.trim() === '') return [];
+  
+  const codes = entityStr.split('/').map(c => c.trim()).filter(c => c);
+  const fullNames = codes.map(code => ENTITY_CODE_MAP[code.toUpperCase()] || code);
+  return fullNames;
+}
+
 async function main() {
   console.log('📅 Re-importing schedules with correct employee mappings...\n');
 
@@ -103,7 +145,25 @@ async function main() {
     for (const [name, assignment] of Object.entries(schedule.assignments || {})) {
       const empId = getEmployeeId(name);
       if (empId) {
-        newAssignments[empId] = assignment;
+        // Convert assignment fields to expected format
+        const convertedAssignment = {
+          ...assignment,
+          // Convert newIncomingItems string to newIncoming array
+          // e.g., "THC/THAL/THB" -> ["Texas Health Cleburn", "Texas Health Allen", "Texas Health Burleson"]
+          newIncoming: convertEntityString(assignment.newIncomingItems),
+          // Convert crossTraining string to array if needed
+          crossTraining: convertEntityString(assignment.crossTraining),
+          // Keep dars as-is (they're indices)
+          dars: assignment.dars || [],
+          // Keep other fields
+          cpoe: assignment.cpoe || '',
+          backupNewIncoming: assignment.backupNewIncoming || false,
+          specialProjects: assignment.specialProjects || { threePEmail: false, threePBackupEmail: false, float: false, notes: '' }
+        };
+        // Remove old field name
+        delete convertedAssignment.newIncomingItems;
+        
+        newAssignments[empId] = convertedAssignment;
         assignmentCount++;
       } else {
         unmappedEmployees.add(name);
