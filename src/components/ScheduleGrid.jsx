@@ -88,6 +88,45 @@ export default function ScheduleGrid({
   // State for fullscreen mode
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const getActiveExclusiveFields = useCallback((assignment = {}) => {
+    const activeFields = [];
+
+    const hasEntries = (value) => {
+      if (Array.isArray(value)) return value.length > 0;
+      return Boolean(value);
+    };
+
+    if (hasEntries(assignment.dars)) activeFields.push('dars');
+    if (hasEntries(assignment.newIncoming)) activeFields.push('newIncoming');
+    if (assignment.cpoe) activeFields.push('cpoe');
+
+    return activeFields;
+  }, []);
+
+  const formatExclusiveLabel = useCallback((fields = []) => {
+    const labels = {
+      dars: 'DAR',
+      newIncoming: 'New Incoming',
+      cpoe: 'CPOE'
+    };
+
+    if (!fields.length) return '';
+    const mapped = fields.map((field) => labels[field] || field);
+    if (mapped.length === 1) return mapped[0];
+    return `${mapped.slice(0, -1).join(', ')} and ${mapped[mapped.length - 1]}`;
+  }, []);
+
+  const isFieldBlockedByExclusiveAssignment = useCallback((employeeId, targetField) => {
+    const activeFields = getActiveExclusiveFields(assignments[employeeId] || {});
+    return activeFields.length > 0 && !activeFields.includes(targetField);
+  }, [assignments, getActiveExclusiveFields]);
+
+  const getExclusiveBlockMessage = useCallback((employeeId, targetField) => {
+    const activeFields = getActiveExclusiveFields(assignments[employeeId] || {});
+    if (activeFields.length === 0 || activeFields.includes(targetField)) return '';
+    return `Assignment locked by ${formatExclusiveLabel(activeFields)}`;
+  }, [assignments, getActiveExclusiveFields, formatExclusiveLabel]);
+
   // Auto-save functionality
   const scheduleData = useMemo(() => ({
     name: scheduleName,
@@ -150,6 +189,10 @@ export default function ScheduleGrid({
 
   const handleAssignmentChange = useCallback((employeeId, field, value) => {
     if (readOnly) return;
+    const isCurrentlyAssigned = Boolean(assignments[employeeId]?.[field]);
+    const blocked = !isCurrentlyAssigned && isFieldBlockedByExclusiveAssignment(employeeId, field);
+    if (blocked) return;
+
     setAssignments(prev => ({
       ...prev,
       [employeeId]: {
@@ -158,7 +201,7 @@ export default function ScheduleGrid({
       }
     }));
     setHasChanges(true);
-  }, [readOnly, setAssignments]);
+  }, [readOnly, setAssignments, assignments, isFieldBlockedByExclusiveAssignment]);
 
   const handleDARToggle = useCallback((employeeId, darIndex) => {
     if (readOnly) return;
@@ -168,6 +211,10 @@ export default function ScheduleGrid({
     if (!employee?.skills?.includes('DAR') && !employee?.skills?.includes('Float')) {
       return;
     }
+
+    const isAssigned = assignments[employeeId]?.dars?.includes(darIndex);
+    const blocked = !isAssigned && isFieldBlockedByExclusiveAssignment(employeeId, 'dars');
+    if (blocked) return;
 
     setAssignments(prev => {
       const currentDars = prev[employeeId]?.dars || [];
@@ -184,7 +231,7 @@ export default function ScheduleGrid({
       };
     });
     setHasChanges(true);
-  }, [readOnly, employees, setAssignments]);
+  }, [readOnly, employees, setAssignments, assignments, isFieldBlockedByExclusiveAssignment]);
 
   const handleDarEntityToggle = useCallback((darIndex, entityName) => {
     setDarEntities(prev => {
@@ -203,6 +250,8 @@ export default function ScheduleGrid({
   }, []);
 
   const handleAssignmentEntityToggle = useCallback((employeeId, field, entityName) => {
+    const blocked = isFieldBlockedByExclusiveAssignment(employeeId, field);
+    if (blocked) return;
     setAssignments(prev => {
       const current = prev[employeeId]?.[field] || [];
       const currentArray = Array.isArray(current) ? current : (current ? [current] : []);
@@ -219,7 +268,7 @@ export default function ScheduleGrid({
       };
     });
     setHasChanges(true);
-  }, [setAssignments]);
+  }, [setAssignments, isFieldBlockedByExclusiveAssignment]);
 
   const handleSpecialProjectToggle = useCallback((employeeId, field) => {
     setAssignments(prev => {
@@ -567,6 +616,10 @@ export default function ScheduleGrid({
               const assignment = assignments[employee.id] || {};
               const isDarTrained = canAssignDAR(employee);
               const colorClass = EMPLOYEE_COLORS[empIdx % EMPLOYEE_COLORS.length];
+              const darBlocked = isFieldBlockedByExclusiveAssignment(employee.id, 'dars');
+              const darBlockMessage = getExclusiveBlockMessage(employee.id, 'dars');
+              const cpoeBlocked = isFieldBlockedByExclusiveAssignment(employee.id, 'cpoe');
+              const cpoeBlockMessage = getExclusiveBlockMessage(employee.id, 'cpoe');
 
               return (
                 <tr 
@@ -622,18 +675,20 @@ export default function ScheduleGrid({
                             ? 'bg-slate-100 dark:bg-slate-700/50'
                             : isAssigned
                               ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
-                              : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                              : darBlocked
+                                ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
+                                : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
                         }`}
-                        onClick={() => isDarTrained && handleDARToggle(employee.id, darIdx)}
+                        onClick={() => isDarTrained && !darBlocked && handleDARToggle(employee.id, darIdx)}
                         onKeyPress={(e) => {
-                          if ((e.key === 'Enter' || e.key === ' ') && isDarTrained) {
+                          if ((e.key === 'Enter' || e.key === ' ') && isDarTrained && !darBlocked) {
                             e.preventDefault();
                             handleDARToggle(employee.id, darIdx);
                           }
                         }}
                         tabIndex={isDarTrained && !readOnly ? 0 : -1}
                         role="gridcell"
-                        aria-label={`${isAssigned ? 'Remove' : 'Assign'} ${employee.name} to ${darName}`}
+                        aria-label={`${isAssigned ? 'Remove' : 'Assign'} ${employee.name} to ${darName}${darBlocked ? `. ${darBlockMessage}` : ''}`}
                         aria-pressed={isAssigned}
                       >
                         {isDarTrained ? (
@@ -658,18 +713,20 @@ export default function ScheduleGrid({
                         ? 'bg-slate-100 dark:bg-slate-700/50'
                         : assignment.cpoe
                           ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
-                          : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                          : cpoeBlocked
+                            ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
+                            : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
                     }`}
-                    onClick={() => employee.skills?.includes('CPOE') && !readOnly && handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe)}
+                    onClick={() => employee.skills?.includes('CPOE') && !readOnly && !cpoeBlocked && handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe)}
                     onKeyPress={(e) => {
-                      if ((e.key === 'Enter' || e.key === ' ') && employee.skills?.includes('CPOE') && !readOnly) {
+                      if ((e.key === 'Enter' || e.key === ' ') && employee.skills?.includes('CPOE') && !readOnly && !cpoeBlocked) {
                         e.preventDefault();
                         handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe);
                       }
                     }}
                     tabIndex={employee.skills?.includes('CPOE') && !readOnly ? 0 : -1}
                     role="gridcell"
-                    aria-label={`${assignment.cpoe ? 'Remove' : 'Assign'} ${employee.name} to CPOE`}
+                    aria-label={`${assignment.cpoe ? 'Remove' : 'Assign'} ${employee.name} to CPOE${cpoeBlocked ? `. ${cpoeBlockMessage}` : ''}`}
                     aria-pressed={assignment.cpoe}
                   >
                     {employee.skills?.includes('CPOE') ? (
@@ -686,93 +743,110 @@ export default function ScheduleGrid({
                   </td>
 
                   {/* New Incoming Items - Clickable cell with popup */}
-                  <td
-                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
-                      (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0)
-                        ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
-                        : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    }`}
-                    onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'newIncoming' })}
-                    onKeyPress={(e) => {
-                      if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
-                        e.preventDefault();
-                        setEditingCell({ employeeId: employee.id, field: 'newIncoming' });
-                      }
-                    }}
-                    tabIndex={!readOnly ? 0 : -1}
-                    role="gridcell"
-                    aria-label={`New incoming items for ${employee.name}: ${formatEntityList(assignment.newIncoming) || 'None'}`}
-                  >
-                    {readOnly ? (
-                      (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
-                        // P0-7: Show full entity names instead of abbreviations
-                        <div
-                          className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
-                          title={formatEntityList(assignment.newIncoming)}
-                        >
-                          {formatEntityList(assignment.newIncoming)}
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
-                      )
-                    ) : (
-                      <>
-                        {(Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
-                          // P0-7: Show full entity names instead of abbreviations
-                          <div
-                            className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight px-1"
-                            title={formatEntityList(assignment.newIncoming)}
-                          >
-                            {formatEntityList(assignment.newIncoming)}
-                          </div>
-                        ) : (
-                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
-                        )}
-                        {editingCell?.employeeId === employee.id && editingCell?.field === 'newIncoming' && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for New Incoming">
-                            <div className="space-y-1 mb-3">
-                              {getAvailableEntitiesForAssignment(employee.id, 'newIncoming', assignments, darEntities, entities).map(entity => {
-                                const currentList = assignment.newIncoming || [];
-                                const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
-                                const isSelected = currentArray.includes(entity.name);
-                                const history = entityHistory[entity.name];
+                  {(() => {
+                    const newIncomingBlocked = isFieldBlockedByExclusiveAssignment(employee.id, 'newIncoming');
+                    const newIncomingBlockMessage = getExclusiveBlockMessage(employee.id, 'newIncoming');
+                    const hasAssignments = Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0;
 
-                                return (
-                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" title={entity.name}>
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={() => handleAssignmentEntityToggle(employee.id, 'newIncoming', entity.name)}
-                                      className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
-                                      aria-label={`Assign ${entity.name} to New Incoming`}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                        {entity.name}
-                                      </span>
-                                      {history?.employeeName && (
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                          Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
-                                        </div>
-                                      )}
-                                    </div>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                            {/* P0-7: Legend removed - now showing full entity names instead of abbreviations */}
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
-                              className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
-                              aria-label="Close entity selection"
+                    return (
+                      <td
+                        className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
+                          hasAssignments
+                            ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                            : newIncomingBlocked
+                              ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
+                              : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
+                        }`}
+                        onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'newIncoming' })}
+                        onKeyPress={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
+                            e.preventDefault();
+                            setEditingCell({ employeeId: employee.id, field: 'newIncoming' });
+                          }
+                        }}
+                        tabIndex={!readOnly ? 0 : -1}
+                        role="gridcell"
+                        aria-label={`New incoming items for ${employee.name}: ${formatEntityList(assignment.newIncoming) || 'None'}${newIncomingBlocked ? `. ${newIncomingBlockMessage}` : ''}`}
+                      >
+                        {readOnly ? (
+                          hasAssignments ? (
+                            // P0-7: Show full entity names instead of abbreviations
+                            <div
+                              className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
+                              title={formatEntityList(assignment.newIncoming)}
                             >
-                              Done
-                            </button>
-                          </div>
+                              {formatEntityList(assignment.newIncoming)}
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
+                          )
+                        ) : (
+                          <>
+                            {hasAssignments ? (
+                              // P0-7: Show full entity names instead of abbreviations
+                              <div
+                                className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight px-1"
+                                title={formatEntityList(assignment.newIncoming)}
+                              >
+                                {formatEntityList(assignment.newIncoming)}
+                              </div>
+                            ) : (
+                              <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                            )}
+                            {editingCell?.employeeId === employee.id && editingCell?.field === 'newIncoming' && (
+                              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for New Incoming">
+                                {newIncomingBlocked && (
+                                  <div className="mb-2 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-2 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-200">
+                                    {newIncomingBlockMessage || 'Remove other primary assignments to add New Incoming.'}
+                                  </div>
+                                )}
+                                <div className="space-y-1 mb-3">
+                                  {getAvailableEntitiesForAssignment(employee.id, 'newIncoming', assignments, darEntities, entities).map(entity => {
+                                    const currentList = assignment.newIncoming || [];
+                                    const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
+                                    const isSelected = currentArray.includes(entity.name);
+                                    const history = entityHistory[entity.name];
+                                    const entityShort = getEntityShortCode([entity.name]);
+
+                                    return (
+                                      <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" title={entity.name}>
+                                        <input
+                                          type="checkbox"
+                                          checked={isSelected}
+                                          disabled={newIncomingBlocked}
+                                          onChange={() => handleAssignmentEntityToggle(employee.id, 'newIncoming', entity.name)}
+                                          className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600 disabled:opacity-50"
+                                          aria-label={`Assign ${entity.name} to New Incoming`}
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                          <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
+                                            {entityShort || entity.name}
+                                          </span>
+                                          {history?.employeeName && (
+                                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                              Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
+                                            </div>
+                                          )}
+                                        </div>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                                {/* P0-7: Legend removed - now showing full entity names instead of abbreviations */}
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
+                                  className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
+                                  aria-label="Close entity selection"
+                                >
+                                  Done
+                                </button>
+                              </div>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                  </td>
+                      </td>
+                    );
+                  })()}
 
                   {/* Cross-Training - Clickable cell with popup */}
                   <td 
