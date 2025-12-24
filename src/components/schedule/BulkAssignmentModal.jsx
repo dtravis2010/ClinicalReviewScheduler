@@ -31,12 +31,13 @@ export default function BulkAssignmentModal({
   // Compute available entities for the selected assignment type
   // For bulk assignment, we show entities that are available for ALL selected employees
   const availableEntities = useMemo(() => {
-    if (!['newIncoming', 'crossTraining'].includes(assignmentType)) {
+    if (!['newIncoming', 'crossTraining', 'specialProjects'].includes(assignmentType)) {
       return entities; // For other types, show all entities
     }
 
     if (selectedEmployeeObjects.length === 0) {
-      return entities;
+      // When no employees selected, deduplicate entities using the same logic
+      return getAvailableEntitiesForAssignment('', assignmentType, assignments, darEntities, entities);
     }
 
     // Get available entities for each selected employee
@@ -51,8 +52,17 @@ export default function BulkAssignmentModal({
       return new Set(available.map(e => e.name));
     });
 
+    // Get deduplicated entities from the first employee (all will have same deduplication)
+    const deduplicatedEntities = getAvailableEntitiesForAssignment(
+      selectedEmployeeObjects[0].id,
+      assignmentType,
+      assignments,
+      darEntities,
+      entities
+    );
+
     // Find intersection - entities available for ALL selected employees
-    const intersection = entities.filter(entity => {
+    const intersection = deduplicatedEntities.filter(entity => {
       return availablePerEmployee.every(availableSet => availableSet.has(entity.name));
     });
 
