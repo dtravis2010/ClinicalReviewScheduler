@@ -41,6 +41,7 @@ export const scheduleSchema = z.object({
   assignments: z.record(z.string(), assignmentSchema),
   darEntities: z.record(z.string(), z.array(z.string())),
   darCount: z.number().min(3, 'Must have at least 3 DAR columns').max(8, 'Cannot have more than 8 DAR columns'),
+  version: z.number().int().min(0).optional().default(0),
   createdAt: z.any().optional(),
   updatedAt: z.any().optional(),
   publishedAt: z.any().optional()

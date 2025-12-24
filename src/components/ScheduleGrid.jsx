@@ -436,7 +436,7 @@ export default function ScheduleGrid({
   );
 
   return (
-    <div className="space-y-0 flex flex-col animate-fade-in-up">
+    <div className="space-y-0 flex flex-col animate-fade-in-up w-full">
       {/* Header Section */}
       <ScheduleHeader
         readOnly={readOnly}

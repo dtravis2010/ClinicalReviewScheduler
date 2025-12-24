@@ -45,7 +45,7 @@ function ScheduleTableHeader({
           Team Member
         </th>
         {darColumns.map((dar, idx) => (
-          <th key={idx} scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px] relative">
+          <th key={idx} scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[120px] relative">
             <div className="flex items-center justify-center gap-1 mb-1">
               <span className="text-xs">{dar}</span>
               {!readOnly && (
@@ -125,7 +125,7 @@ function ScheduleTableHeader({
             )}
           </div>
         </th>
-        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">
+        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[150px]">
           <div className="flex items-center justify-center gap-1">
             <span>New Incoming<br/>Items</span>
             {!readOnly && onNewIncomingInfoClick && (
@@ -143,7 +143,7 @@ function ScheduleTableHeader({
             )}
           </div>
         </th>
-        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[90px]">
+        <th scope="col" className="px-2 py-2.5 text-center text-xs font-bold uppercase tracking-wider min-w-[150px]">
           <div className="flex items-center justify-center gap-1">
             <span>Cross-<br/>Training</span>
             {!readOnly && onCrossTrainingInfoClick && (

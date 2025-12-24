@@ -16,7 +16,8 @@ import {
   query,
   orderBy,
   limit,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
@@ -183,6 +184,7 @@ export default function SupervisorDashboard() {
         assignments: {},
         darEntities: darConfig,
         darCount: darCount,
+        version: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -216,41 +218,98 @@ export default function SupervisorDashboard() {
     if (!currentSchedule) return;
 
     try {
-      // Detect changes for audit log
-      const changes = AuditService.detectChanges(currentSchedule, scheduleData);
-
       const scheduleRef = doc(db, 'schedules', currentSchedule.id);
-      await updateDoc(scheduleRef, {
-        ...scheduleData,
-        updatedAt: serverTimestamp()
+
+      // P0-1: Use Firestore transaction for optimistic locking
+      await runTransaction(db, async (transaction) => {
+        // Read current document
+        const scheduleDoc = await transaction.get(scheduleRef);
+
+        if (!scheduleDoc.exists()) {
+          throw new Error('Schedule no longer exists');
+        }
+
+        const currentData = scheduleDoc.data();
+        const currentVersion = currentData.version || 0;
+        const expectedVersion = currentSchedule.version || 0;
+
+        // Check if versions match (no concurrent edits)
+        if (currentVersion !== expectedVersion) {
+          // Version mismatch - someone else edited this schedule
+          throw {
+            code: 'version-conflict',
+            currentVersion,
+            expectedVersion,
+            message: 'Another supervisor has edited this schedule since you last loaded it.'
+          };
+        }
+
+        // Versions match - safe to update
+        const changes = AuditService.detectChanges(currentData, scheduleData);
+
+        transaction.update(scheduleRef, {
+          ...scheduleData,
+          version: currentVersion + 1,  // Increment version
+          updatedAt: serverTimestamp()
+        });
+
+        // Log audit trail (outside transaction to avoid hanging)
+        setTimeout(() => {
+          AuditService.log({
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            action: 'schedule.update',
+            resourceType: 'schedule',
+            resourceId: currentSchedule.id,
+            changes: changes,
+            metadata: {
+              scheduleName: scheduleData.name || currentSchedule.name,
+              version: currentVersion + 1
+            }
+          });
+        }, 0);
       });
 
-      setCurrentSchedule({ ...currentSchedule, ...scheduleData });
+      // Update local state with new version
+      const newVersion = (currentSchedule.version || 0) + 1;
+      setCurrentSchedule({ ...currentSchedule, ...scheduleData, version: newVersion });
       setSchedules((prev) =>
         prev.map((schedule) =>
           schedule.id === currentSchedule.id
-            ? { ...schedule, ...scheduleData }
+            ? { ...schedule, ...scheduleData, version: newVersion }
             : schedule
         )
       );
 
-      // Log audit trail with changes
-      await AuditService.log({
-        userId: currentUser.uid,
-        userEmail: currentUser.email,
-        action: 'schedule.update',
-        resourceType: 'schedule',
-        resourceId: currentSchedule.id,
-        changes: changes,
-        metadata: {
-          scheduleName: scheduleData.name || currentSchedule.name
-        }
-      });
-
       showSuccess('Schedule saved successfully!');
     } catch (error) {
       logger.error('Error saving schedule:', error);
-      showError('Failed to save schedule');
+
+      // P0-1: Handle version conflict specifically
+      if (error.code === 'version-conflict') {
+        const reload = await showConfirm(
+          `${error.message}\n\nYour changes: Version ${error.expectedVersion}\nCurrent version: ${error.currentVersion}\n\nWould you like to reload the latest version? (Your unsaved changes will be lost)`,
+          { confirmText: 'Reload Latest', cancelText: 'Keep My Changes' }
+        );
+
+        if (reload) {
+          // Reload the schedule from Firestore
+          const scheduleRef = doc(db, 'schedules', currentSchedule.id);
+          const freshDoc = await getDoc(scheduleRef);
+          if (freshDoc.exists()) {
+            const freshData = { id: freshDoc.id, ...freshDoc.data() };
+            setCurrentSchedule(freshData);
+            setSchedules((prev) =>
+              prev.map((s) => (s.id === currentSchedule.id ? freshData : s))
+            );
+            showSuccess('Schedule reloaded with latest changes');
+          }
+        } else {
+          showError('Your changes were not saved. Try saving again after resolving conflicts.');
+        }
+      } else {
+        showError('Failed to save schedule');
+      }
     }
   }
 
@@ -469,7 +528,7 @@ export default function SupervisorDashboard() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'schedule' && (
           <div id="schedule-panel" role="tabpanel" aria-labelledby="schedule-tab">
             {/* Schedule Actions */}
