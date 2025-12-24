@@ -250,14 +250,17 @@ export default function UserView() {
             />
           </div>
         ) : (
-          <div className="card dark:bg-gray-800 dark:border-gray-700 text-center py-12">
+          // P0-3: Empty state when no published schedules exist
+          <div className="card dark:bg-gray-800 dark:border-gray-700 text-center py-12" role="status" aria-live="polite">
             <Calendar className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" aria-hidden="true" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              No Schedule Published
+              No Schedules Available
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              The supervisor has not published a schedule yet.
-              Please check back later.
+            <p className="text-gray-600 dark:text-gray-400 mb-2">
+              No schedules have been published yet.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              Please contact your supervisor if you believe this is an error.
             </p>
           </div>
         )}

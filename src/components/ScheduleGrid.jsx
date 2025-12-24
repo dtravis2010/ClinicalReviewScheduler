@@ -594,11 +594,14 @@ export default function ScheduleGrid({
                   {/* DAR Columns - Clickable Cells with modern styling */}
                   {darColumns.map((darName, darIdx) => {
                     const isAssigned = assignment.dars?.includes(darIdx);
-                    const entityCode = getEntityShortCode(darEntities[darIdx]);
+                    // P0-7: Show full entity names instead of abbreviations
+                    const entityNames = darEntities[darIdx];
+                    const entityDisplay = Array.isArray(entityNames) ? entityNames.join(', ') : (entityNames || '');
 
                     return (
                       <td
                         key={darIdx}
+                        title={entityDisplay || `${darName} - No entities assigned`}
                         className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
                           !isDarTrained
                             ? 'bg-slate-100 dark:bg-slate-700/50'
@@ -687,8 +690,12 @@ export default function ScheduleGrid({
                   >
                     {readOnly ? (
                       (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight whitespace-nowrap">
-                          {getEntityShortCode(assignment.newIncoming)}
+                        // P0-7: Show full entity names instead of abbreviations
+                        <div
+                          className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
+                          title={formatEntityList(assignment.newIncoming)}
+                        >
+                          {formatEntityList(assignment.newIncoming)}
                         </div>
                       ) : (
                         <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
@@ -696,8 +703,12 @@ export default function ScheduleGrid({
                     ) : (
                       <>
                         {(Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
-                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight whitespace-nowrap">
-                            {getEntityShortCode(assignment.newIncoming)}
+                          // P0-7: Show full entity names instead of abbreviations
+                          <div
+                            className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight px-1"
+                            title={formatEntityList(assignment.newIncoming)}
+                          >
+                            {formatEntityList(assignment.newIncoming)}
                           </div>
                         ) : (
                           <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
@@ -710,7 +721,6 @@ export default function ScheduleGrid({
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                                 const isSelected = currentArray.includes(entity.name);
                                 const history = entityHistory[entity.name];
-                                const abbrev = getEntityShortCode([entity.name]);
 
                                 return (
                                   <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" title={entity.name}>
@@ -735,17 +745,7 @@ export default function ScheduleGrid({
                                 );
                               })}
                             </div>
-                            {/* Entity Legend */}
-                            <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mb-2">
-                              <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Legend:</div>
-                              <div className="space-y-0.5 max-h-32 overflow-y-auto">
-                                {entities.map(entity => (
-                                  <div key={entity.id} className="text-xs text-slate-600 dark:text-slate-400">
-                                    <span className="font-bold text-thr-blue-600 dark:text-thr-blue-400">{getEntityShortCode([entity.name])}</span> = {entity.name}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
+                            {/* P0-7: Legend removed - now showing full entity names instead of abbreviations */}
                             <button
                               onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
                               className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
@@ -779,8 +779,12 @@ export default function ScheduleGrid({
                   >
                     {readOnly ? (
                       (Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight whitespace-nowrap">
-                          {getEntityShortCode(assignment.crossTraining)}
+                        // P0-7: Show full entity names instead of abbreviations
+                        <div
+                          className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
+                          title={formatEntityList(assignment.crossTraining)}
+                        >
+                          {formatEntityList(assignment.crossTraining)}
                         </div>
                       ) : (
                         <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
@@ -788,8 +792,12 @@ export default function ScheduleGrid({
                     ) : (
                       <>
                         {(Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
-                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight whitespace-nowrap">
-                            {getEntityShortCode(assignment.crossTraining)}
+                          // P0-7: Show full entity names instead of abbreviations
+                          <div
+                            className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight px-1"
+                            title={formatEntityList(assignment.crossTraining)}
+                          >
+                            {formatEntityList(assignment.crossTraining)}
                           </div>
                         ) : (
                           <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
@@ -802,7 +810,6 @@ export default function ScheduleGrid({
                                 const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                                 const isSelected = currentArray.includes(entity.name);
                                 const history = entityHistory[entity.name];
-                                const abbrev = getEntityShortCode([entity.name]);
 
                                 return (
                                   <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" title={entity.name}>
@@ -827,17 +834,7 @@ export default function ScheduleGrid({
                                 );
                               })}
                             </div>
-                            {/* Entity Legend */}
-                            <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mb-2">
-                              <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Legend:</div>
-                              <div className="space-y-0.5 max-h-32 overflow-y-auto">
-                                {entities.map(entity => (
-                                  <div key={entity.id} className="text-xs text-slate-600 dark:text-slate-400">
-                                    <span className="font-bold text-thr-blue-600 dark:text-thr-blue-400">{getEntityShortCode([entity.name])}</span> = {entity.name}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
+                            {/* P0-7: Legend removed - now showing full entity names instead of abbreviations */}
                             <button
                               onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
                               className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
@@ -870,11 +867,14 @@ export default function ScheduleGrid({
                     {readOnly ? (
                       (() => {
                         const sp = assignment.specialProjects;
-                        // Handle old format (array or string)
+                        // Handle old format (array or string) - P0-7: Show full names
                         if (Array.isArray(sp) && sp.length > 0) {
                           return (
-                            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-                              {getEntityShortCode(sp)}
+                            <div
+                              className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
+                              title={formatEntityList(sp)}
+                            >
+                              {formatEntityList(sp)}
                             </div>
                           );
                         }

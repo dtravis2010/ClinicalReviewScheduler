@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { logger } from '../utils/logger';
 import { AuditService } from '../services/auditService';
+import { detectConflicts } from '../utils/conflictDetection';
 import {
   collection,
   addDoc,
@@ -255,6 +256,26 @@ export default function SupervisorDashboard() {
 
   async function publishSchedule() {
     if (!currentSchedule) return;
+
+    // P0-2: Validate schedule before publishing - block if errors exist
+    const conflictResults = detectConflicts(
+      currentSchedule.assignments || {},
+      employees,
+      currentSchedule.darEntities || {}
+    );
+
+    if (conflictResults.conflicts.length > 0) {
+      // Block publishing with errors
+      const errorList = conflictResults.conflicts
+        .map((c, idx) => `${idx + 1}. ${c.message}`)
+        .join('\n');
+
+      await showConfirm(
+        `Cannot publish schedule with ${conflictResults.conflicts.length} error${conflictResults.conflicts.length !== 1 ? 's' : ''}:\n\n${errorList}\n\nPlease fix these errors before publishing.`,
+        { confirmText: 'OK', cancelText: null }
+      );
+      return; // Block publishing
+    }
 
     const confirmed = await showConfirm(
       'Are you sure you want to publish this schedule? Users will be able to view it.'
