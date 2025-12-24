@@ -770,12 +770,11 @@ export default function ScheduleGrid({
                       >
                         {readOnly ? (
                           hasAssignments ? (
-                            // P0-7: Show full entity names instead of abbreviations
                             <div
                               className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
                               title={formatEntityList(assignment.newIncoming)}
                             >
-                              {formatEntityList(assignment.newIncoming)}
+                              {getEntityShortCode(assignment.newIncoming)}
                             </div>
                           ) : (
                             <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
@@ -783,12 +782,11 @@ export default function ScheduleGrid({
                         ) : (
                           <>
                             {hasAssignments ? (
-                              // P0-7: Show full entity names instead of abbreviations
                               <div
                                 className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight px-1"
                                 title={formatEntityList(assignment.newIncoming)}
                               >
-                                {formatEntityList(assignment.newIncoming)}
+                                {getEntityShortCode(assignment.newIncoming)}
                               </div>
                             ) : (
                               <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
@@ -819,9 +817,9 @@ export default function ScheduleGrid({
                                           aria-label={`Assign ${entity.name} to New Incoming`}
                                         />
                                         <div className="flex-1 min-w-0">
-                                          <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                            {entityShort || entity.name}
-                                          </span>
+                                      <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
+                                        {entityShort || entity.name}
+                                      </span>
                                           {history?.employeeName && (
                                             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                               Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
@@ -868,12 +866,11 @@ export default function ScheduleGrid({
                   >
                     {readOnly ? (
                       (Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
-                        // P0-7: Show full entity names instead of abbreviations
                         <div
                           className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
                           title={formatEntityList(assignment.crossTraining)}
                         >
-                          {formatEntityList(assignment.crossTraining)}
+                          {getEntityShortCode(assignment.crossTraining)}
                         </div>
                       ) : (
                         <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
@@ -881,12 +878,11 @@ export default function ScheduleGrid({
                     ) : (
                       <>
                         {(Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
-                          // P0-7: Show full entity names instead of abbreviations
                           <div
                             className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight px-1"
                             title={formatEntityList(assignment.crossTraining)}
                           >
-                            {formatEntityList(assignment.crossTraining)}
+                            {getEntityShortCode(assignment.crossTraining)}
                           </div>
                         ) : (
                           <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
@@ -909,9 +905,9 @@ export default function ScheduleGrid({
                                       className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
                                       aria-label={`Assign ${entity.name} to Cross-Training`}
                                     />
-                                    <div className="flex-1 min-w-0">
+                                        <div className="flex-1 min-w-0">
                                       <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                        {entity.name}
+                                        {getEntityShortCode([entity.name]) || entity.name}
                                       </span>
                                       {history?.employeeName && (
                                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">

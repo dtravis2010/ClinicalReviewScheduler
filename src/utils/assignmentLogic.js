@@ -51,39 +51,25 @@ export function getAvailableEntitiesForDar(darIndex, darEntities, entities) {
  * @returns {Array} Available entities for this assignment
  */
 export function getAvailableEntitiesForAssignment(employeeId, field, assignments, darEntities, entities) {
-  const assignedEntities = new Set();
-  
-  // Note: We no longer exclude entities assigned to DARs
-  // This allows all entities to be available for New Incoming assignments
+  if (!Array.isArray(entities)) return [];
 
-  // Add entities assigned to other employees or other fields of same employee
-  if (assignments && typeof assignments === 'object') {
-    Object.entries(assignments).forEach(([empId, assignment]) => {
-      if (empId !== employeeId) {
-        // For other employees, exclude all their assignments
-        ['newIncoming', 'crossTraining'].forEach(f => {
-          if (assignment[f]) {
-            if (Array.isArray(assignment[f])) {
-              assignment[f].forEach(e => assignedEntities.add(e));
-            } else {
-              assignedEntities.add(assignment[f]);
-            }
-          }
-        });
-      } else {
-        // For same employee, exclude assignments in other fields
-        ['newIncoming', 'crossTraining'].forEach(f => {
-          if (f !== field && assignment[f]) {
-            if (Array.isArray(assignment[f])) {
-              assignment[f].forEach(e => assignedEntities.add(e));
-            } else {
-              assignedEntities.add(assignment[f]);
-            }
-          }
-        });
-      }
-    });
-  }
+  // Show the full entity catalog in the dropdown so supervisors can assign any location,
+  // even if it is already used elsewhere in the schedule.
+  const BLOCKED_NAMES = new Set(['thr']); // Remove legacy THR placeholder
+  const seen = new Set();
 
-  return Array.isArray(entities) ? entities.filter(e => !assignedEntities.has(e.name)) : [];
+  return entities
+    .filter((entity) => {
+      const name = entity?.name?.trim();
+      if (!name) return false;
+
+      const normalized = name.toLowerCase();
+      if (BLOCKED_NAMES.has(normalized)) return false;
+
+      // Deduplicate by normalized name so the dropdown matches settings count
+      if (seen.has(normalized)) return false;
+      seen.add(normalized);
+      return true;
+    })
+    .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 }
