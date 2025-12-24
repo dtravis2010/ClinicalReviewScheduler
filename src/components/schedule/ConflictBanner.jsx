@@ -7,7 +7,8 @@ import { AriaLiveRegion } from '../AriaLiveRegion';
  * Banner component for displaying schedule conflicts and warnings
  */
 export default function ConflictBanner({ conflicts, warnings, workloadImbalances, onDismiss }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Auto-expand if there are errors (P0-5: Critical errors should be immediately visible)
+  const [isExpanded, setIsExpanded] = useState(conflicts.length > 0);
 
   const totalIssues = conflicts.length + warnings.length + workloadImbalances.length;
 

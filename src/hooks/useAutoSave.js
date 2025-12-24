@@ -22,6 +22,7 @@ export function useAutoSave(data, saveFunction, options = {}) {
   const timeoutRef = useRef(null);
   const previousDataRef = useRef(null);
   const isMountedRef = useRef(true);
+  const lastResetKeyRef = useRef(resetKey);
 
   const serializedData = useMemo(() => {
     if (!data) return null;
@@ -49,16 +50,36 @@ export function useAutoSave(data, saveFunction, options = {}) {
       clearTimeout(timeoutRef.current);
     }
 
+    // When switching schedules (resetKey changes), reset state but keep the latest snapshot of data
     previousDataRef.current = serializedData;
     setIsSaving(false);
     setLastSaved(null);
     setError(null);
     setHasUnsavedChanges(false);
-  }, [resetKey, serializedData]);
+  }, [resetKey]); // Only reset when the key actually changes
+
+  // Track local changes to mark unsaved state (ignores resetKey transitions)
+  useEffect(() => {
+    const resetKeyChanged = lastResetKeyRef.current !== resetKey;
+    lastResetKeyRef.current = resetKey;
+
+    if (resetKeyChanged) return;
+    if (!serializedData || previousDataRef.current === null) return;
+
+    if (serializedData !== previousDataRef.current) {
+      setHasUnsavedChanges(true);
+    }
+  }, [serializedData, resetKey]);
 
   // Detect data changes
   const hasChanged = useCallback(() => {
-    if (!serializedData || previousDataRef.current === null) return false;
+    if (!serializedData) return false;
+    
+    // If this is the first pass, prime the previous snapshot and report no change
+    if (previousDataRef.current === null) {
+      previousDataRef.current = serializedData;
+      return false;
+    }
     
     return serializedData !== previousDataRef.current;
   }, [serializedData]);
@@ -81,7 +102,50 @@ export function useAutoSave(data, saveFunction, options = {}) {
       }
     } catch (err) {
       if (isMountedRef.current) {
-        setError(err.message || 'Failed to save');
+        // P0-1: Detect version conflicts
+        const isVersionConflict = err.code === 'version-conflict';
+
+        // P0-4: Detect session expiry and save draft to localStorage
+        const isAuthError = err.code === 'permission-denied' ||
+                           err.code === 'unauthenticated' ||
+                           err.message?.toLowerCase().includes('auth') ||
+                           err.message?.toLowerCase().includes('permission');
+
+        if (isVersionConflict) {
+          setError({
+            type: 'conflict',
+            message: 'Schedule was updated by another supervisor. Please refresh to see latest changes.',
+            canRecover: true
+          });
+        } else if (isAuthError) {
+          // Save draft to localStorage as backup
+          try {
+            const draftKey = `draft_${resetKey || 'schedule'}`;
+            localStorage.setItem(draftKey, serializedData);
+            localStorage.setItem(`${draftKey}_timestamp`, new Date().toISOString());
+            logger.warn('Session expired - draft saved to localStorage');
+
+            setError({
+              type: 'auth',
+              message: 'Session expired. Your changes have been saved locally. Please re-login to save to the server.',
+              canRecover: true
+            });
+          } catch (storageErr) {
+            logger.error('Failed to save draft to localStorage:', storageErr);
+            setError({
+              type: 'auth',
+              message: 'Session expired and failed to save draft locally. Please re-login.',
+              canRecover: false
+            });
+          }
+        } else {
+          setError({
+            type: 'save',
+            message: err.message || 'Failed to save',
+            canRecover: false
+          });
+        }
+
         logger.error('Auto-save failed:', err);
       }
     } finally {
