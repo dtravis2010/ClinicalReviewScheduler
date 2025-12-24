@@ -81,7 +81,41 @@ export function useAutoSave(data, saveFunction, options = {}) {
       }
     } catch (err) {
       if (isMountedRef.current) {
-        setError(err.message || 'Failed to save');
+        // P0-4: Detect session expiry and save draft to localStorage
+        const isAuthError = err.code === 'permission-denied' ||
+                           err.code === 'unauthenticated' ||
+                           err.message?.toLowerCase().includes('auth') ||
+                           err.message?.toLowerCase().includes('permission');
+
+        if (isAuthError) {
+          // Save draft to localStorage as backup
+          try {
+            const draftKey = `draft_${resetKey || 'schedule'}`;
+            localStorage.setItem(draftKey, serializedData);
+            localStorage.setItem(`${draftKey}_timestamp`, new Date().toISOString());
+            logger.warn('Session expired - draft saved to localStorage');
+
+            setError({
+              type: 'auth',
+              message: 'Session expired. Your changes have been saved locally. Please re-login to save to the server.',
+              canRecover: true
+            });
+          } catch (storageErr) {
+            logger.error('Failed to save draft to localStorage:', storageErr);
+            setError({
+              type: 'auth',
+              message: 'Session expired and failed to save draft locally. Please re-login.',
+              canRecover: false
+            });
+          }
+        } else {
+          setError({
+            type: 'save',
+            message: err.message || 'Failed to save',
+            canRecover: false
+          });
+        }
+
         logger.error('Auto-save failed:', err);
       }
     } finally {
