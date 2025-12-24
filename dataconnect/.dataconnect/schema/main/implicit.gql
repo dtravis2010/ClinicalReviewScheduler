@@ -1,0 +1,54 @@
+extend type Category {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Category", purpose: IMPLICIT_KEY_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Category`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  userId: UUID! @fdc_generated(from: "Category.user", purpose: IMPLICIT_REF_FIELD)
+}
+extend type Event {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Event", purpose: IMPLICIT_KEY_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Event`.`category`. It must match the value of `Category`.`id`. See `@ref` for how to customize it.
+  """
+  categoryId: UUID @fdc_generated(from: "Event.category", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Event`.`organizer`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  organizerId: UUID! @fdc_generated(from: "Event.organizer", purpose: IMPLICIT_REF_FIELD)
+}
+extend type Invitation {
+  """
+  ✨ Implicit foreign key field based on `Invitation`.`event`. It must match the value of `Event`.`id`. See `@ref` for how to customize it.
+  """
+  eventId: UUID! @fdc_generated(from: "Invitation.event", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Invitation`.`invitee`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  inviteeId: UUID! @fdc_generated(from: "Invitation.invitee", purpose: IMPLICIT_REF_FIELD)
+}
+extend type Reminder {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Reminder", purpose: IMPLICIT_KEY_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Reminder`.`event`. It must match the value of `Event`.`id`. See `@ref` for how to customize it.
+  """
+  eventId: UUID! @fdc_generated(from: "Reminder.event", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Reminder`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  userId: UUID! @fdc_generated(from: "Reminder.user", purpose: IMPLICIT_REF_FIELD)
+}
+extend type User {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "User", purpose: IMPLICIT_KEY_FIELD)
+}

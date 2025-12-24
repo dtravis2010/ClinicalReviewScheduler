@@ -1,0 +1,42 @@
+type User @table {
+  displayName: String!
+  email: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  timezone: String
+}
+
+type Event @table {
+  title: String!
+  description: String
+  startTime: Timestamp!
+  endTime: Timestamp!
+  location: String
+  recurrencePattern: String
+  isPublic: Boolean!
+  createdAt: Timestamp!
+  organizer: User!
+  category: Category
+}
+
+type Invitation @table(key: ["event", "invitee"]) {
+  status: String!
+  createdAt: Timestamp!
+  event: Event!
+  invitee: User!
+}
+
+type Reminder @table {
+  reminderTime: Timestamp!
+  method: String!
+  createdAt: Timestamp!
+  event: Event!
+  user: User!
+}
+
+type Category @table {
+  name: String!
+  color: String
+  createdAt: Timestamp!
+  user: User!
+}

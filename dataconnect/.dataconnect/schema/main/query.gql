@@ -1,0 +1,262 @@
+extend type Query {
+  """
+  ✨ Look up a single `Category` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  category(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Category_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Category_FirstRow
+  ): Category @fdc_generated(from: "Category", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Event` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  event(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Event_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Event_FirstRow
+  ): Event @fdc_generated(from: "Event", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Invitation` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  invitation(
+    """
+    The key used to identify the object.
+    """
+    key: Invitation_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Invitation_FirstRow
+  ): Invitation @fdc_generated(from: "Invitation", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Reminder` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  reminder(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Reminder_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Reminder_FirstRow
+  ): Reminder @fdc_generated(from: "Reminder", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `User` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  user(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User @fdc_generated(from: "User", purpose: QUERY_SINGLE)
+  """
+  ✨ List `Category` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  categories(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Category_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Category_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Category_Having
+  ): [Category!]! @fdc_generated(from: "Category", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Event` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  events(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Event_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Event_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Event_Having
+  ): [Event!]! @fdc_generated(from: "Event", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Invitation` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  invitations(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Invitation_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Invitation_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Invitation_Having
+  ): [Invitation!]! @fdc_generated(from: "Invitation", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Reminder` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  reminders(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Reminder_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Reminder_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Reminder_Having
+  ): [Reminder!]! @fdc_generated(from: "Reminder", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `User` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  users(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: User_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [User_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: User_Having
+  ): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
+}
