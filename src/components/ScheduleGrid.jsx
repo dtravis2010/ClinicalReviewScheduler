@@ -748,7 +748,7 @@ export default function ScheduleGrid({
                                     />
                                     <div className="flex-1 min-w-0">
                                       <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                        {abbrev}
+                                        {entity.name}
                                       </span>
                                       {history?.employeeName && (
                                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -837,7 +837,7 @@ export default function ScheduleGrid({
                                     />
                                     <div className="flex-1 min-w-0">
                                       <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                        {abbrev}
+                                        {entity.name}
                                       </span>
                                       {history?.employeeName && (
                                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
