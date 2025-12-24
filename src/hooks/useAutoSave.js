@@ -22,6 +22,7 @@ export function useAutoSave(data, saveFunction, options = {}) {
   const timeoutRef = useRef(null);
   const previousDataRef = useRef(null);
   const isMountedRef = useRef(true);
+  const lastResetKeyRef = useRef(resetKey);
 
   const serializedData = useMemo(() => {
     if (!data) return null;
@@ -49,16 +50,36 @@ export function useAutoSave(data, saveFunction, options = {}) {
       clearTimeout(timeoutRef.current);
     }
 
+    // When switching schedules (resetKey changes), reset state but keep the latest snapshot of data
     previousDataRef.current = serializedData;
     setIsSaving(false);
     setLastSaved(null);
     setError(null);
     setHasUnsavedChanges(false);
-  }, [resetKey, serializedData]);
+  }, [resetKey]); // Only reset when the key actually changes
+
+  // Track local changes to mark unsaved state (ignores resetKey transitions)
+  useEffect(() => {
+    const resetKeyChanged = lastResetKeyRef.current !== resetKey;
+    lastResetKeyRef.current = resetKey;
+
+    if (resetKeyChanged) return;
+    if (!serializedData || previousDataRef.current === null) return;
+
+    if (serializedData !== previousDataRef.current) {
+      setHasUnsavedChanges(true);
+    }
+  }, [serializedData, resetKey]);
 
   // Detect data changes
   const hasChanged = useCallback(() => {
-    if (!serializedData || previousDataRef.current === null) return false;
+    if (!serializedData) return false;
+    
+    // If this is the first pass, prime the previous snapshot and report no change
+    if (previousDataRef.current === null) {
+      previousDataRef.current = serializedData;
+      return false;
+    }
     
     return serializedData !== previousDataRef.current;
   }, [serializedData]);
