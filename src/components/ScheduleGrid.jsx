@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
 import { Save, Calendar, Info } from 'lucide-react';
@@ -61,6 +62,8 @@ export default function ScheduleGrid({
     canRedo
   } = useUndoRedo({}, { limit: 50 });
 
+  const navigate = useNavigate();
+
   const [scheduleName, setScheduleName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -82,6 +85,8 @@ export default function ScheduleGrid({
   // State for bulk assignment
   const [selectedEmployees, setSelectedEmployees] = useState(new Set());
   const [showBulkAssignmentModal, setShowBulkAssignmentModal] = useState(false);
+  // State for fullscreen mode
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Auto-save functionality
   const scheduleData = useMemo(() => ({
@@ -404,13 +409,18 @@ export default function ScheduleGrid({
           onSave(scheduleData);
         }
       }
+      // ESC to exit fullscreen
+      if (e.key === 'Escape' && isFullscreen) {
+        e.preventDefault();
+        setIsFullscreen(false);
+      }
     };
 
     if (!readOnly) {
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [canUndo, canRedo, undo, redo, readOnly, onSave, scheduleData]);
+  }, [canUndo, canRedo, undo, redo, readOnly, onSave, scheduleData, isFullscreen]);
 
   const exportToExcel = useCallback(() => {
     exportScheduleToExcel({
@@ -436,7 +446,9 @@ export default function ScheduleGrid({
   );
 
   return (
-    <div className="space-y-0 flex flex-col animate-fade-in-up w-full">
+    <div className={`space-y-0 flex flex-col animate-fade-in-up w-full ${
+      isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-slate-900 overflow-auto' : ''
+    }`}>
       {/* Header Section */}
       <ScheduleHeader
         readOnly={readOnly}
@@ -453,6 +465,9 @@ export default function ScheduleGrid({
         scheduleStatus={schedule?.status}
         selectedCount={selectedEmployees.size}
         onBulkAssign={handleBulkAssign}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+        onViewProductivity={() => navigate('/productivity-dashboard')}
       />
 
       {/* Date Banner */}
