@@ -1,3 +1,5 @@
+import { getEntityShortCode } from './scheduleUtils.js';
+
 /**
  * Assignment logic utilities for schedule management
  * Contains business logic for determining valid assignments
@@ -56,20 +58,33 @@ export function getAvailableEntitiesForAssignment(employeeId, field, assignments
   // Show the full entity catalog in the dropdown so supervisors can assign any location,
   // even if it is already used elsewhere in the schedule.
   const BLOCKED_NAMES = new Set(['thr']); // Remove legacy THR placeholder
-  const seen = new Set();
 
-  return entities
-    .filter((entity) => {
-      const name = entity?.name?.trim();
-      if (!name) return false;
+  // Pre-process to find the "best" entity for each short code to avoid visual duplicates
+  // Preference: Name that is NOT the short code (e.g. "Texas Health Allen" > "THA")
+  // If both are full names or both are codes, pick the first one (or longest).
+  const bestEntitiesByShortCode = new Map();
 
-      const normalized = name.toLowerCase();
-      if (BLOCKED_NAMES.has(normalized)) return false;
+  entities.forEach(entity => {
+    const name = entity?.name?.trim();
+    if (!name) return;
 
-      // Deduplicate by normalized name so the dropdown matches settings count
-      if (seen.has(normalized)) return false;
-      seen.add(normalized);
-      return true;
-    })
+    const normalized = name.toLowerCase();
+    if (BLOCKED_NAMES.has(normalized)) return;
+
+    const shortCode = getEntityShortCode([name]);
+
+    if (!bestEntitiesByShortCode.has(shortCode)) {
+      bestEntitiesByShortCode.set(shortCode, entity);
+    } else {
+      const existing = bestEntitiesByShortCode.get(shortCode);
+      // If the new one is "better", replace it.
+      // "Better" = longer name (heuristic for "Full Name" vs "Abbreviation")
+      if (name.length > existing.name.length) {
+        bestEntitiesByShortCode.set(shortCode, entity);
+      }
+    }
+  });
+
+  return Array.from(bestEntitiesByShortCode.values())
     .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 }
