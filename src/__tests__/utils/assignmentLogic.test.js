@@ -70,35 +70,49 @@ describe('Assignment Logic Utilities', () => {
 
   describe('getAvailableEntitiesForAssignment', () => {
     const entities = [
-      { id: '1', name: 'Entity1' },
-      { id: '2', name: 'Entity2' },
-      { id: '3', name: 'Entity3' }
+      { id: '1', name: 'Texas Health Allen' },
+      { id: '2', name: 'Texas Health Arlington Memorial' },
+      { id: '3', name: 'Other Entity' }
     ];
 
     it('should return all entities regardless of other assignments', () => {
       const assignments = {
-        emp1: { crossTraining: ['Entity3'] },
-        emp2: { newIncoming: ['Entity2'] }
+        emp1: { crossTraining: ['Other Entity'] },
+        emp2: { newIncoming: ['Texas Health Arlington Memorial'] }
       };
       const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', assignments, {}, entities);
       expect(result).toHaveLength(3);
-      expect(result.map(e => e.name).sort()).toEqual(['Entity1', 'Entity2', 'Entity3']);
+      expect(result.map(e => e.name).sort()).toEqual(['Other Entity', 'Texas Health Allen', 'Texas Health Arlington Memorial']);
     });
 
     it('should deduplicate entities by name regardless of case/spacing', () => {
       const entitiesWithDuplicates = [
-        { id: '1', name: 'Entity1' },
-        { id: '2', name: ' entity1 ' },
-        { id: '3', name: 'ENTITY2' }
+        { id: '1', name: 'Texas Health Allen' },
+        { id: '2', name: ' texas health allen ' },
+        { id: '3', name: 'TEXAS HEALTH ARLINGTON MEMORIAL' }
       ];
       const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', {}, {}, entitiesWithDuplicates);
       expect(result).toHaveLength(2);
-      expect(result.map(e => e.name).sort()).toEqual(['ENTITY2', 'Entity1']);
+      expect(result.map(e => e.name).sort()).toEqual(['TEXAS HEALTH ARLINGTON MEMORIAL', 'Texas Health Allen']);
+    });
+
+    it('should deduplicate entities that share the same short code', () => {
+      // "Texas Health Allen" -> THA
+      // "THA" -> THA
+      // Should prefer the longer name "Texas Health Allen"
+      const entitiesWithCodeCollision = [
+        { id: '1', name: 'Texas Health Allen' },
+        { id: '2', name: 'THA' },
+        { id: '3', name: 'Other Entity' }
+      ];
+      const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', {}, {}, entitiesWithCodeCollision);
+      expect(result).toHaveLength(2);
+      expect(result.map(e => e.name).sort()).toEqual(['Other Entity', 'Texas Health Allen']);
     });
 
     it('should include entities assigned to same field of same employee', () => {
       const assignments = {
-        emp1: { newIncoming: ['Entity1'] }
+        emp1: { newIncoming: ['Texas Health Allen'] }
       };
       const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', assignments, {}, entities);
       expect(result).toHaveLength(3);
@@ -107,12 +121,12 @@ describe('Assignment Logic Utilities', () => {
     it('should remove legacy THR placeholder entities', () => {
       const entitiesWithThr = [
         { id: '1', name: 'THR' },
-        { id: '2', name: 'Entity1' },
+        { id: '2', name: 'Texas Health Allen' },
         { id: '3', name: 'thr' }
       ];
       const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', {}, {}, entitiesWithThr);
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('Entity1');
+      expect(result[0].name).toBe('Texas Health Allen');
     });
   });
 });
