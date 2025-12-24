@@ -30,17 +30,22 @@ export default function StatCard({ title, value, icon: Icon, description, trend,
   const colors = colorClasses[color] || colorClasses.blue;
 
   return (
-    <div className="card hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1">
+    <div 
+      className="card hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 focus-within:ring-2 focus-within:ring-thr-blue-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-slate-800"
+      tabIndex={0}
+      role="article"
+      aria-label={`${title}: ${value}${description ? `, ${description}` : ''}`}
+    >
       <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
             {title}
           </p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 tabular-nums">
             {value}
           </p>
           {description && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 truncate">
               {description}
             </p>
           )}
@@ -50,7 +55,7 @@ export default function StatCard({ title, value, icon: Icon, description, trend,
             </p>
           )}
         </div>
-        <div className={`p-4 rounded-xl ${colors.bg}`}>
+        <div className={`p-4 rounded-xl flex-shrink-0 ${colors.bg}`}>
           <Icon className={`w-8 h-8 ${colors.icon}`} aria-hidden="true" />
         </div>
       </div>
