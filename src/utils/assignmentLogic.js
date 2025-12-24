@@ -59,32 +59,62 @@ export function getAvailableEntitiesForAssignment(employeeId, field, assignments
   // even if it is already used elsewhere in the schedule.
   const BLOCKED_NAMES = new Set(['thr']); // Remove legacy THR placeholder
 
-  // Pre-process to find the "best" entity for each short code to avoid visual duplicates
-  // Preference: Name that is NOT the short code (e.g. "Texas Health Allen" > "THA")
-  // If both are full names or both are codes, pick the first one (or longest).
-  const bestEntitiesByShortCode = new Map();
+  // Pre-process to find the "best" entity using TWO deduplication strategies:
+  // 1. Normalized name (case-insensitive) - deduplicates "Entity A" with "ENTITY A"
+  // 2. Short code - deduplicates "Texas Health Allen" with "THA"
+  // Preference: Keep the "best" version - longer name (e.g. "Texas Health Allen" > "THA")
+  
+  // Track which entities we've already added (by their id)
+  const addedEntityIds = new Set();
+  // Maps: key -> best entity for that key
+  const byNormalizedName = new Map();
+  const byShortCode = new Map();
 
   entities.forEach(entity => {
     const name = entity?.name?.trim();
     if (!name) return;
 
-    const normalized = name.toLowerCase();
-    if (BLOCKED_NAMES.has(normalized)) return;
+    const normalizedName = name.toLowerCase().replace(/\s+/g, ' ');
+    if (BLOCKED_NAMES.has(normalizedName)) return;
 
     const shortCode = getEntityShortCode([name]);
 
-    if (!bestEntitiesByShortCode.has(shortCode)) {
-      bestEntitiesByShortCode.set(shortCode, entity);
-    } else {
-      const existing = bestEntitiesByShortCode.get(shortCode);
-      // If the new one is "better", replace it.
-      // "Better" = longer name (heuristic for "Full Name" vs "Abbreviation")
+    // Check if this entity matches an existing one by normalized name
+    if (byNormalizedName.has(normalizedName)) {
+      const existing = byNormalizedName.get(normalizedName);
+      // Keep the longer name
       if (name.length > existing.name.length) {
-        bestEntitiesByShortCode.set(shortCode, entity);
+        addedEntityIds.delete(existing.id);
+        byNormalizedName.set(normalizedName, entity);
+        addedEntityIds.add(entity.id);
       }
+      return;
     }
+
+    // Check if this entity matches an existing one by short code
+    if (shortCode && byShortCode.has(shortCode)) {
+      const existing = byShortCode.get(shortCode);
+      // Keep the longer name
+      if (name.length > existing.name.length) {
+        addedEntityIds.delete(existing.id);
+        byShortCode.set(shortCode, entity);
+        byNormalizedName.set(normalizedName, entity);
+        addedEntityIds.add(entity.id);
+      }
+      return;
+    }
+
+    // New entity - add to both maps
+    byNormalizedName.set(normalizedName, entity);
+    if (shortCode) {
+      byShortCode.set(shortCode, entity);
+    }
+    addedEntityIds.add(entity.id);
   });
 
-  return Array.from(bestEntitiesByShortCode.values())
+  // Collect unique entities
+  const uniqueEntities = entities.filter(e => addedEntityIds.has(e.id));
+
+  return uniqueEntities
     .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 }
