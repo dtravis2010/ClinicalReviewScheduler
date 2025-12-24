@@ -9,6 +9,8 @@
   @apply shadow-soft hover:shadow-soft-md;
   @apply transition-all duration-200 ease-out;
   @apply transform hover:-translate-y-0.5 active:translate-y-0;
+  @apply focus-visible:ring-2 focus-visible:ring-thr-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800;
+  @apply outline-none;
 }
 
 .btn-secondary {
@@ -17,6 +19,8 @@
   @apply shadow-soft hover:shadow-soft-md;
   @apply transition-all duration-200 ease-out;
   @apply transform hover:-translate-y-0.5 active:translate-y-0;
+  @apply focus-visible:ring-2 focus-visible:ring-thr-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800;
+  @apply outline-none;
 }
 
 .btn-danger {
@@ -25,6 +29,8 @@
   @apply shadow-soft hover:shadow-soft-md;
   @apply transition-all duration-200 ease-out;
   @apply transform hover:-translate-y-0.5 active:translate-y-0;
+  @apply focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800;
+  @apply outline-none;
 }
 
 .btn-outline {
@@ -34,6 +40,8 @@
   @apply font-semibold py-2.5 px-5 rounded-xl;
   @apply transition-all duration-200 ease-out;
   @apply transform hover:-translate-y-0.5 active:translate-y-0;
+  @apply focus-visible:ring-2 focus-visible:ring-thr-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800;
+  @apply outline-none;
 }
 
 .btn-ghost {
@@ -41,6 +49,8 @@
   @apply hover:bg-slate-100 dark:hover:bg-slate-800;
   @apply font-medium py-2 px-4 rounded-lg;
   @apply transition-all duration-200;
+  @apply focus-visible:ring-2 focus-visible:ring-thr-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800;
+  @apply outline-none;
 }
 
 /* Glossy pill buttons for quick-assign toolbar */

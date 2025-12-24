@@ -40,31 +40,31 @@ export default function ConfirmDialog({
       <div className="space-y-4">
         {/* Icon for danger variant */}
         {danger && (
-          <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full">
-            <AlertTriangle className="w-6 h-6 text-red-600" />
+          <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full">
+            <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" aria-hidden="true" />
           </div>
         )}
 
         {/* Message */}
-        <p className="text-sm text-gray-600 text-center">
+        <p className="text-sm text-slate-600 dark:text-slate-300 text-center leading-relaxed">
           {message}
         </p>
 
         {/* Actions */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row items-center gap-3 pt-2">
           <button
             onClick={onClose}
-            className="btn-outline flex-1"
+            className="btn-outline flex-1 w-full sm:w-auto focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-slate-800"
             autoFocus={!danger}
           >
             {cancelText}
           </button>
           <button
             onClick={handleConfirm}
-            className={`flex-1 ${
+            className={`flex-1 w-full sm:w-auto focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${
               danger
-                ? 'bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-lg font-medium transition-colors'
-                : 'btn-primary'
+                ? 'btn-danger focus:ring-red-500'
+                : 'btn-primary focus:ring-thr-blue-500'
             }`}
             autoFocus={danger}
           >
