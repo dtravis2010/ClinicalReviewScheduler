@@ -24,6 +24,7 @@ import { useConflictDetection } from '../hooks/useConflictDetection';
 import { useScheduleForm } from '../hooks/useScheduleForm';
 import { useInfoPanels } from '../hooks/useInfoPanels';
 import { calculateWorkload } from '../utils/conflictDetection';
+import { AriaLiveRegion } from './AriaLiveRegion';
 import { exportToExcel as exportScheduleToExcel } from '../utils/exportUtils';
 import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees, getEmployeeInitials } from '../utils/scheduleUtils';
 import { canAssignDAR, getAvailableEntitiesForDar, getAvailableEntitiesForAssignment } from '../utils/assignmentLogic';
@@ -106,6 +107,7 @@ export default function ScheduleGrid({
   const [selectedEmployees, setSelectedEmployees] = useState(new Set());
   const [showBulkAssignmentModal, setShowBulkAssignmentModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [announcementMessage, setAnnouncementMessage] = useState('');
 
   const getActiveExclusiveFields = useCallback((assignment = {}) => {
     const activeFields = [];
@@ -353,6 +355,12 @@ export default function ScheduleGrid({
     markDirty();
     setShowBulkAssignmentModal(false);
     setSelectedEmployees(new Set()); // Clear selection after bulk assign
+    // Announce bulk assign for screen readers
+    if (successfulAssignments && successfulAssignments.length > 0) {
+      setAnnouncementMessage(`Bulk assignment applied: ${successfulAssignments.length} update${successfulAssignments.length > 1 ? 's' : ''} completed.`);
+      // Clear announcement after short delay to allow re-announcement later
+      setTimeout(() => setAnnouncementMessage(''), 1500);
+    }
   }, [setAssignments, markDirty]);
 
   function handleSave() {
@@ -465,6 +473,8 @@ export default function ScheduleGrid({
     <div className={`space-y-0 flex flex-col animate-fade-in-up w-full ${
       isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-slate-900 overflow-auto' : ''
     }`}>
+      {/* Accessibility live announcements */}
+      <AriaLiveRegion message={announcementMessage} mode="polite" />
       {/* Header Section */}
       <ScheduleHeader
         readOnly={readOnly}
@@ -616,7 +626,7 @@ export default function ScheduleGrid({
                         {isDarTrained ? (
                           isAssigned ? (
                             <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight whitespace-nowrap">
-                              X
+                              Assigned
                             </div>
                           ) : (
                             <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>

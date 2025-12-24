@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { getEntityShortCode, formatEntityList } from '../../utils/scheduleUtils';
 import { formatHistoryDate } from '../../utils/entityHistory';
@@ -19,7 +19,10 @@ function EntityAssignmentCell({
   isEditing,
   onStartEdit,
   onEndEdit,
-  onToggle
+  onToggle,
+  cellId,
+  useKeyboardNav = false,
+  isFocused = false
 }) {
   const currentValues = assignment?.[field] || [];
   const currentArray = Array.isArray(currentValues) ? currentValues : (currentValues ? [currentValues] : []);
@@ -51,8 +54,19 @@ function EntityAssignmentCell({
 
   const fieldLabel = field === 'newIncoming' ? 'New Incoming' : 'Cross-Training';
 
+  // Search within available entities
+  const [query, setQuery] = useState('');
+  const filteredEntities = useMemo(() => {
+    if (!query) return availableEntities;
+    const q = query.toLowerCase();
+    return availableEntities.filter(e => e.name.toLowerCase().includes(q));
+  }, [availableEntities, query]);
+
+  const selectedCount = currentArray.length;
+
   return (
     <td
+      id={cellId}
       className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
         hasAssignments
           ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
@@ -62,7 +76,7 @@ function EntityAssignmentCell({
       }`}
       onClick={handleCellClick}
       onKeyPress={handleCellKeyPress}
-      tabIndex={!readOnly ? 0 : -1}
+      tabIndex={useKeyboardNav ? (isFocused ? 0 : -1) : (!readOnly ? 0 : -1)}
       role="gridcell"
       aria-label={`${fieldLabel} for ${employee.name}: ${formatEntityList(currentArray) || 'None'}${blocked ? `. ${blockMessage}` : ''}`}
     >
@@ -97,6 +111,20 @@ function EntityAssignmentCell({
               role="dialog" 
               aria-label={`Select entities for ${fieldLabel}`}
             >
+              {/* Search and summary */}
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 bg-white dark:bg-slate-700 dark:text-slate-100"
+                  placeholder="Search entities..."
+                  aria-label="Search entities"
+                  role="search"
+                />
+                <span className="text-xs text-slate-500 dark:text-slate-400">{selectedCount} selected</span>
+              </div>
               {blocked && (
                 <div className="mb-2 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-2 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-200">
                   {blockMessage || `Remove other primary assignments to add ${fieldLabel}.`}
@@ -104,7 +132,7 @@ function EntityAssignmentCell({
               )}
               
               <div className="space-y-1 mb-3">
-                {availableEntities.map(entity => {
+                {filteredEntities.map(entity => {
                   const isSelected = currentArray.includes(entity.name);
                   const history = entityHistory?.[entity.name];
                   const entityShort = getEntityShortCode([entity.name]);
@@ -179,6 +207,9 @@ EntityAssignmentCell.propTypes = {
   onStartEdit: PropTypes.func.isRequired,
   onEndEdit: PropTypes.func.isRequired,
   onToggle: PropTypes.func.isRequired,
+  cellId: PropTypes.string,
+  useKeyboardNav: PropTypes.bool,
+  isFocused: PropTypes.bool,
 };
 
 EntityAssignmentCell.defaultProps = {
@@ -188,6 +219,9 @@ EntityAssignmentCell.defaultProps = {
   blocked: false,
   blockMessage: '',
   isEditing: false,
+  cellId: undefined,
+  useKeyboardNav: false,
+  isFocused: false,
 };
 
 export default memo(EntityAssignmentCell);

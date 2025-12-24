@@ -171,7 +171,7 @@ function ScheduleHeader({
                 : 'bg-orange-500 text-white'
             }`}>
               <Eye className="w-4 h-4" aria-hidden="true" />
-              <span>{scheduleStatus === 'published' ? 'Published' : 'Unpublish (Draft)'}</span>
+              <span>{scheduleStatus === 'published' ? 'Published' : 'Draft'}</span>
             </div>
           </div>
         )}

@@ -58,6 +58,7 @@ function ScheduleDateBanner({
 }) {
   const isCurrent = isScheduleCurrent(endDate);
   const headerColorClass = isCurrent ? 'header-gradient' : 'header-gradient-past';
+  const invalidRange = Boolean(startDate) && Boolean(endDate) && (new Date(startDate) > new Date(endDate));
 
   // Determine if navigation is available at all
   const hasNavigation = (canGoPrevious || canGoNext) && (onPreviousSchedule || onNextSchedule);
@@ -118,6 +119,7 @@ function ScheduleDateBanner({
                   value={startDate}
                   onChange={(e) => onStartDateChange(e.target.value)}
                   className="bg-transparent px-2 py-1 rounded-lg text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-200 cursor-pointer [color-scheme:dark]"
+                  aria-invalid={invalidRange ? 'true' : 'false'}
                   aria-label="Schedule start date"
                   style={{ colorScheme: 'dark' }}
                 />
@@ -127,10 +129,19 @@ function ScheduleDateBanner({
                   value={endDate}
                   onChange={(e) => onEndDateChange(e.target.value)}
                   className="bg-transparent px-2 py-1 rounded-lg text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-200 cursor-pointer [color-scheme:dark]"
+                  aria-invalid={invalidRange ? 'true' : 'false'}
                   aria-label="Schedule end date"
                   style={{ colorScheme: 'dark' }}
                 />
               </div>
+              {invalidRange && (
+                <div className="mt-2 text-center" role="alert" aria-live="assertive">
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500 text-white shadow-md">
+                    Invalid date range: start date must be before end date
+                  </span>
+                  <p className="mt-1 text-xs text-white/80">Adjust dates to continue. Publishing is recommended only with a valid range.</p>
+                </div>
+              )}
             </div>
           )}
 
