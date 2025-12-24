@@ -147,7 +147,11 @@ describe('useAutoSave', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(result.current.error).toBe('Save failed');
+    expect(result.current.error).toEqual({
+      type: 'save',
+      message: 'Save failed',
+      canRecover: false
+    });
     expect(result.current.isSaving).toBe(false);
   });
 
@@ -228,10 +232,12 @@ describe('useAutoSave', () => {
     );
 
     rerender({ data: { name: 'test2' }, resetKey: 'schedule-a' });
+    await act(async () => {});
     expect(result.current.hasUnsavedChanges).toBe(true);
 
     rerender({ data: { name: 'test3' }, resetKey: 'schedule-b' });
-    await waitFor(() => expect(result.current.hasUnsavedChanges).toBe(false));
+    await act(async () => {});
+    expect(result.current.hasUnsavedChanges).toBe(false);
 
     act(() => {
       vi.advanceTimersByTime(200);
