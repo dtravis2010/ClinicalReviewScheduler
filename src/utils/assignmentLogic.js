@@ -55,13 +55,21 @@ export function getAvailableEntitiesForAssignment(employeeId, field, assignments
 
   // Show the full entity catalog in the dropdown so supervisors can assign any location,
   // even if it is already used elsewhere in the schedule.
+  const BLOCKED_NAMES = new Set(['thr']); // Remove legacy THR placeholder
   const seen = new Set();
+
   return entities
     .filter((entity) => {
-      const key = entity?.id || entity?.name;
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
+      const name = entity?.name?.trim();
+      if (!name) return false;
+
+      const normalized = name.toLowerCase();
+      if (BLOCKED_NAMES.has(normalized)) return false;
+
+      // Deduplicate by normalized name so the dropdown matches settings count
+      if (seen.has(normalized)) return false;
+      seen.add(normalized);
       return true;
     })
-    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 }

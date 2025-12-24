@@ -85,6 +85,17 @@ describe('Assignment Logic Utilities', () => {
       expect(result.map(e => e.name).sort()).toEqual(['Entity1', 'Entity2', 'Entity3']);
     });
 
+    it('should deduplicate entities by name regardless of case/spacing', () => {
+      const entitiesWithDuplicates = [
+        { id: '1', name: 'Entity1' },
+        { id: '2', name: ' entity1 ' },
+        { id: '3', name: 'ENTITY2' }
+      ];
+      const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', {}, {}, entitiesWithDuplicates);
+      expect(result).toHaveLength(2);
+      expect(result.map(e => e.name).sort()).toEqual(['ENTITY2', 'Entity1']);
+    });
+
     it('should include entities assigned to same field of same employee', () => {
       const assignments = {
         emp1: { newIncoming: ['Entity1'] }
@@ -93,15 +104,15 @@ describe('Assignment Logic Utilities', () => {
       expect(result).toHaveLength(3);
     });
 
-    it('should deduplicate entities by id or name', () => {
-      const entitiesWithDuplicates = [
-        { id: '1', name: 'Entity1' },
-        { id: '1', name: 'Entity1' },
-        { id: '2', name: 'Entity2' }
+    it('should remove legacy THR placeholder entities', () => {
+      const entitiesWithThr = [
+        { id: '1', name: 'THR' },
+        { id: '2', name: 'Entity1' },
+        { id: '3', name: 'thr' }
       ];
-      const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', {}, {}, entitiesWithDuplicates);
-      expect(result).toHaveLength(2);
-      expect(result.map(e => e.name).sort()).toEqual(['Entity1', 'Entity2']);
+      const result = getAvailableEntitiesForAssignment('emp1', 'newIncoming', {}, {}, entitiesWithThr);
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Entity1');
     });
   });
 });
