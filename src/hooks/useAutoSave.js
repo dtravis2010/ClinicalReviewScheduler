@@ -81,13 +81,22 @@ export function useAutoSave(data, saveFunction, options = {}) {
       }
     } catch (err) {
       if (isMountedRef.current) {
+        // P0-1: Detect version conflicts
+        const isVersionConflict = err.code === 'version-conflict';
+
         // P0-4: Detect session expiry and save draft to localStorage
         const isAuthError = err.code === 'permission-denied' ||
                            err.code === 'unauthenticated' ||
                            err.message?.toLowerCase().includes('auth') ||
                            err.message?.toLowerCase().includes('permission');
 
-        if (isAuthError) {
+        if (isVersionConflict) {
+          setError({
+            type: 'conflict',
+            message: 'Schedule was updated by another supervisor. Please refresh to see latest changes.',
+            canRecover: true
+          });
+        } else if (isAuthError) {
           // Save draft to localStorage as backup
           try {
             const draftKey = `draft_${resetKey || 'schedule'}`;

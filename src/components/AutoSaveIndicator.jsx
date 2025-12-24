@@ -38,6 +38,8 @@ function AutoSaveIndicator({ isSaving, lastSaved, error }) {
     if (error) {
       // P0-4: Handle auth errors specially with re-login button
       const isAuthError = typeof error === 'object' && error.type === 'auth';
+      // P0-1: Handle version conflicts specially
+      const isConflict = typeof error === 'object' && error.type === 'conflict';
       const errorMsg = typeof error === 'object' ? error.message : error;
 
       return (
@@ -52,6 +54,15 @@ function AutoSaveIndicator({ isSaving, lastSaved, error }) {
             >
               <LogIn className="w-3 h-3" aria-hidden="true" />
               Re-login
+            </button>
+          )}
+          {isConflict && (
+            <button
+              onClick={() => window.location.reload()}
+              className="ml-2 flex items-center gap-1 px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-semibold transition-colors"
+              aria-label="Reload to see latest changes"
+            >
+              Refresh
             </button>
           )}
         </div>
