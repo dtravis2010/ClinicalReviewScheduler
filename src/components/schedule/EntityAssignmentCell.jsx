@@ -73,7 +73,7 @@ function EntityAssignmentCell({
           : blocked
             ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
             : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-      }`}
+      } ${isFocused ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-800' : ''}`}
       onClick={handleCellClick}
       onKeyPress={handleCellKeyPress}
       tabIndex={useKeyboardNav ? (isFocused ? 0 : -1) : (!readOnly ? 0 : -1)}

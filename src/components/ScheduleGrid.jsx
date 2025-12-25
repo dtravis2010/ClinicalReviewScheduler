@@ -19,6 +19,7 @@ import ScheduleTableHeader from './schedule/ScheduleTableHeader';
 import BulkAssignmentModal from './schedule/BulkAssignmentModal';
 import EntityAssignmentCell from './schedule/EntityAssignmentCell';
 import { useAutoSave } from '../hooks/useAutoSave';
+import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useConflictDetection } from '../hooks/useConflictDetection';
 import { useScheduleForm } from '../hooks/useScheduleForm';
@@ -171,6 +172,74 @@ export default function ScheduleGrid({
 
   // Use utility function for active employees (memoized)
   const activeEmployees = useMemo(() => getActiveEmployees(employees), [employees]);
+
+  // Keyboard navigation across interactive grid cells
+  const navColCount = useMemo(() => (darColumns?.length || 0) + 4, [darColumns]);
+  const {
+    gridRef,
+    focusedCell,
+    getCellId,
+    isCellFocused,
+  } = useKeyboardNavigation({
+    rowCount: activeEmployees.length || 0,
+    colCount: navColCount,
+    enabled: !readOnly,
+    onActivate: (row, col) => {
+      const emp = activeEmployees[row];
+      if (!emp) return;
+      const empAssign = assignments[emp.id] || {};
+
+      // DAR columns
+      if (col < (darColumns?.length || 0)) {
+        const darIdx = col;
+        const darBlocked = isFieldBlockedByExclusiveAssignment(emp.id, 'dars');
+        const isDarTrained = canAssignDAR(emp);
+        if (isDarTrained && !darBlocked) {
+          handleDARToggle(emp.id, darIdx);
+        }
+        return;
+      }
+
+      const cpoeColIndex = (darColumns?.length || 0);
+      const newIncomingColIndex = cpoeColIndex + 1;
+      const crossTrainingColIndex = cpoeColIndex + 2;
+      const specialProjectsColIndex = cpoeColIndex + 3;
+
+      // CPOE
+      if (col === cpoeColIndex) {
+        const cpoeBlocked = isFieldBlockedByExclusiveAssignment(emp.id, 'cpoe');
+        if (emp.skills?.includes('CPOE') && !cpoeBlocked) {
+          handleAssignmentChange(emp.id, 'cpoe', !empAssign.cpoe);
+        }
+        return;
+      }
+
+      // New Incoming
+      if (col === newIncomingColIndex) {
+        if (!readOnly) setEditingCell({ employeeId: emp.id, field: 'newIncoming' });
+        return;
+      }
+
+      // Cross-Training
+      if (col === crossTrainingColIndex) {
+        if (!readOnly) setEditingCell({ employeeId: emp.id, field: 'crossTraining' });
+        return;
+      }
+
+      // Special Projects
+      if (col === specialProjectsColIndex) {
+        if (!readOnly) setEditingCell({ employeeId: emp.id, field: 'specialProjects' });
+        return;
+      }
+    }
+  });
+
+  // Focus the schedule table to enable arrow-key navigation when not read-only
+  useEffect(() => {
+    if (!readOnly && gridRef?.current) {
+      gridRef.current.focus();
+    }
+  }, [readOnly]);
 
   // Reset selected employees when schedule changes
   useEffect(() => {
@@ -524,7 +593,12 @@ export default function ScheduleGrid({
       )}
 
       {/* Schedule Table */}
-      <ScheduleTable>
+      <ScheduleTable
+        tableRef={gridRef}
+        ariaActivedescendant={getCellId(focusedCell.row, focusedCell.col)}
+        ariaRowCount={activeEmployees.length}
+        ariaColCount={navColCount}
+      >
         <ScheduleTableHeader
           darColumns={darColumns}
           darEntities={darEntities}
@@ -600,6 +674,7 @@ export default function ScheduleGrid({
 
                     return (
                       <td
+                        id={getCellId(empIdx, darIdx)}
                         key={darIdx}
                         title={entityDisplay || `${darName} - No entities assigned`}
                         className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
@@ -610,7 +685,7 @@ export default function ScheduleGrid({
                               : darBlocked
                                 ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
                                 : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                        }`}
+                        } ${isCellFocused(empIdx, darIdx) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-800' : ''}`}
                         onClick={() => isDarTrained && !darBlocked && handleDARToggle(employee.id, darIdx)}
                         onKeyPress={(e) => {
                           if ((e.key === 'Enter' || e.key === ' ') && isDarTrained && !darBlocked) {
@@ -618,7 +693,7 @@ export default function ScheduleGrid({
                             handleDARToggle(employee.id, darIdx);
                           }
                         }}
-                        tabIndex={isDarTrained && !readOnly ? 0 : -1}
+                        tabIndex={(!readOnly && isDarTrained) ? -1 : -1}
                         role="gridcell"
                         aria-label={`${isAssigned ? 'Remove' : 'Assign'} ${employee.name} to ${darName}${darBlocked ? `. ${darBlockMessage}` : ''}`}
                         aria-pressed={isAssigned}
@@ -640,6 +715,7 @@ export default function ScheduleGrid({
 
                   {/* CPOE Column - Toggleable like DAR columns */}
                   <td
+                    id={getCellId(empIdx, (darColumns?.length || 0))}
                     className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
                       !employee.skills?.includes('CPOE')
                         ? 'bg-slate-100 dark:bg-slate-700/50'
@@ -648,7 +724,7 @@ export default function ScheduleGrid({
                           : cpoeBlocked
                             ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
                             : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    }`}
+                    } ${isCellFocused(empIdx, (darColumns?.length || 0)) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-800' : ''}`}
                     onClick={() => employee.skills?.includes('CPOE') && !readOnly && !cpoeBlocked && handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe)}
                     onKeyPress={(e) => {
                       if ((e.key === 'Enter' || e.key === ' ') && employee.skills?.includes('CPOE') && !readOnly && !cpoeBlocked) {
@@ -656,7 +732,7 @@ export default function ScheduleGrid({
                         handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe);
                       }
                     }}
-                    tabIndex={employee.skills?.includes('CPOE') && !readOnly ? 0 : -1}
+                    tabIndex={employee.skills?.includes('CPOE') && !readOnly ? -1 : -1}
                     role="gridcell"
                     aria-label={`${assignment.cpoe ? 'Remove' : 'Assign'} ${employee.name} to CPOE${cpoeBlocked ? `. ${cpoeBlockMessage}` : ''}`}
                     aria-pressed={assignment.cpoe}
@@ -686,8 +762,11 @@ export default function ScheduleGrid({
                     blockMessage={getExclusiveBlockMessage(employee.id, 'newIncoming')}
                     isEditing={editingCell?.employeeId === employee.id && editingCell?.field === 'newIncoming'}
                     onStartEdit={() => setEditingCell({ employeeId: employee.id, field: 'newIncoming' })}
-                    onEndEdit={() => setEditingCell(null)}
+                    onEndEdit={() => { setEditingCell(null); gridRef?.current?.focus(); }}
                     onToggle={handleAssignmentEntityToggle}
+                    cellId={getCellId(empIdx, (darColumns?.length || 0) + 1)}
+                    useKeyboardNav={!readOnly}
+                    isFocused={isCellFocused(empIdx, (darColumns?.length || 0) + 1)}
                   />
 
                   {/* Cross-Training */}
@@ -702,15 +781,19 @@ export default function ScheduleGrid({
                     blockMessage=""
                     isEditing={editingCell?.employeeId === employee.id && editingCell?.field === 'crossTraining'}
                     onStartEdit={() => setEditingCell({ employeeId: employee.id, field: 'crossTraining' })}
-                    onEndEdit={() => setEditingCell(null)}
+                    onEndEdit={() => { setEditingCell(null); gridRef?.current?.focus(); }}
                     onToggle={handleAssignmentEntityToggle}
+                    cellId={getCellId(empIdx, (darColumns?.length || 0) + 2)}
+                    useKeyboardNav={!readOnly}
+                    isFocused={isCellFocused(empIdx, (darColumns?.length || 0) + 2)}
                   />
 
                   {/* Special Projects/Assignments */}
                   <td
+                    id={getCellId(empIdx, (darColumns?.length || 0) + 3)}
                     className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
                       readOnly ? '' : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    }`}
+                    } ${isCellFocused(empIdx, (darColumns?.length || 0) + 3) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-800' : ''}`}
                     onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'specialProjects' })}
                     onKeyPress={(e) => {
                       if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
@@ -718,7 +801,7 @@ export default function ScheduleGrid({
                         setEditingCell({ employeeId: employee.id, field: 'specialProjects' });
                       }
                     }}
-                    tabIndex={!readOnly ? 0 : -1}
+                    tabIndex={!readOnly ? -1 : -1}
                     role="gridcell"
                     aria-label={`Special projects for ${employee.name}`}
                   >
@@ -849,7 +932,7 @@ export default function ScheduleGrid({
                               })()}
                             </div>
                             <button
-                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
+                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); gridRef?.current?.focus(); }}
                               className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
                               aria-label="Close special projects selection"
                             >

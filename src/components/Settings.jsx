@@ -214,6 +214,9 @@ export default function Settings({ employees = [], onUpdate }) {
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
               Manage all locations and facilities
             </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              This is your single entity bank. Changes here are used across DAR defaults and the New Incoming/Cross-Training selectors.
+            </p>
           </div>
         </div>
         <EntityManagement entities={entities} onUpdate={loadEntities} />

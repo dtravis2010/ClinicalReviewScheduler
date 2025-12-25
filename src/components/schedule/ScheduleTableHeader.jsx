@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Info } from 'lucide-react';
 import { formatEntityList, getEntityShortCode } from '../../utils/scheduleUtils';
@@ -26,6 +26,12 @@ function ScheduleTableHeader({
   allSelected = false,
   onSelectAll
 }) {
+  const [query, setQuery] = useState('');
+  const filteredEntities = useMemo(() => {
+    if (!entities || query.trim() === '') return entities;
+    const q = query.trim().toLowerCase();
+    return entities.filter(e => (e.name || '').toLowerCase().includes(q));
+  }, [entities, query]);
   return (
     <thead className="sticky top-0 z-20">
       <tr className="bg-gradient-to-r from-thr-blue-500 to-thr-blue-600 dark:from-thr-blue-600 dark:to-thr-blue-700 text-white">
@@ -65,8 +71,24 @@ function ScheduleTableHeader({
             <div className="text-[10px] font-normal opacity-80">
               {editingDar === idx && !readOnly ? (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-48 overflow-y-auto min-w-[200px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for DAR">
+                  {/* Unified entity bank: search + selected count */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 bg-white dark:bg-slate-700 dark:text-slate-100"
+                      placeholder="Search entities..."
+                      aria-label={`Search entities for ${dar}`}
+                      role="search"
+                    />
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {(Array.isArray(darEntities[idx]) ? darEntities[idx] : (darEntities[idx] ? [darEntities[idx]] : [])).length} selected
+                    </span>
+                  </div>
                   <div className="space-y-1">
-                    {getAvailableEntitiesForDar(idx, darEntities, entities).map(entity => {
+                    {getAvailableEntitiesForDar(idx, darEntities, filteredEntities).map(entity => {
                       const currentList = darEntities[idx] || [];
                       const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
                       const isSelected = currentArray.includes(entity.name);
