@@ -15,6 +15,7 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import HelpButton from './HelpButton';
 import GlobalUXEnhancements from './GlobalUXEnhancements';
 
 /**
@@ -52,6 +53,14 @@ export default function Layout({ children, title, subtitle, onSave, onNew, onExp
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="skip-to-main focus:left-0 focus:top-0"
+      >
+        Skip to main content
+      </a>
+
       {/* Desktop Sidebar */}
       <aside
         className={`hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300 ${
@@ -197,14 +206,15 @@ export default function Layout({ children, title, subtitle, onSave, onNew, onExp
             {/* Future: Month selector component */}
           </div>
 
-          {/* Right: Theme toggle + Actions */}
-          <div className="flex items-center gap-3">
+          {/* Right: Theme toggle + Help + Actions */}
+          <div className="flex items-center gap-2">
+            <HelpButton />
             <ThemeToggle />
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6 animate-fade-in-up">
+        <main id="main-content" className="flex-1 p-4 lg:p-6 animate-fade-in-up" tabIndex="-1">
           {children}
         </main>
       </div>
