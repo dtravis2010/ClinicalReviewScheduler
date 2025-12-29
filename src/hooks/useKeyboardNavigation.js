@@ -12,7 +12,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  * @returns {Object} Navigation state and handlers
  */
 export function useKeyboardNavigation({ rowCount, colCount, onActivate, enabled = true }) {
-  const [focusedCell, setFocusedCell] = useState({ row: 0, col: 0 });
+  const [focusedCell, setFocusedCell] = useState({ row: -1, col: -1 });
   const gridRef = useRef(null);
 
   /**
