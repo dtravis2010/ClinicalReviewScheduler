@@ -533,6 +533,44 @@ input[type="date"] {
   @apply focus:outline-none focus:ring-2 focus:ring-thr-blue-500 focus:ring-offset-2;
 }
 
+/* Improved focus styles for dark mode */
+.dark .focus-ring {
+  @apply focus:ring-offset-slate-800;
+}
+
+/* Touch-friendly button styles */
+.touch-target {
+  @apply min-w-[44px] min-h-[44px];
+}
+
+.touch-target-lg {
+  @apply min-w-[48px] min-h-[48px];
+}
+
+/* Improved link styles */
+.link {
+  @apply text-thr-blue-500 hover:text-thr-blue-600 dark:text-thr-blue-400 dark:hover:text-thr-blue-300;
+  @apply underline underline-offset-2 decoration-1;
+  @apply transition-colors duration-200;
+}
+
+/* Success/Error indicator colors */
+.indicator-success {
+  @apply bg-green-500 dark:bg-green-400;
+}
+
+.indicator-error {
+  @apply bg-red-500 dark:bg-red-400;
+}
+
+.indicator-warning {
+  @apply bg-amber-500 dark:bg-amber-400;
+}
+
+.indicator-info {
+  @apply bg-blue-500 dark:bg-blue-400;
+}
+
 /* Drag and drop styles */
 .draggable {
   cursor: move;

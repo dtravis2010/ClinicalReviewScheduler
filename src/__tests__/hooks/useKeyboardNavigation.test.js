@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 
 describe('useKeyboardNavigation', () => {
-  it('should initialize with focus at (0, 0)', () => {
+  it('should initialize with no cell focused (-1, -1)', () => {
     const { result } = renderHook(() =>
       useKeyboardNavigation({
         rowCount: 5,
@@ -12,7 +12,8 @@ describe('useKeyboardNavigation', () => {
       })
     );
 
-    expect(result.current.focusedCell).toEqual({ row: 0, col: 0 });
+    // Initially no cell is focused until user interaction
+    expect(result.current.focusedCell).toEqual({ row: -1, col: -1 });
   });
 
   it('should move focus down with ArrowDown', () => {
@@ -80,14 +81,20 @@ describe('useKeyboardNavigation', () => {
       })
     );
 
-    // Try to move to negative row
+    // First set focus to a valid position
+    act(() => {
+      result.current.moveFocus(2, 2);
+    });
+    expect(result.current.focusedCell).toEqual({ row: 2, col: 2 });
+
+    // Try to move to negative row - should clamp to 0
     act(() => {
       result.current.moveFocus(-1, 0);
     });
 
     expect(result.current.focusedCell).toEqual({ row: 0, col: 0 });
 
-    // Try to move to negative column
+    // Try to move to negative column - should clamp to 0
     act(() => {
       result.current.moveFocus(0, -1);
     });
@@ -121,9 +128,19 @@ describe('useKeyboardNavigation', () => {
       })
     );
 
+    // Initially no cell is focused
+    expect(result.current.isCellFocused(0, 0)).toBe(false);
+    expect(result.current.isCellFocused(1, 1)).toBe(false);
+
+    // Move focus to (0, 0)
+    act(() => {
+      result.current.moveFocus(0, 0);
+    });
+
     expect(result.current.isCellFocused(0, 0)).toBe(true);
     expect(result.current.isCellFocused(1, 1)).toBe(false);
 
+    // Move focus to (1, 1)
     act(() => {
       result.current.moveFocus(1, 1);
     });
