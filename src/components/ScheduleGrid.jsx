@@ -700,8 +700,8 @@ export default function ScheduleGrid({
                       >
                         {isDarTrained ? (
                           isAssigned ? (
-                            <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight whitespace-nowrap">
-                              Assigned
+                            <div className="text-lg font-bold text-thr-green-700 dark:text-thr-green-300 leading-tight">
+                              ✕
                             </div>
                           ) : (
                             <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
