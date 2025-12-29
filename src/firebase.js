@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getDatabase } from 'firebase/database';
 
 // Your web app's Firebase configuration
 // These values are loaded from environment variables for security (see .env.example)
@@ -36,12 +37,14 @@ export const firebaseConfigError = missingKeys.length > 0
 let app = null;
 let auth = null;
 let db = null;
+let rtdb = null;
 
 if (isFirebaseConfigured) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+  rtdb = getDatabase(app);
 }
 
-export { auth, db };
+export { auth, db, rtdb };
 export default app;
