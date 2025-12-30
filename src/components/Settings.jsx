@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus, User } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus, User, TrendingUp } from 'lucide-react';
 import EntityManagement from './EntityManagement';
 import ProductivityImport from './ProductivityImport';
+import ProductivityUpload from './ProductivityUpload';
 import DarEntityConfig from './DarEntityConfig';
 import UserPreferencesPanel from './UserPreferencesPanel';
 
@@ -238,6 +239,24 @@ export default function Settings({ employees = [], onUpdate }) {
           </div>
         </div>
         <ProductivityImport employees={employees} />
+      </div>
+
+      {/* New Incoming Productivity Upload */}
+      <div className="card">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-500/5 flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-orange-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              New Incoming Productivity Tracking
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Upload monthly trace reports to track entity productivity for New Incoming Items
+            </p>
+          </div>
+        </div>
+        <ProductivityUpload onUploadComplete={() => logger.info('Productivity report uploaded')} />
       </div>
     </div>
   );

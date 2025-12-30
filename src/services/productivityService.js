@@ -342,4 +342,122 @@ export class ProductivityService {
       throw new Error(`Failed to delete period: ${error.message}`);
     }
   }
+
+  /**
+   * Parse trace report CSV for New Incoming productivity data
+   * @param {string} csvText - Raw CSV text content
+   * @returns {Object} Parsed data with entities array
+   */
+  static parseTraceReportCSV(csvText) {
+    try {
+      const lines = csvText.trim().split('\n');
+      if (lines.length < 2) {
+        throw new Error('CSV file appears to be empty');
+      }
+
+      // Parse header
+      const headers = lines[0].split(',').map(h => h.trim());
+      const requiredHeaders = ['TeamName', 'ClearedFromListCount', 'InboundFaxCount', 'NewInboundItemsRemainingLast60Days'];
+
+      const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+      if (missingHeaders.length > 0) {
+        throw new Error(`Missing required columns: ${missingHeaders.join(', ')}`);
+      }
+
+      // Find column indices
+      const indices = {
+        teamName: headers.indexOf('TeamName'),
+        cleared: headers.indexOf('ClearedFromListCount'),
+        inbound: headers.indexOf('InboundFaxCount'),
+        remaining: headers.indexOf('NewInboundItemsRemainingLast60Days'),
+        deleted: headers.indexOf('DeletedCount'),
+        indexed: headers.indexOf('IndexedCount'),
+        unindexed: headers.indexOf('UnindexedCount')
+      };
+
+      // Parse data rows
+      const entityMap = {};
+      const entityMapping = {
+        'Enterprise Women\'s Allen': 'Enterprise Allen',
+        'Enterprise Women\'s Plano': 'Enterprise Plano'
+      };
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const values = line.split(',').map(v => v.trim());
+        const teamName = values[indices.teamName];
+
+        // Map enterprise women's locations to parent entities
+        const mappedName = entityMapping[teamName] || teamName;
+
+        const entityData = {
+          clearedFromList: parseInt(values[indices.cleared]) || 0,
+          inboundFaxCount: parseInt(values[indices.inbound]) || 0,
+          remaining: parseInt(values[indices.remaining]) || 0,
+          deletedCount: indices.deleted >= 0 ? parseInt(values[indices.deleted]) || 0 : 0,
+          indexedCount: indices.indexed >= 0 ? parseInt(values[indices.indexed]) || 0 : 0,
+          unindexedCount: indices.unindexed >= 0 ? parseInt(values[indices.unindexed]) || 0 : 0
+        };
+
+        // If entity already exists (from women's location), combine the data
+        if (entityMap[mappedName]) {
+          entityMap[mappedName].clearedFromList += entityData.clearedFromList;
+          entityMap[mappedName].inboundFaxCount += entityData.inboundFaxCount;
+          entityMap[mappedName].remaining += entityData.remaining;
+          entityMap[mappedName].deletedCount += entityData.deletedCount;
+          entityMap[mappedName].indexedCount += entityData.indexedCount;
+          entityMap[mappedName].unindexedCount += entityData.unindexedCount;
+          entityMap[mappedName].sources.push(teamName);
+        } else {
+          entityMap[mappedName] = {
+            name: mappedName,
+            ...entityData,
+            sources: [teamName]
+          };
+        }
+      }
+
+      const entities = Object.values(entityMap);
+      return { entities, totalEntities: entities.length };
+    } catch (error) {
+      logger.error('Error parsing trace report CSV:', error);
+      throw new Error(`Failed to parse CSV: ${error.message}`);
+    }
+  }
+
+  /**
+   * Upload trace report for New Incoming productivity
+   * @param {File} file - CSV file object
+   * @param {Object} dateRange - { start, end } date range
+   * @param {string} userId - User ID uploading the report
+   * @returns {Promise<Object>} Upload result with periodId
+   */
+  static async uploadTraceReport(file, dateRange, userId) {
+    try {
+      // Read file contents
+      const csvText = await file.text();
+
+      // Parse CSV
+      const { entities } = this.parseTraceReportCSV(csvText);
+
+      // Create period data
+      const periodData = {
+        startDate: dateRange.start,
+        endDate: dateRange.end,
+        reportType: 'newIncoming',
+        uploadedBy: userId
+      };
+
+      // Save to Firestore using existing savePeriodData method
+      const periodId = await this.savePeriodData(periodData, entities, []);
+
+      logger.info(`Trace report uploaded successfully: ${periodId}`);
+      return { success: true, periodId, entitiesCount: entities.length };
+    } catch (error) {
+      logger.error('Error uploading trace report:', error);
+      throw new Error(`Failed to upload trace report: ${error.message}`);
+    }
+  }
 }
