@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
-import { Save, Calendar, Info } from 'lucide-react';
+import { Save, Calendar } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';

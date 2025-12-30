@@ -27,13 +27,9 @@ import {
   Settings as SettingsIcon,
   FileText,
   Plus,
-  Save,
   Eye,
   Upload,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  Zap
+  CheckCircle2
 } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import EmployeeManagement from '../components/EmployeeManagement';
