@@ -67,42 +67,60 @@ export function formatDateRange(startDate, endDate, monthYearOnly = false) {
 
 /**
  * Get short entity code for display in cells
- * Extracts abbreviation from entity name (e.g., "Texas Health Allen" -> "THA")
- * @param {Array|string} entityList - Entity or list of entities
+ * Uses custom entity code if available, otherwise extracts abbreviation from name
+ * @param {Array|string|Object} entityList - Entity, list of entities, or entity object(s)
+ * @param {Array} [allEntities] - Full list of entities with code fields (optional)
  * @returns {string} Short entity code
  */
-export function getEntityShortCode(entityList) {
+export function getEntityShortCode(entityList, allEntities = []) {
   if (!entityList) return '';
-  
-  // Skip if it's an object (like new specialProjects format)
-  if (typeof entityList === 'object' && !Array.isArray(entityList)) {
+
+  // Skip if it's an object (like new specialProjects format) that's not an entity
+  if (typeof entityList === 'object' && !Array.isArray(entityList) && !entityList.name) {
     return '';
   }
-  
-  // Helper function to extract abbreviation from a single entity name
-  const getAbbreviation = (entityName) => {
-    if (!entityName || typeof entityName !== 'string') return '';
-    
+
+  // Helper function to extract abbreviation from a single entity name or object
+  const getAbbreviation = (entity) => {
+    // Handle object with name and optional code
+    if (typeof entity === 'object' && entity !== null && entity.name) {
+      // Use custom code if available
+      if (entity.code && entity.code.trim()) {
+        return entity.code.trim().toUpperCase();
+      }
+      entity = entity.name;
+    }
+
+    if (!entity || typeof entity !== 'string') return '';
+
+    // Try to find entity in allEntities list by name to get custom code
+    if (allEntities && allEntities.length > 0) {
+      const foundEntity = allEntities.find(e => e.name === entity);
+      if (foundEntity && foundEntity.code && foundEntity.code.trim()) {
+        return foundEntity.code.trim().toUpperCase();
+      }
+    }
+
     // Split by '/' first (in case entity name contains it)
-    const parts = entityName.split('/');
+    const parts = entity.split('/');
     const mainPart = parts[0].trim();
-    
+
     // Extract capital letters to form abbreviation
     // e.g., "Texas Health Allen" -> "THA"
     const capitals = mainPart.match(/[A-Z]/g);
     if (capitals && capitals.length > 0) {
       return capitals.join('');
     }
-    
+
     // Fallback: take first letter of each word
     const words = mainPart.split(/\s+/);
     return words.map(word => word.charAt(0).toUpperCase()).join('');
   };
-  
+
   if (Array.isArray(entityList)) {
     return entityList.map(e => getAbbreviation(e)).join('/');
   }
-  
+
   return getAbbreviation(entityList);
 }
 

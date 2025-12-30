@@ -141,7 +141,7 @@ function EntityAssignmentCell({
                 {filteredEntities.map(entity => {
                   const isSelected = currentArray.includes(entity.name);
                   const history = entityHistory?.[entity.name];
-                  const entityShort = getEntityShortCode([entity.name]);
+                  const entityShort = getEntityShortCode([entity], availableEntities);
 
                   return (
                     <label 
