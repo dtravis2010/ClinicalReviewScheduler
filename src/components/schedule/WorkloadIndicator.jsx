@@ -12,16 +12,16 @@ function WorkloadIndicator({ workload, avgWorkload, employeeName, assignment }) 
   const ratio = avgWorkload > 0 ? workload / avgWorkload : 1;
   
   let level = 'normal';
-  let colorClass = 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700';
+  let colorClass = 'bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-400 dark:border-blue-700';
   let icon = <Minus className="w-3 h-3" aria-hidden="true" />;
-  
+
   if (ratio > 1.5) {
     level = 'high';
-    colorClass = 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700';
+    colorClass = 'bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-400 dark:border-red-700';
     icon = <TrendingUp className="w-3 h-3" aria-hidden="true" />;
   } else if (ratio < 0.5 && workload > 0) {
     level = 'low';
-    colorClass = 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700';
+    colorClass = 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-300 border-yellow-400 dark:border-yellow-700';
     icon = <TrendingDown className="w-3 h-3" aria-hidden="true" />;
   }
 
@@ -67,35 +67,35 @@ function WorkloadIndicator({ workload, avgWorkload, employeeName, assignment }) 
         <span>{workload}</span>
       </div>
       
-      {/* Tooltip */}
-      <div className="absolute left-0 top-full mt-1 hidden group-hover:block z-50 w-64 pointer-events-none">
-        <div className="bg-slate-900 dark:bg-slate-800 text-white text-xs rounded-lg shadow-lg p-3 border border-slate-700">
+      {/* Tooltip - positioned above to avoid being hidden */}
+      <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-50 w-64 pointer-events-none">
+        <div className="bg-slate-800 dark:bg-slate-900 text-white text-xs rounded-lg shadow-xl p-3 border border-slate-600 dark:border-slate-700">
           <div className="font-semibold mb-2">{employeeName}</div>
           <div className="space-y-1">
             <div className="flex justify-between">
-              <span className="text-slate-300">Workload:</span>
-              <span className="font-semibold">{workload} pts</span>
+              <span className="text-slate-200 dark:text-slate-300">Workload:</span>
+              <span className="font-semibold text-white">{workload} pts</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-300">Average:</span>
-              <span>{avgWorkload.toFixed(1)} pts</span>
+              <span className="text-slate-200 dark:text-slate-300">Average:</span>
+              <span className="text-white">{avgWorkload.toFixed(1)} pts</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-300">Ratio:</span>
+              <span className="text-slate-200 dark:text-slate-300">Ratio:</span>
               <span className={
-                level === 'high' ? 'text-red-400' : 
-                level === 'low' ? 'text-yellow-400' : 
-                'text-blue-400'
+                level === 'high' ? 'text-red-300 dark:text-red-400' :
+                level === 'low' ? 'text-yellow-300 dark:text-yellow-400' :
+                'text-blue-300 dark:text-blue-400'
               }>
                 {percentOfAvg}%
               </span>
             </div>
           </div>
-          
+
           {tooltipContent !== 'No assignments' && (
             <>
-              <div className="border-t border-slate-700 my-2"></div>
-              <div className="text-slate-300 space-y-0.5">
+              <div className="border-t border-slate-600 dark:border-slate-700 my-2"></div>
+              <div className="text-slate-200 dark:text-slate-300 space-y-0.5">
                 {tooltipContent.split('\n').map((line, idx) => (
                   <div key={idx} className="text-xs">• {line}</div>
                 ))}
