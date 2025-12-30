@@ -6,6 +6,7 @@ import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus, User
 import EntityManagement from './EntityManagement';
 import ProductivityImport from './ProductivityImport';
 import ProductivityUpload from './ProductivityUpload';
+import ProductivityViewer from './ProductivityViewer';
 import DarEntityConfig from './DarEntityConfig';
 import UserPreferencesPanel from './UserPreferencesPanel';
 
@@ -15,6 +16,7 @@ export default function Settings({ employees = [], onUpdate }) {
   const [entities, setEntities] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [productivityRefreshKey, setProductivityRefreshKey] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -256,7 +258,15 @@ export default function Settings({ employees = [], onUpdate }) {
             </p>
           </div>
         </div>
-        <ProductivityUpload onUploadComplete={() => logger.info('Productivity report uploaded')} />
+        <ProductivityUpload onUploadComplete={() => {
+          logger.info('Productivity report uploaded');
+          setProductivityRefreshKey(prev => prev + 1);
+        }} />
+
+        {/* Productivity Data Viewer */}
+        <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+          <ProductivityViewer key={productivityRefreshKey} />
+        </div>
       </div>
     </div>
   );
