@@ -88,7 +88,8 @@ export default function EntityInfoPanel({
           </div>
           <div className="space-y-3">
             {assignedEntities.map((entity, idx) => {
-              const abbrev = getEntityShortCode([entity.entityName]);
+              const entityObj = entities.find(e => e.name === entity.entityName);
+              const abbrev = getEntityShortCode(entityObj ? [entityObj] : [entity.entityName], entities);
               const isCurrent = currentEntityAssignments.has(entity.entityName);
               
               return (
@@ -181,7 +182,8 @@ export default function EntityInfoPanel({
           </div>
           <div className="flex flex-wrap gap-2">
             {neverAssignedEntities.map((entity, idx) => {
-              const abbrev = getEntityShortCode([entity.entityName]);
+              const entityObj = entities.find(e => e.name === entity.entityName);
+              const abbrev = getEntityShortCode(entityObj ? [entityObj] : [entity.entityName], entities);
               return (
                 <div
                   key={idx}

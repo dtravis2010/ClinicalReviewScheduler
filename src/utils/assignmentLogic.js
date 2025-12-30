@@ -77,7 +77,7 @@ export function getAvailableEntitiesForAssignment(employeeId, field, assignments
     const normalizedName = name.toLowerCase().replace(/\s+/g, ' ');
     if (BLOCKED_NAMES.has(normalizedName)) return;
 
-    const shortCode = getEntityShortCode([name]);
+    const shortCode = getEntityShortCode([entity], entities);
 
     // Check if this entity matches an existing one by normalized name
     if (byNormalizedName.has(normalizedName)) {

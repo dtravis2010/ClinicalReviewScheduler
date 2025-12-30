@@ -125,7 +125,7 @@ function ScheduleTableHeader({
                   aria-label={`Configure entities for ${dar}. Current: ${formatEntityList(darEntities[idx]) || 'None'}`}
                   disabled={readOnly}
                 >
-                  {getEntityShortCode(darEntities[idx]) || '+ Entities'}
+                  {getEntityShortCode(darEntities[idx], entities) || '+ Entities'}
                 </button>
               )}
             </div>
