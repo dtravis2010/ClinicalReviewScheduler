@@ -29,7 +29,13 @@ import {
   Plus,
   Eye,
   Upload,
-  CheckCircle2
+  CheckCircle2,
+  LayoutDashboard,
+  Building2,
+  Activity,
+  TrendingUp,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import EmployeeManagement from '../components/EmployeeManagement';
@@ -42,7 +48,7 @@ export default function SupervisorDashboard() {
   const { currentUser, logout, isSupervisor } = useAuth();
   const navigate = useNavigate();
   const { showSuccess, showError, showConfirm } = useToast();
-  const [activeTab, setActiveTab] = useState('schedule');
+  const [activeTab, setActiveTab] = useState('overview');
   const [employees, setEmployees] = useState([]);
   const [entities, setEntities] = useState([]);
   const [schedules, setSchedules] = useState([]);
@@ -472,6 +478,22 @@ export default function SupervisorDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex gap-8" role="tablist">
             <button
+              onClick={() => setActiveTab('overview')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-thr-blue-500 ${
+                activeTab === 'overview'
+                  ? 'border-thr-blue-500 text-thr-blue-600 dark:text-thr-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
+              role="tab"
+              aria-selected={activeTab === 'overview'}
+              aria-controls="overview-panel"
+            >
+              <div className="flex items-center gap-2">
+                <LayoutDashboard className="w-4 h-4" aria-hidden="true" />
+                Overview
+              </div>
+            </button>
+            <button
               onClick={() => setActiveTab('schedule')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-thr-blue-500 ${
                 activeTab === 'schedule'
@@ -525,6 +547,229 @@ export default function SupervisorDashboard() {
 
       {/* Main Content */}
       <main className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'overview' && (
+          <div id="overview-panel" role="tabpanel" aria-labelledby="overview-tab">
+            <div className="space-y-6">
+              {/* Core Stats Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Active Employees"
+                  value={employees.filter(emp => !emp.archived).length}
+                  icon={Users}
+                  color="blue"
+                  description="Non-archived reviewers"
+                />
+                <StatCard
+                  title="Total Entities"
+                  value={entities.length}
+                  icon={Building2}
+                  color="green"
+                  description="Healthcare facilities"
+                />
+                <StatCard
+                  title="Current Schedule"
+                  value={currentSchedule ? currentSchedule.status.charAt(0).toUpperCase() + currentSchedule.status.slice(1) : 'None'}
+                  icon={Calendar}
+                  color={currentSchedule?.status === 'published' ? 'green' : 'orange'}
+                  description={currentSchedule ? currentSchedule.name : 'No active schedule'}
+                />
+                <StatCard
+                  title="Total Assignments"
+                  value={currentSchedule ? Object.keys(currentSchedule.assignments || {}).length : 0}
+                  icon={Activity}
+                  color="purple"
+                  description="In current schedule"
+                />
+              </div>
+
+              {/* Schedule Health Row */}
+              {currentSchedule && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <StatCard
+                    title="Conflicts"
+                    value={(() => {
+                      const conflicts = detectConflicts(
+                        currentSchedule.assignments || {},
+                        employees,
+                        currentSchedule.darEntities || {}
+                      );
+                      return conflicts.conflicts.length;
+                    })()}
+                    icon={AlertCircle}
+                    color={(() => {
+                      const conflicts = detectConflicts(
+                        currentSchedule.assignments || {},
+                        employees,
+                        currentSchedule.darEntities || {}
+                      );
+                      return conflicts.conflicts.length > 0 ? 'orange' : 'green';
+                    })()}
+                    description={(() => {
+                      const conflicts = detectConflicts(
+                        currentSchedule.assignments || {},
+                        employees,
+                        currentSchedule.darEntities || {}
+                      );
+                      return conflicts.conflicts.length > 0 ? 'Needs attention' : 'No issues detected';
+                    })()}
+                  />
+                  <StatCard
+                    title="Coverage Rate"
+                    value={(() => {
+                      const assignments = currentSchedule.assignments || {};
+                      const assignedEntities = new Set();
+                      Object.values(assignments).forEach(assignment => {
+                        if (assignment.dars) assignment.dars.forEach(e => assignedEntities.add(e));
+                        if (assignment.newIncoming) assignment.newIncoming.forEach(e => assignedEntities.add(e));
+                        if (assignment.crossTraining) assignment.crossTraining.forEach(e => assignedEntities.add(e));
+                      });
+                      return entities.length > 0 ? `${Math.round((assignedEntities.size / entities.length) * 100)}%` : '0%';
+                    })()}
+                    icon={TrendingUp}
+                    color="purple"
+                    description="Entities with assignments"
+                  />
+                  <StatCard
+                    title="Avg Workload"
+                    value={(() => {
+                      const assignments = currentSchedule.assignments || {};
+                      const employeesWithWork = Object.keys(assignments).length;
+                      if (employeesWithWork === 0) return '0';
+                      let totalWork = 0;
+                      Object.values(assignments).forEach(assignment => {
+                        if (assignment.dars) totalWork += assignment.dars.length;
+                        if (assignment.newIncoming) totalWork += assignment.newIncoming.length;
+                        if (assignment.crossTraining) totalWork += assignment.crossTraining.length;
+                        if (assignment.cpoe) totalWork += 1;
+                      });
+                      return (totalWork / employeesWithWork).toFixed(1);
+                    })()}
+                    icon={Activity}
+                    color="teal"
+                    description="Assignments per employee"
+                  />
+                </div>
+              )}
+
+              {/* Quick Actions */}
+              <div className="card dark:bg-gray-800 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                  Quick Actions
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={createNewSchedule}
+                    className="btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700"
+                  >
+                    <Calendar className="w-4 h-4 inline mr-2" />
+                    Create New Schedule
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('schedule')}
+                    className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600"
+                  >
+                    <FileText className="w-4 h-4 inline mr-2" />
+                    Manage Schedules
+                  </button>
+                  <button
+                    onClick={() => navigate('/analytics')}
+                    className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600"
+                  >
+                    <TrendingUp className="w-4 h-4 inline mr-2" />
+                    View Analytics
+                  </button>
+                  {currentSchedule && (
+                    <button
+                      onClick={() => setActiveTab('schedule')}
+                      className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600"
+                    >
+                      <Upload className="w-4 h-4 inline mr-2" />
+                      Export Schedule
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Schedules */}
+              <div className="card dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Recent Schedules
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab('schedule')}
+                    className="text-sm text-thr-blue-600 dark:text-thr-blue-400 hover:text-thr-blue-700 dark:hover:text-thr-blue-300"
+                  >
+                    View All →
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {schedules.slice(0, 5).map(schedule => (
+                    <div
+                      key={schedule.id}
+                      className={`p-4 rounded-lg border transition-colors ${
+                        currentSchedule?.id === schedule.id
+                          ? 'border-thr-blue-500 bg-thr-blue-50 dark:bg-thr-blue-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                              {schedule.name}
+                            </h4>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                schedule.status === 'published'
+                                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                  : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400'
+                              }`}
+                            >
+                              {schedule.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {schedule.startDate || 'Not set'} - {schedule.endDate || 'Not set'}
+                            </span>
+                            <span>
+                              {Object.keys(schedule.assignments || {}).length} employees assigned
+                            </span>
+                          </div>
+                        </div>
+                        {currentSchedule?.id !== schedule.id && (
+                          <button
+                            onClick={() => {
+                              setCurrentSchedule(schedule);
+                              setActiveTab('schedule');
+                            }}
+                            className="ml-4 px-3 py-1.5 text-sm font-medium text-thr-blue-600 dark:text-thr-blue-400 hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 rounded-lg transition-colors"
+                          >
+                            Load
+                          </button>
+                        )}
+                        {currentSchedule?.id === schedule.id && (
+                          <span className="ml-4 px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400">
+                            Current
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {schedules.length === 0 && (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No schedules yet. Create your first schedule to get started!</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'schedule' && (
           <div id="schedule-panel" role="tabpanel" aria-labelledby="schedule-tab">
             {/* Schedule Actions */}
