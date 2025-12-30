@@ -67,13 +67,13 @@ function EntityAssignmentCell({
   return (
     <td
       id={cellId}
-      className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
+      className={`px-2 py-3 text-center relative transition-all duration-200 border-r border-slate-100 dark:border-slate-700/50 ${
         hasAssignments
-          ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+          ? 'bg-gradient-to-br from-thr-green-100 to-thr-green-50 dark:from-thr-green-900/40 dark:to-thr-green-900/20 hover:from-thr-green-200 hover:to-thr-green-100 dark:hover:from-thr-green-900/60 dark:hover:to-thr-green-900/40 cursor-pointer shadow-sm hover:shadow-md active:scale-95'
           : blocked
-            ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
-            : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-      } ${isFocused ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-800' : ''}`}
+            ? 'bg-slate-100/50 dark:bg-slate-800/40 cursor-not-allowed opacity-60'
+            : 'bg-white dark:bg-slate-800/20 hover:bg-gradient-to-br hover:from-thr-blue-50 hover:to-white dark:hover:from-thr-blue-900/20 dark:hover:to-slate-800/40 cursor-pointer hover:shadow-sm active:scale-95'
+      } ${isFocused ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800' : ''}`}
       onClick={handleCellClick}
       onKeyPress={handleCellKeyPress}
       tabIndex={useKeyboardNav ? (isFocused ? 0 : -1) : (!readOnly ? 0 : -1)}
@@ -82,26 +82,32 @@ function EntityAssignmentCell({
     >
       {readOnly ? (
         hasAssignments ? (
-          <div
-            className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
-            title={formatEntityList(currentArray)}
-          >
-            {getEntityShortCode(currentArray)}
+          <div className="flex items-center justify-center gap-1" title={formatEntityList(currentArray)}>
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-thr-green-200 dark:bg-thr-green-800/40 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-thr-green-600 dark:bg-thr-green-400"></span>
+              <span className="text-xs font-bold text-thr-green-700 dark:text-thr-green-300">
+                {currentArray.length}
+              </span>
+            </div>
           </div>
         ) : (
-          <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
+          <span className="text-slate-400 dark:text-slate-600 text-xs">N/A</span>
         )
       ) : (
         <>
           {hasAssignments ? (
-            <div
-              className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight px-1"
-              title={formatEntityList(currentArray)}
-            >
-              {getEntityShortCode(currentArray)}
+            <div className="flex items-center justify-center gap-1" title={formatEntityList(currentArray)}>
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-thr-green-200 dark:bg-thr-green-800/40 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-thr-green-600 dark:bg-thr-green-400"></span>
+                <span className="text-xs font-bold text-thr-green-700 dark:text-thr-green-300">
+                  {currentArray.length}
+                </span>
+              </div>
             </div>
           ) : (
-            <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+            <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+              <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+            </div>
           )}
           
           {/* Entity Selection Popup */}

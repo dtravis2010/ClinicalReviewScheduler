@@ -18,6 +18,7 @@ import ScheduleTable from './schedule/ScheduleTable';
 import ScheduleTableHeader from './schedule/ScheduleTableHeader';
 import BulkAssignmentModal from './schedule/BulkAssignmentModal';
 import EntityAssignmentCell from './schedule/EntityAssignmentCell';
+import ScheduleSummary from './schedule/ScheduleSummary';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { useUndoRedo } from '../hooks/useUndoRedo';
@@ -592,6 +593,62 @@ export default function ScheduleGrid({
         </div>
       )}
 
+      {/* Schedule Summary */}
+      <ScheduleSummary
+        totalEmployees={activeEmployees.length}
+        assignedEmployees={Object.keys(assignments).filter(empId => {
+          const assign = assignments[empId];
+          return assign && (
+            (assign.dars && assign.dars.length > 0) ||
+            assign.cpoe ||
+            (assign.newIncoming && assign.newIncoming.length > 0) ||
+            (assign.crossTraining && assign.crossTraining.length > 0) ||
+            (assign.specialProjects && (
+              assign.specialProjects.threePEmail ||
+              assign.specialProjects.threePBackupEmail ||
+              assign.specialProjects.float ||
+              (assign.specialProjects.other && assign.specialProjects.other.trim())
+            ))
+          );
+        }).length}
+        totalEntities={entities.length}
+        assignedEntities={(() => {
+          const assignedEntitySet = new Set();
+          Object.values(assignments).forEach(assign => {
+            if (assign.dars) assign.dars.forEach(darIdx => {
+              const entityList = darEntities[darIdx];
+              if (Array.isArray(entityList)) {
+                entityList.forEach(e => assignedEntitySet.add(e));
+              } else if (entityList) {
+                assignedEntitySet.add(entityList);
+              }
+            });
+            if (assign.newIncoming && Array.isArray(assign.newIncoming)) {
+              assign.newIncoming.forEach(e => assignedEntitySet.add(e));
+            }
+            if (assign.crossTraining && Array.isArray(assign.crossTraining)) {
+              assign.crossTraining.forEach(e => assignedEntitySet.add(e));
+            }
+          });
+          return assignedEntitySet.size;
+        })()}
+        totalAssignments={Object.values(assignments).reduce((total, assign) => {
+          let count = 0;
+          if (assign.dars) count += assign.dars.length;
+          if (assign.cpoe) count += 1;
+          if (assign.newIncoming) count += assign.newIncoming.length;
+          if (assign.crossTraining) count += assign.crossTraining.length;
+          if (assign.specialProjects) {
+            if (assign.specialProjects.threePEmail) count += 1;
+            if (assign.specialProjects.threePBackupEmail) count += 1;
+            if (assign.specialProjects.float) count += 1;
+            if (assign.specialProjects.other && assign.specialProjects.other.trim()) count += 1;
+          }
+          return total + count;
+        }, 0)}
+        conflicts={conflicts.length}
+      />
+
       {/* Schedule Table */}
       <ScheduleTable
         tableRef={gridRef}
@@ -628,15 +685,15 @@ export default function ScheduleGrid({
               const cpoeBlockMessage = getExclusiveBlockMessage(employee.id, 'cpoe');
 
               return (
-                <tr 
-                  key={employee.id} 
-                  className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30 ${
-                    empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/50 dark:bg-slate-800/50'
+                <tr
+                  key={employee.id}
+                  className={`group transition-all duration-200 hover:bg-gradient-to-r hover:from-slate-50 hover:via-white hover:to-slate-50 dark:hover:from-slate-700/40 dark:hover:via-slate-700/20 dark:hover:to-slate-700/40 border-b border-slate-100 dark:border-slate-700/50 ${
+                    empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/30 dark:bg-slate-800/30'
                   }`}
                 >
                   {/* Checkbox for bulk selection */}
                   {!readOnly && (
-                    <td className="sticky left-0 bg-inherit px-3 py-2 z-10 text-center">
+                    <td className="sticky left-0 bg-inherit px-3 py-3 z-10 text-center border-r border-slate-200 dark:border-slate-700">
                       <input
                         type="checkbox"
                         checked={selectedEmployees.has(employee.id)}
@@ -647,9 +704,9 @@ export default function ScheduleGrid({
                     </td>
                   )}
                   {/* Employee Name - Employee Chip Style */}
-                  <th scope="row" className="sticky left-0 bg-inherit px-3 py-2 z-10">
-                    <div className="flex items-center gap-2">
-                      <div className="employee-chip inline-flex">
+                  <th scope="row" className="sticky left-0 bg-inherit px-4 py-3 z-10 border-r-2 border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center gap-3">
+                      <div className="employee-chip inline-flex bg-white dark:bg-slate-700/50 px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600">
                         <span className={`font-semibold text-sm ${colorClass} truncate`} title={employee.name}>
                           {employee.name}
                         </span>
@@ -677,15 +734,15 @@ export default function ScheduleGrid({
                         id={getCellId(empIdx, darIdx)}
                         key={darIdx}
                         title={entityDisplay || `${darName} - No entities assigned`}
-                        className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
+                        className={`px-2 py-3 text-center transition-all duration-200 border-r border-slate-100 dark:border-slate-700/50 ${
                           !isDarTrained
-                            ? 'bg-slate-100 dark:bg-slate-700/50'
+                            ? 'bg-slate-100/50 dark:bg-slate-700/30 cursor-not-allowed'
                             : isAssigned
-                              ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                              ? 'bg-gradient-to-br from-thr-green-100 to-thr-green-50 dark:from-thr-green-900/40 dark:to-thr-green-900/20 hover:from-thr-green-200 hover:to-thr-green-100 dark:hover:from-thr-green-900/60 dark:hover:to-thr-green-900/40 cursor-pointer shadow-sm hover:shadow-md active:scale-95'
                               : darBlocked
-                                ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
-                                : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                        } ${isCellFocused(empIdx, darIdx) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-800' : ''}`}
+                                ? 'bg-slate-100/50 dark:bg-slate-800/40 cursor-not-allowed opacity-60'
+                                : 'bg-white dark:bg-slate-800/20 hover:bg-gradient-to-br hover:from-thr-blue-50 hover:to-white dark:hover:from-thr-blue-900/20 dark:hover:to-slate-800/40 cursor-pointer hover:shadow-sm active:scale-95'
+                        } ${isCellFocused(empIdx, darIdx) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800' : ''}`}
                         onClick={() => isDarTrained && !darBlocked && handleDARToggle(employee.id, darIdx)}
                         onKeyPress={(e) => {
                           if ((e.key === 'Enter' || e.key === ' ') && isDarTrained && !darBlocked) {
@@ -700,31 +757,35 @@ export default function ScheduleGrid({
                       >
                         {isDarTrained ? (
                           isAssigned ? (
-                            <div className="text-lg font-bold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                              ✕
+                            <div className="flex items-center justify-center">
+                              <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
+                                <span className="text-white text-xs font-bold">✓</span>
+                              </div>
                             </div>
                           ) : (
-                            <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                            <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                              <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                            </div>
                           )
                         ) : (
-                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                          <span className="text-slate-400 dark:text-slate-600 text-xs">N/A</span>
                         )}
                       </td>
                     );
                   })}
 
-                  {/* CPOE Column - Toggleable like DAR columns */}
+                  {/* CPOE Column - Modern toggle design matching DAR columns */}
                   <td
                     id={getCellId(empIdx, (darColumns?.length || 0))}
-                    className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
+                    className={`px-2 py-3 text-center transition-all duration-200 border-r border-slate-100 dark:border-slate-700/50 ${
                       !employee.skills?.includes('CPOE')
-                        ? 'bg-slate-100 dark:bg-slate-700/50'
+                        ? 'bg-slate-100/50 dark:bg-slate-700/30 cursor-not-allowed'
                         : assignment.cpoe
-                          ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
+                          ? 'bg-gradient-to-br from-thr-green-100 to-thr-green-50 dark:from-thr-green-900/40 dark:to-thr-green-900/20 hover:from-thr-green-200 hover:to-thr-green-100 dark:hover:from-thr-green-900/60 dark:hover:to-thr-green-900/40 cursor-pointer shadow-sm hover:shadow-md active:scale-95'
                           : cpoeBlocked
-                            ? 'bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed'
-                            : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    } ${isCellFocused(empIdx, (darColumns?.length || 0)) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-800' : ''}`}
+                            ? 'bg-slate-100/50 dark:bg-slate-800/40 cursor-not-allowed opacity-60'
+                            : 'bg-white dark:bg-slate-800/20 hover:bg-gradient-to-br hover:from-thr-blue-50 hover:to-white dark:hover:from-thr-blue-900/20 dark:hover:to-slate-800/40 cursor-pointer hover:shadow-sm active:scale-95'
+                    } ${isCellFocused(empIdx, (darColumns?.length || 0)) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800' : ''}`}
                     onClick={() => employee.skills?.includes('CPOE') && !readOnly && !cpoeBlocked && handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe)}
                     onKeyPress={(e) => {
                       if ((e.key === 'Enter' || e.key === ' ') && employee.skills?.includes('CPOE') && !readOnly && !cpoeBlocked) {
@@ -739,14 +800,18 @@ export default function ScheduleGrid({
                   >
                     {employee.skills?.includes('CPOE') ? (
                       assignment.cpoe ? (
-                        <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                          X
+                        <div className="flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
+                            <span className="text-white text-xs font-bold">✓</span>
+                          </div>
                         </div>
                       ) : (
-                        <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                        <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                          <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                        </div>
                       )
                     ) : (
-                      <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                      <span className="text-slate-400 dark:text-slate-600 text-xs">N/A</span>
                     )}
                   </td>
 
@@ -788,12 +853,22 @@ export default function ScheduleGrid({
                     isFocused={isCellFocused(empIdx, (darColumns?.length || 0) + 2)}
                   />
 
-                  {/* Special Projects/Assignments */}
+                  {/* Special Projects/Assignments - Modern design */}
                   <td
                     id={getCellId(empIdx, (darColumns?.length || 0) + 3)}
-                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
-                      readOnly ? '' : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    } ${isCellFocused(empIdx, (darColumns?.length || 0) + 3) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-800' : ''}`}
+                    className={`px-2 py-3 text-center relative transition-all duration-200 ${
+                      (() => {
+                        const sp = assignment.specialProjects;
+                        const hasProjects = sp && (
+                          (typeof sp === 'object' && !Array.isArray(sp) && (sp.threePEmail || sp.threePBackupEmail || sp.float || sp.other)) ||
+                          (Array.isArray(sp) && sp.length > 0) ||
+                          (typeof sp === 'string' && sp)
+                        );
+                        return hasProjects
+                          ? 'bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/40 dark:to-purple-900/20 hover:from-purple-200 hover:to-purple-100 dark:hover:from-purple-900/60 dark:hover:to-purple-900/40 shadow-sm hover:shadow-md active:scale-95'
+                          : 'bg-white dark:bg-slate-800/20 hover:bg-gradient-to-br hover:from-thr-blue-50 hover:to-white dark:hover:from-thr-blue-900/20 dark:hover:to-slate-800/40 hover:shadow-sm active:scale-95';
+                      })()
+                    } ${readOnly ? '' : 'cursor-pointer'} ${isCellFocused(empIdx, (darColumns?.length || 0) + 3) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800' : ''}`}
                     onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'specialProjects' })}
                     onKeyPress={(e) => {
                       if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
@@ -811,16 +886,21 @@ export default function ScheduleGrid({
                         // Handle old format (array or string) - P0-7: Show full names
                         if (Array.isArray(sp) && sp.length > 0) {
                           return (
-                            <div
-                              className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight px-1"
-                              title={formatEntityList(sp)}
-                            >
-                              {formatEntityList(sp)}
+                            <div className="flex flex-wrap gap-1 justify-center">
+                              {sp.map((item, idx) => (
+                                <span key={idx} className="px-2 py-1 text-xs font-medium rounded-full bg-purple-200 text-purple-700 dark:bg-purple-800/40 dark:text-purple-300 shadow-sm">
+                                  {item}
+                                </span>
+                              ))}
                             </div>
                           );
                         }
                         if (typeof sp === 'string' && sp) {
-                          return <span className="text-xs text-slate-700 dark:text-slate-300">{sp}</span>;
+                          return (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-200 text-purple-700 dark:bg-purple-800/40 dark:text-purple-300 shadow-sm">
+                              {sp}
+                            </span>
+                          );
                         }
                         // Handle new format (object)
                         if (sp && typeof sp === 'object' && !Array.isArray(sp)) {
@@ -829,12 +909,12 @@ export default function ScheduleGrid({
                           if (sp.threePBackupEmail) badges.push('3P-B');
                           if (sp.float) badges.push('Float');
                           if (sp.other) badges.push(sp.other);
-                          
+
                           if (badges.length > 0) {
                             return (
                               <div className="flex flex-wrap gap-1 justify-center">
                                 {badges.map((badge, idx) => (
-                                  <span key={idx} className="px-1.5 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                                  <span key={idx} className="px-2 py-1 text-xs font-medium rounded-full bg-purple-200 text-purple-700 dark:bg-purple-800/40 dark:text-purple-300 shadow-sm">
                                     {badge}
                                   </span>
                                 ))}
@@ -842,35 +922,39 @@ export default function ScheduleGrid({
                             );
                           }
                         }
-                        return <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>;
+                        return <span className="text-slate-400 dark:text-slate-600 text-xs">N/A</span>;
                       })()
                     ) : (
                       <>
                         {(() => {
                           const sp = assignment.specialProjects;
                           // Normalize to object format for display
-                          const spObj = (sp && typeof sp === 'object' && !Array.isArray(sp)) 
-                            ? sp 
+                          const spObj = (sp && typeof sp === 'object' && !Array.isArray(sp))
+                            ? sp
                             : { threePEmail: false, threePBackupEmail: false, float: false, other: '' };
-                          
+
                           const badges = [];
                           if (spObj.threePEmail) badges.push('3P');
                           if (spObj.threePBackupEmail) badges.push('3P-B');
                           if (spObj.float) badges.push('Float');
                           if (spObj.other) badges.push(spObj.other);
-                          
+
                           if (badges.length > 0) {
                             return (
                               <div className="flex flex-wrap gap-1 justify-center">
                                 {badges.map((badge, idx) => (
-                                  <span key={idx} className="px-1.5 py-0.5 text-xs font-medium rounded bg-thr-green-100 text-thr-green-700 dark:bg-thr-green-900/30 dark:text-thr-green-300">
+                                  <span key={idx} className="px-2 py-1 text-xs font-medium rounded-full bg-purple-200 text-purple-700 dark:bg-purple-800/40 dark:text-purple-300 shadow-sm">
                                     {badge}
                                   </span>
                                 ))}
                               </div>
                             );
                           }
-                          return <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>;
+                          return (
+                            <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                              <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                            </div>
+                          );
                         })()}
                         {editingCell?.employeeId === employee.id && editingCell?.field === 'specialProjects' && (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select special projects">
