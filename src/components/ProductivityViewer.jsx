@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { TrendingUp, RefreshCw, Calendar, Award, AlertCircle } from 'lucide-react';
+import { TrendingUp, RefreshCw, Calendar, Award, AlertCircle, Trash2 } from 'lucide-react';
 import { ProductivityService } from '../services/productivityService';
 import { logger } from '../utils/logger';
 
@@ -13,6 +13,8 @@ export default function ProductivityViewer() {
   const [selectedPeriod, setSelectedPeriod] = useState(null);
   const [entityData, setEntityData] = useState([]);
   const [error, setError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadPeriods();
@@ -64,6 +66,27 @@ export default function ProductivityViewer() {
       setError('Failed to load productivity data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeletePeriod = async () => {
+    if (!selectedPeriod) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+      await ProductivityService.deletePeriod(selectedPeriod);
+
+      logger.info(`Deleted productivity period: ${selectedPeriod}`);
+      setShowDeleteConfirm(false);
+
+      // Reload periods
+      await loadPeriods();
+    } catch (err) {
+      logger.error('Error deleting period:', err);
+      setError('Failed to delete report');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -131,13 +154,23 @@ export default function ProductivityViewer() {
             ))}
           </select>
         </div>
-        <button
-          onClick={loadPeriods}
-          className="mt-6 p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-          title="Refresh data"
-        >
-          <RefreshCw className="w-5 h-5" />
-        </button>
+        <div className="flex gap-2 mt-6">
+          <button
+            onClick={loadPeriods}
+            className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            title="Refresh data"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={!selectedPeriod}
+            className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Delete this report"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -325,6 +358,62 @@ export default function ProductivityViewer() {
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  Delete Productivity Report?
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                  Are you sure you want to delete this report?
+                </p>
+                {currentPeriod && (
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {formatDate(currentPeriod.startDate)} - {formatDate(currentPeriod.endDate)}
+                  </p>
+                )}
+                <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeletePeriod}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete Report
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
