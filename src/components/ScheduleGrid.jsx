@@ -31,6 +31,8 @@ import { exportToExcel as exportScheduleToExcel } from '../utils/exportUtils';
 import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees, getEmployeeInitials } from '../utils/scheduleUtils';
 import { canAssignDAR, getAvailableEntitiesForDar, getAvailableEntitiesForAssignment } from '../utils/assignmentLogic';
 import { getLastEntityAssignments, formatHistoryDate } from '../utils/entityHistory';
+import { calculateEmployeeRotation } from '../utils/rotationAnalysis';
+import RotationStatusBadge from './schedule/RotationStatusBadge';
 
 const EMPLOYEE_COLORS = [
   'text-thr-blue-600 dark:text-thr-blue-400', 
@@ -534,10 +536,25 @@ export default function ScheduleGrid({
   }, []);
 
   // Calculate entity history for showing who last had each entity (memoized)
-  const entityHistory = useMemo(() => 
+  const entityHistory = useMemo(() =>
     getLastEntityAssignments(schedules || [], employees || [], entities || []),
     [schedules, employees, entities]
   );
+
+  // Calculate employee rotation data (memoized)
+  const employeesWithRotation = useMemo(() =>
+    calculateEmployeeRotation(employees || [], schedules || [], 10),
+    [employees, schedules]
+  );
+
+  // Create a map for quick rotation data lookup
+  const rotationDataMap = useMemo(() => {
+    const map = new Map();
+    employeesWithRotation.forEach(emp => {
+      map.set(emp.id, emp.rotationData);
+    });
+    return map;
+  }, [employeesWithRotation]);
 
   return (
     <div className={`space-y-0 flex flex-col animate-fade-in-up w-full ${
@@ -705,12 +722,18 @@ export default function ScheduleGrid({
                   )}
                   {/* Employee Name - Employee Chip Style */}
                   <th scope="row" className="sticky left-0 bg-inherit px-4 py-3 z-10 border-r-2 border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <div className="employee-chip inline-flex bg-white dark:bg-slate-700/50 px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600">
                         <span className={`font-semibold text-sm ${colorClass} truncate`} title={employee.name}>
                           {employee.name}
                         </span>
                       </div>
+                      {!readOnly && rotationDataMap.get(employee.id) && (
+                        <RotationStatusBadge
+                          rotationStatus={rotationDataMap.get(employee.id).rotationStatus}
+                          compact={true}
+                        />
+                      )}
                       {!readOnly && (
                         <WorkloadIndicator
                           workload={calculateWorkload(assignment, darEntities)}

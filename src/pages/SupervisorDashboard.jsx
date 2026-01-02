@@ -35,7 +35,8 @@ import {
   Activity,
   TrendingUp,
   AlertCircle,
-  Clock
+  Clock,
+  RotateCcw
 } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
 import EmployeeManagement from '../components/EmployeeManagement';
@@ -670,6 +671,13 @@ export default function SupervisorDashboard() {
                   >
                     <FileText className="w-4 h-4 inline mr-2" />
                     Manage Schedules
+                  </button>
+                  <button
+                    onClick={() => navigate('/rotation')}
+                    className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600"
+                  >
+                    <RotateCcw className="w-4 h-4 inline mr-2" />
+                    Rotation Tracker
                   </button>
                   <button
                     onClick={() => navigate('/analytics')}
