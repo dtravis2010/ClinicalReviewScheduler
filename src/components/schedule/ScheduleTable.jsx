@@ -8,8 +8,8 @@ import PropTypes from 'prop-types';
 function ScheduleTable({ children, className = '', tableRef = null, ariaActivedescendant, ariaRowCount, ariaColCount }) {
   return (
     <div className={`bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-4 w-full ${className}`}>
-      <div className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 w-full overflow-hidden">
-        <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-slate-100 dark:scrollbar-track-slate-800">
+      <div className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 w-full overflow-visible">
+        <div className="overflow-x-auto overflow-y-visible w-full scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-slate-100 dark:scrollbar-track-slate-800">
           <table
             ref={tableRef}
             className="w-full border-collapse"
