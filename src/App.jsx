@@ -7,6 +7,7 @@ import SupervisorDashboard from './pages/SupervisorDashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ProductivityDashboard from './pages/ProductivityDashboard';
 import InsightsDashboard from './pages/InsightsDashboard';
+import RotationDashboard from './pages/RotationDashboard';
 import UserView from './pages/UserView';
 import ConfigurationError from './components/ConfigurationError';
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
@@ -56,6 +57,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <InsightsDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/rotation"
+            element={
+              <ProtectedRoute>
+                <RotationDashboard />
               </ProtectedRoute>
             }
           />
