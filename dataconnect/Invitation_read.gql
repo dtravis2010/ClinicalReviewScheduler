@@ -1,0 +1,45 @@
+
+# This is a file for you to write an un-named query.
+# Only one un-named query is allowed per file.
+query {
+  invitations{
+    status
+    createdAt
+    event {
+      title
+      description
+      startTime
+      endTime
+      location
+      recurrencePattern
+      isPublic
+      createdAt
+      organizer {
+        displayName
+        email
+        createdAt
+        photoUrl
+        timezone
+      }
+      category {
+        name
+        color
+        createdAt
+        user {
+          displayName
+          email
+          createdAt
+          photoUrl
+          timezone
+        }
+      }
+    }
+    invitee {
+      displayName
+      email
+      createdAt
+      photoUrl
+      timezone
+    }
+  }
+}

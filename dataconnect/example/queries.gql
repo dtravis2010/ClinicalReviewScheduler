@@ -6,6 +6,7 @@ mutation CreateNewEvent($title: String!, $description: String, $startTime: Times
     endTime: $endTime,
     location: $location,
     isPublic: $isPublic,
+    createdAt_expr: "request.time",
     organizerId_expr: "auth.uid",
     categoryId: $categoryId
   })

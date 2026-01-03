@@ -1,85 +1,47 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth, isFirebaseConfigured, firebaseConfigError } from '../firebase';
-import {
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  setPersistence,
-  browserSessionPersistence
-} from 'firebase/auth';
 
 const AuthContext = createContext();
+
+// Simple password for supervisor login
+const SUPERVISOR_PASSWORD = '123456';
 
 export function useAuth() {
   return useContext(AuthContext);
 }
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [isSupervisor, setIsSupervisor] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Check if already logged in (from sessionStorage)
+  useEffect(() => {
+    const isLoggedIn = sessionStorage.getItem('supervisorLoggedIn') === 'true';
+    setIsSupervisor(isLoggedIn);
+    setLoading(false);
+  }, []);
+
   async function loginAsSupervisor(password) {
-    if (!isFirebaseConfigured) {
-      throw new Error(firebaseConfigError);
-    }
-    try {
-      await setPersistence(auth, browserSessionPersistence);
-
-      // Use environment variable for supervisor email
-      const supervisorEmail = import.meta.env.VITE_SUPERVISOR_EMAIL || 'supervisor@clinical.com';
-
-      const result = await signInWithEmailAndPassword(
-        auth,
-        supervisorEmail,
-        password
-      );
-      return result;
-    } catch (error) {
-      throw error;
+    if (password === SUPERVISOR_PASSWORD) {
+      sessionStorage.setItem('supervisorLoggedIn', 'true');
+      setIsSupervisor(true);
+      return { success: true };
+    } else {
+      throw new Error('Invalid password');
     }
   }
 
   async function logout() {
-    if (!isFirebaseConfigured) {
-      return;
-    }
-    return signOut(auth);
+    sessionStorage.removeItem('supervisorLoggedIn');
+    setIsSupervisor(false);
   }
 
-  useEffect(() => {
-    if (!isFirebaseConfigured) {
-      setLoading(false);
-      return;
-    }
-    
-    // Set a timeout to prevent hanging forever if auth never responds
-    const timeoutId = setTimeout(() => {
-      console.warn('Auth state change timed out');
-      setLoading(false);
-    }, 10000);
-    
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      clearTimeout(timeoutId);
-      setCurrentUser(user);
-      setLoading(false);
-    });
-
-    return () => {
-      clearTimeout(timeoutId);
-      unsubscribe();
-    };
-  }, []);
-
-  // Get supervisor email from environment
-  const supervisorEmail = import.meta.env.VITE_SUPERVISOR_EMAIL || 'supervisor@clinical.com';
-
   const value = {
-    currentUser,
+    currentUser: isSupervisor ? { role: 'supervisor' } : null,
     loginAsSupervisor,
     logout,
-    isSupervisor: currentUser?.email === supervisorEmail,
-    isFirebaseConfigured,
-    firebaseConfigError,
+    isSupervisor,
+    isFirebaseConfigured: true,
+    firebaseConfigError: null,
   };
 
   if (loading) {
