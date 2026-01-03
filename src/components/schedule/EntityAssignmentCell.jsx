@@ -28,14 +28,16 @@ function EntityAssignmentCell({
   const currentArray = Array.isArray(currentValues) ? currentValues : (currentValues ? [currentValues] : []);
   const hasAssignments = currentArray.length > 0;
 
-  const handleCellClick = () => {
-    if (!readOnly) {
+  const handleCellClick = (e) => {
+    // Only open the popup if we're not already editing
+    // This prevents the cell click from interfering with popup interactions
+    if (!readOnly && !isEditing) {
       onStartEdit();
     }
   };
 
   const handleCellKeyPress = (e) => {
-    if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
+    if ((e.key === 'Enter' || e.key === ' ') && !readOnly && !isEditing) {
       e.preventDefault();
       onStartEdit();
     }
@@ -112,10 +114,11 @@ function EntityAssignmentCell({
           
           {/* Entity Selection Popup */}
           {isEditing && (
-            <div 
-              className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600" 
-              role="dialog" 
+            <div
+              className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600"
+              role="dialog"
               aria-label={`Select entities for ${fieldLabel}`}
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Search and summary */}
               <div className="flex items-center gap-2 mb-2">
@@ -144,16 +147,21 @@ function EntityAssignmentCell({
                   const entityShort = getEntityShortCode([entity], availableEntities);
 
                   return (
-                    <label 
-                      key={entity.id} 
-                      className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" 
+                    <label
+                      key={entity.id}
+                      className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors"
                       title={entity.name}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <input
                         type="checkbox"
                         checked={isSelected}
                         disabled={blocked}
-                        onChange={() => handleEntityToggle(entity.name)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleEntityToggle(entity.name);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
                         className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600 disabled:opacity-50"
                         aria-label={`Assign ${entity.name} to ${fieldLabel}`}
                       />
