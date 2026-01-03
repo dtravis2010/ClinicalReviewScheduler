@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { X, Users, AlertCircle, CheckCircle } from 'lucide-react';
+import { getAvailableEntitiesForAssignment } from '../../utils/assignmentLogic';
 
 /**
  * BulkAssignmentModal component
@@ -13,6 +14,8 @@ export default function BulkAssignmentModal({
   employees,
   entities,
   darColumns,
+  assignments = {},
+  darEntities = {},
   onApply
 }) {
   const [assignmentType, setAssignmentType] = useState('dar'); // 'dar', 'cpoe', 'newIncoming', 'crossTraining', 'specialProjects'
@@ -24,6 +27,47 @@ export default function BulkAssignmentModal({
   const selectedEmployeeObjects = useMemo(() => {
     return employees.filter(emp => selectedEmployees.has(emp.id));
   }, [employees, selectedEmployees]);
+
+  // Compute available entities for the selected assignment type
+  // For bulk assignment, we show entities that are available for ALL selected employees
+  const availableEntities = useMemo(() => {
+    if (!['newIncoming', 'crossTraining', 'specialProjects'].includes(assignmentType)) {
+      return entities; // For other types, show all entities
+    }
+
+    if (selectedEmployeeObjects.length === 0) {
+      // When no employees selected, deduplicate entities using the same logic
+      return getAvailableEntitiesForAssignment('', assignmentType, assignments, darEntities, entities);
+    }
+
+    // Get available entities for each selected employee
+    const availablePerEmployee = selectedEmployeeObjects.map(emp => {
+      const available = getAvailableEntitiesForAssignment(
+        emp.id,
+        assignmentType,
+        assignments,
+        darEntities,
+        entities
+      );
+      return new Set(available.map(e => e.name));
+    });
+
+    // Get deduplicated entities from the first employee (all will have same deduplication)
+    const deduplicatedEntities = getAvailableEntitiesForAssignment(
+      selectedEmployeeObjects[0].id,
+      assignmentType,
+      assignments,
+      darEntities,
+      entities
+    );
+
+    // Find intersection - entities available for ALL selected employees
+    const intersection = deduplicatedEntities.filter(entity => {
+      return availablePerEmployee.every(availableSet => availableSet.has(entity.name));
+    });
+
+    return intersection;
+  }, [assignmentType, selectedEmployeeObjects, assignments, darEntities, entities]);
 
   // Validate assignments and generate preview
   const generatePreview = () => {
@@ -178,17 +222,23 @@ export default function BulkAssignmentModal({
                 Select Entities
               </label>
               <div className="border border-slate-300 dark:border-slate-600 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2" role="group" aria-labelledby="select-entities-label">
-                {entities.map(entity => (
-                  <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={selectedEntities.includes(entity.name)}
-                      onChange={() => handleEntityToggle(entity.name)}
-                      className="w-4 h-4 text-thr-blue-500 rounded focus:ring-2 focus:ring-thr-blue-500"
-                    />
-                    <span className="text-sm text-slate-900 dark:text-slate-100">{entity.name}</span>
-                  </label>
-                ))}
+                {availableEntities.length === 0 ? (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
+                    No entities available for the selected employees
+                  </p>
+                ) : (
+                  availableEntities.map(entity => (
+                    <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={selectedEntities.includes(entity.name)}
+                        onChange={() => handleEntityToggle(entity.name)}
+                        className="w-4 h-4 text-thr-blue-500 rounded focus:ring-2 focus:ring-thr-blue-500"
+                      />
+                      <span className="text-sm text-slate-900 dark:text-slate-100">{entity.name}</span>
+                    </label>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -282,5 +332,7 @@ BulkAssignmentModal.propTypes = {
     name: PropTypes.string.isRequired
   })).isRequired,
   darColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
+  assignments: PropTypes.object,
+  darEntities: PropTypes.object,
   onApply: PropTypes.func.isRequired
 };

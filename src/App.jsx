@@ -1,8 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
 import LoginPage from './pages/LoginPage';
 import SupervisorDashboard from './pages/SupervisorDashboard';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import ProductivityDashboard from './pages/ProductivityDashboard';
+import InsightsDashboard from './pages/InsightsDashboard';
+import RotationDashboard from './pages/RotationDashboard';
 import UserView from './pages/UserView';
 import ConfigurationError from './components/ConfigurationError';
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
@@ -31,6 +36,38 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <AnalyticsDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/productivity"
+            element={
+              <ProtectedRoute>
+                <ProductivityDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/insights"
+            element={
+              <ProtectedRoute>
+                <InsightsDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/rotation"
+            element={
+              <ProtectedRoute>
+                <RotationDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/schedule" element={<UserView />} />
         </Routes>
       </div>
@@ -43,8 +80,10 @@ function App() {
     <EnhancedErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <AppContent />
-          <ToastProvider />
+          <UserPreferencesProvider>
+            <AppContent />
+            <ToastProvider />
+          </UserPreferencesProvider>
         </AuthProvider>
       </ThemeProvider>
     </EnhancedErrorBoundary>

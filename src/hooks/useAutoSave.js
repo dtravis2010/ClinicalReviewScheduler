@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { logger } from '../utils/logger';
 
 /**
@@ -8,10 +8,11 @@ import { logger } from '../utils/logger';
  * @param {Object} options - Configuration options
  * @param {number} options.delay - Debounce delay in milliseconds (default: 2000)
  * @param {boolean} options.enabled - Whether auto-save is enabled (default: true)
+ * @param {*} options.resetKey - Reset key to re-initialize auto-save state when changed
  * @returns {Object} Auto-save state and controls
  */
 export function useAutoSave(data, saveFunction, options = {}) {
-  const { delay = 2000, enabled = true } = options;
+  const { delay = 2000, enabled = true, resetKey } = options;
   
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
@@ -21,26 +22,67 @@ export function useAutoSave(data, saveFunction, options = {}) {
   const timeoutRef = useRef(null);
   const previousDataRef = useRef(null);
   const isMountedRef = useRef(true);
+  const lastResetKeyRef = useRef(resetKey);
+
+  const serializedData = useMemo(() => {
+    if (!data) return null;
+    
+    try {
+      return JSON.stringify(data);
+    } catch (err) {
+      logger.error('Error serializing data for auto-save:', err);
+      return null;
+    }
+  }, [data]);
 
   // Initialize previous data on mount
   useEffect(() => {
-    if (previousDataRef.current === null && data) {
-      previousDataRef.current = JSON.stringify(data);
+    if (previousDataRef.current === null && serializedData !== null) {
+      previousDataRef.current = serializedData;
     }
-  }, []);
+  }, [serializedData]);
+
+  // Reset auto-save state when a reset key changes (e.g., switching schedules)
+  useEffect(() => {
+    if (resetKey === undefined) return;
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // When switching schedules (resetKey changes), reset state but keep the latest snapshot of data
+    previousDataRef.current = serializedData;
+    setIsSaving(false);
+    setLastSaved(null);
+    setError(null);
+    setHasUnsavedChanges(false);
+  }, [resetKey]); // Only reset when the key actually changes
+
+  // Track local changes to mark unsaved state (ignores resetKey transitions)
+  useEffect(() => {
+    const resetKeyChanged = lastResetKeyRef.current !== resetKey;
+    lastResetKeyRef.current = resetKey;
+
+    if (resetKeyChanged) return;
+    if (!serializedData || previousDataRef.current === null) return;
+
+    if (serializedData !== previousDataRef.current) {
+      setHasUnsavedChanges(true);
+    }
+  }, [serializedData, resetKey]);
 
   // Detect data changes
   const hasChanged = useCallback(() => {
-    if (!data || previousDataRef.current === null) return false;
+    if (!serializedData) return false;
     
-    try {
-      const currentData = JSON.stringify(data);
-      return currentData !== previousDataRef.current;
-    } catch (err) {
-      logger.error('Error comparing data for auto-save:', err);
+    // If this is the first pass, prime the previous snapshot and report no change
+    if (previousDataRef.current === null) {
+      previousDataRef.current = serializedData;
       return false;
     }
-  }, [data]);
+    
+    return serializedData !== previousDataRef.current;
+  }, [serializedData]);
 
   // Force save function
   const forceSave = useCallback(async () => {
@@ -55,12 +97,55 @@ export function useAutoSave(data, saveFunction, options = {}) {
       if (isMountedRef.current) {
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
-        previousDataRef.current = JSON.stringify(data);
+        previousDataRef.current = serializedData;
         logger.info('Auto-save completed successfully');
       }
     } catch (err) {
       if (isMountedRef.current) {
-        setError(err.message || 'Failed to save');
+        // P0-1: Detect version conflicts
+        const isVersionConflict = err.code === 'version-conflict';
+
+        // P0-4: Detect session expiry and save draft to localStorage
+        const isAuthError = err.code === 'permission-denied' ||
+                           err.code === 'unauthenticated' ||
+                           err.message?.toLowerCase().includes('auth') ||
+                           err.message?.toLowerCase().includes('permission');
+
+        if (isVersionConflict) {
+          setError({
+            type: 'conflict',
+            message: 'Schedule was updated by another supervisor. Please refresh to see latest changes.',
+            canRecover: true
+          });
+        } else if (isAuthError) {
+          // Save draft to localStorage as backup
+          try {
+            const draftKey = `draft_${resetKey || 'schedule'}`;
+            localStorage.setItem(draftKey, serializedData);
+            localStorage.setItem(`${draftKey}_timestamp`, new Date().toISOString());
+            logger.warn('Session expired - draft saved to localStorage');
+
+            setError({
+              type: 'auth',
+              message: 'Session expired. Your changes have been saved locally. Please re-login to save to the server.',
+              canRecover: true
+            });
+          } catch (storageErr) {
+            logger.error('Failed to save draft to localStorage:', storageErr);
+            setError({
+              type: 'auth',
+              message: 'Session expired and failed to save draft locally. Please re-login.',
+              canRecover: false
+            });
+          }
+        } else {
+          setError({
+            type: 'save',
+            message: err.message || 'Failed to save',
+            canRecover: false
+          });
+        }
+
         logger.error('Auto-save failed:', err);
       }
     } finally {
@@ -68,7 +153,7 @@ export function useAutoSave(data, saveFunction, options = {}) {
         setIsSaving(false);
       }
     }
-  }, [data, saveFunction]);
+  }, [data, saveFunction, serializedData]);
 
   // Auto-save effect with debouncing
   useEffect(() => {

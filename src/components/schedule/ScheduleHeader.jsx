@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
-import { History, Settings, FileDown, Plus, Eye, Undo, Redo, Users } from 'lucide-react';
+import { History, Settings, FileDown, Plus, Eye, Undo, Redo, Users, Maximize, Minimize, BarChart3 } from 'lucide-react';
 import AutoSaveIndicator from '../AutoSaveIndicator';
 
 /**
@@ -21,7 +21,10 @@ function ScheduleHeader({
   onExport,
   scheduleStatus,
   selectedCount = 0,
-  onBulkAssign
+  onBulkAssign,
+  isFullscreen = false,
+  onToggleFullscreen,
+  onViewProductivity
 }) {
   return (
     <div className="bg-white dark:bg-slate-800 px-4 sm:px-6 py-3 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-soft">
@@ -122,6 +125,19 @@ function ScheduleHeader({
               <span className="hidden sm:inline">Config</span>
             </button>
 
+            {/* Productivity Dashboard link */}
+            {onViewProductivity && (
+              <button
+                onClick={onViewProductivity}
+                className="btn-pill bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
+                aria-label="View entity productivity data"
+                title="View productivity metrics to help distribute work evenly"
+              >
+                <BarChart3 className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Productivity</span>
+              </button>
+            )}
+
             <button
               onClick={onExport}
               className="btn-pill bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
@@ -131,6 +147,23 @@ function ScheduleHeader({
               <span className="hidden sm:inline">Export</span>
             </button>
 
+            {/* Fullscreen toggle */}
+            {onToggleFullscreen && (
+              <button
+                onClick={onToggleFullscreen}
+                className="btn-pill bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5 shadow-soft hover:shadow-soft-md transition-all"
+                aria-label={isFullscreen ? "Exit focus mode" : "Enter focus mode"}
+                title={isFullscreen ? "Exit focus mode (ESC)" : "Enter focus mode (F11)"}
+              >
+                {isFullscreen ? (
+                  <Minimize className="w-4 h-4" aria-hidden="true" />
+                ) : (
+                  <Maximize className="w-4 h-4" aria-hidden="true" />
+                )}
+                <span className="hidden sm:inline">{isFullscreen ? 'Exit Focus' : 'Focus Mode'}</span>
+              </button>
+            )}
+
             {/* Status indicators */}
             <div className={`btn-pill flex items-center gap-1.5 cursor-default ${
               scheduleStatus === 'published'
@@ -138,7 +171,7 @@ function ScheduleHeader({
                 : 'bg-orange-500 text-white'
             }`}>
               <Eye className="w-4 h-4" aria-hidden="true" />
-              <span>{scheduleStatus === 'published' ? 'Published' : 'Unpublish (Draft)'}</span>
+              <span>{scheduleStatus === 'published' ? 'Published' : 'Draft'}</span>
             </div>
           </div>
         )}
@@ -161,7 +194,10 @@ ScheduleHeader.propTypes = {
   onExport: PropTypes.func.isRequired,
   scheduleStatus: PropTypes.oneOf(['draft', 'published']),
   selectedCount: PropTypes.number,
-  onBulkAssign: PropTypes.func
+  onBulkAssign: PropTypes.func,
+  isFullscreen: PropTypes.bool,
+  onToggleFullscreen: PropTypes.func,
+  onViewProductivity: PropTypes.func
 };
 
 export default memo(ScheduleHeader);

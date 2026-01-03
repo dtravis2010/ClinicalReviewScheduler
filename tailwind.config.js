@@ -94,6 +94,15 @@ export default {
         '18': '4.5rem',
         '22': '5.5rem',
       },
+      // Minimum dimensions for touch targets (WCAG 2.5.5)
+      minWidth: {
+        'touch': '44px', // Minimum touch target size
+        'touch-lg': '48px',
+      },
+      minHeight: {
+        'touch': '44px',
+        'touch-lg': '48px',
+      },
       // Animation durations for "alive" interactions
       transitionDuration: {
         '250': '250ms',

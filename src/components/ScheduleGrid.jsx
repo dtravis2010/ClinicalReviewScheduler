@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
-import { Save, Calendar, Info } from 'lucide-react';
+import { Save, Calendar } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
@@ -16,14 +17,37 @@ import ScheduleDateBanner from './schedule/ScheduleDateBanner';
 import ScheduleTable from './schedule/ScheduleTable';
 import ScheduleTableHeader from './schedule/ScheduleTableHeader';
 import BulkAssignmentModal from './schedule/BulkAssignmentModal';
+import EntityAssignmentCell from './schedule/EntityAssignmentCell';
+import ScheduleSummary from './schedule/ScheduleSummary';
 import { useAutoSave } from '../hooks/useAutoSave';
+import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useConflictDetection } from '../hooks/useConflictDetection';
+import { useScheduleForm } from '../hooks/useScheduleForm';
+import { useInfoPanels } from '../hooks/useInfoPanels';
 import { calculateWorkload } from '../utils/conflictDetection';
+import { AriaLiveRegion } from './AriaLiveRegion';
 import { exportToExcel as exportScheduleToExcel } from '../utils/exportUtils';
 import { formatEntityList, formatDateRange, getEntityShortCode, getActiveEmployees, getEmployeeInitials } from '../utils/scheduleUtils';
 import { canAssignDAR, getAvailableEntitiesForDar, getAvailableEntitiesForAssignment } from '../utils/assignmentLogic';
 import { getLastEntityAssignments, formatHistoryDate } from '../utils/entityHistory';
+import { calculateEmployeeRotation } from '../utils/rotationAnalysis';
+import RotationStatusBadge from './schedule/RotationStatusBadge';
+
+const EMPLOYEE_COLORS = [
+  'text-thr-blue-600 dark:text-thr-blue-400', 
+  'text-thr-green-600 dark:text-thr-green-400', 
+  'text-purple-600 dark:text-purple-400',
+  'text-orange-600 dark:text-orange-400', 
+  'text-pink-600 dark:text-pink-400', 
+  'text-cyan-600 dark:text-cyan-400',
+  'text-rose-600 dark:text-rose-400', 
+  'text-indigo-600 dark:text-indigo-400',
+  'text-teal-600 dark:text-teal-400', 
+  'text-fuchsia-600 dark:text-fuchsia-400', 
+  'text-lime-600 dark:text-lime-400',
+  'text-amber-600 dark:text-amber-400',
+];
 
 export default function ScheduleGrid({
   schedule,
@@ -39,48 +63,105 @@ export default function ScheduleGrid({
   const {
     state: assignments,
     setState: setAssignments,
+    resetState: resetAssignments,
     undo,
     redo,
     canUndo,
     canRedo
   } = useUndoRedo({}, { limit: 50 });
 
-  const [scheduleName, setScheduleName] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [darEntities, setDarEntities] = useState({});
-  const [darCount, setDarCount] = useState(5); // Default to 5 DARs
+  const navigate = useNavigate();
+
+  // Use schedule form hook for metadata management
+  const {
+    scheduleName,
+    startDate,
+    endDate,
+    darEntities,
+    darCount,
+    darColumns,
+    hasChanges,
+    scheduleData: formData,
+    setScheduleName,
+    setStartDate,
+    setEndDate,
+    handleDarEntityToggle,
+    setDarCount,
+    markClean,
+    markDirty
+  } = useScheduleForm(schedule, resetAssignments);
+
+  // Use info panels hook for consolidated panel state
+  const {
+    openPanel,
+    closePanel,
+    showDarInfoPanel,
+    showCpoeInfoPanel,
+    showNewIncomingInfoPanel,
+    showCrossTrainingInfoPanel,
+    showSpecialProjectsInfoPanel,
+    selectedDarIndex
+  } = useInfoPanels();
+
+  // Remaining local state
   const [editingDar, setEditingDar] = useState(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [showDarInfoPanel, setShowDarInfoPanel] = useState(false);
-  const [selectedDarIndex, setSelectedDarIndex] = useState(null);
-  // State for new info panels
-  const [showCpoeInfoPanel, setShowCpoeInfoPanel] = useState(false);
-  const [showNewIncomingInfoPanel, setShowNewIncomingInfoPanel] = useState(false);
-  const [showCrossTrainingInfoPanel, setShowCrossTrainingInfoPanel] = useState(false);
-  const [showSpecialProjectsInfoPanel, setShowSpecialProjectsInfoPanel] = useState(false);
-  // State for editing assignment cells (New Incoming, Cross-Training)
   const [editingCell, setEditingCell] = useState(null); // { employeeId, field }
-  // State for bulk assignment
   const [selectedEmployees, setSelectedEmployees] = useState(new Set());
   const [showBulkAssignmentModal, setShowBulkAssignmentModal] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [announcementMessage, setAnnouncementMessage] = useState('');
 
-  // Auto-save functionality
-  const scheduleData = {
-    name: scheduleName,
-    startDate,
-    endDate,
-    assignments,
-    darEntities,
-    darCount
-  };
+  const getActiveExclusiveFields = useCallback((assignment = {}) => {
+    const activeFields = [];
+
+    const hasEntries = (value) => {
+      if (Array.isArray(value)) return value.length > 0;
+      return Boolean(value);
+    };
+
+    if (hasEntries(assignment.dars)) activeFields.push('dars');
+    if (hasEntries(assignment.newIncoming)) activeFields.push('newIncoming');
+    if (assignment.cpoe) activeFields.push('cpoe');
+
+    return activeFields;
+  }, []);
+
+  const formatExclusiveLabel = useCallback((fields = []) => {
+    const labels = {
+      dars: 'DAR',
+      newIncoming: 'New Incoming',
+      cpoe: 'CPOE'
+    };
+
+    if (!fields.length) return '';
+    const mapped = fields.map((field) => labels[field] || field);
+    if (mapped.length === 1) return mapped[0];
+    return `${mapped.slice(0, -1).join(', ')} and ${mapped[mapped.length - 1]}`;
+  }, []);
+
+  const isFieldBlockedByExclusiveAssignment = useCallback((employeeId, targetField) => {
+    const activeFields = getActiveExclusiveFields(assignments[employeeId] || {});
+    return activeFields.length > 0 && !activeFields.includes(targetField);
+  }, [assignments, getActiveExclusiveFields]);
+
+  const getExclusiveBlockMessage = useCallback((employeeId, targetField) => {
+    const activeFields = getActiveExclusiveFields(assignments[employeeId] || {});
+    if (activeFields.length === 0 || activeFields.includes(targetField)) return '';
+    return `Assignment locked by ${formatExclusiveLabel(activeFields)}`;
+  }, [assignments, getActiveExclusiveFields, formatExclusiveLabel]);
+
+  // Auto-save functionality - combine form data with assignments
+  const scheduleData = useMemo(() => ({
+    ...formData,
+    assignments
+  }), [formData, assignments]);
 
   const { isSaving, lastSaved, error: autoSaveError, hasUnsavedChanges: autoSaveHasChanges } = useAutoSave(
     scheduleData,
     onSave,
-    { delay: 2000, enabled: !readOnly && !!schedule }
+    { delay: 2000, enabled: !readOnly && !!schedule, resetKey: schedule?.id }
   );
 
   // Conflict detection
@@ -92,58 +173,90 @@ export default function ScheduleGrid({
     avgWorkload
   } = useConflictDetection(assignments, employees, darEntities);
 
-  // Generate DAR columns dynamically based on count (memoized)
-  const darColumns = useMemo(() => Array.from({ length: darCount }, (_, i) => `DAR ${i + 1}`), [darCount]);
-
-  // Use utility function for active employees (memoized) - defined early for use in callbacks
+  // Use utility function for active employees (memoized)
   const activeEmployees = useMemo(() => getActiveEmployees(employees), [employees]);
 
-  // Modern THR-inspired color palette for employee names
-  const employeeColors = [
-    'text-thr-blue-600 dark:text-thr-blue-400', 
-    'text-thr-green-600 dark:text-thr-green-400', 
-    'text-purple-600 dark:text-purple-400',
-    'text-orange-600 dark:text-orange-400', 
-    'text-pink-600 dark:text-pink-400', 
-    'text-cyan-600 dark:text-cyan-400',
-    'text-rose-600 dark:text-rose-400', 
-    'text-indigo-600 dark:text-indigo-400',
-    'text-teal-600 dark:text-teal-400', 
-    'text-fuchsia-600 dark:text-fuchsia-400', 
-    'text-lime-600 dark:text-lime-400',
-    'text-amber-600 dark:text-amber-400',
-  ];
+  // Keyboard navigation across interactive grid cells
+  const navColCount = useMemo(() => (darColumns?.length || 0) + 4, [darColumns]);
+  const {
+    gridRef,
+    focusedCell,
+    getCellId,
+    isCellFocused,
+  } = useKeyboardNavigation({
+    rowCount: activeEmployees.length || 0,
+    colCount: navColCount,
+    enabled: !readOnly,
+    onActivate: (row, col) => {
+      const emp = activeEmployees[row];
+      if (!emp) return;
+      const empAssign = assignments[emp.id] || {};
 
+      // DAR columns
+      if (col < (darColumns?.length || 0)) {
+        const darIdx = col;
+        const darBlocked = isFieldBlockedByExclusiveAssignment(emp.id, 'dars');
+        const isDarTrained = canAssignDAR(emp);
+        if (isDarTrained && !darBlocked) {
+          handleDARToggle(emp.id, darIdx);
+        }
+        return;
+      }
+
+      const cpoeColIndex = (darColumns?.length || 0);
+      const newIncomingColIndex = cpoeColIndex + 1;
+      const crossTrainingColIndex = cpoeColIndex + 2;
+      const specialProjectsColIndex = cpoeColIndex + 3;
+
+      // CPOE
+      if (col === cpoeColIndex) {
+        const cpoeBlocked = isFieldBlockedByExclusiveAssignment(emp.id, 'cpoe');
+        if (emp.skills?.includes('CPOE') && !cpoeBlocked) {
+          handleAssignmentChange(emp.id, 'cpoe', !empAssign.cpoe);
+        }
+        return;
+      }
+
+      // New Incoming
+      if (col === newIncomingColIndex) {
+        if (!readOnly) setEditingCell({ employeeId: emp.id, field: 'newIncoming' });
+        return;
+      }
+
+      // Cross-Training
+      if (col === crossTrainingColIndex) {
+        if (!readOnly) setEditingCell({ employeeId: emp.id, field: 'crossTraining' });
+        return;
+      }
+
+      // Special Projects
+      if (col === specialProjectsColIndex) {
+        if (!readOnly) setEditingCell({ employeeId: emp.id, field: 'specialProjects' });
+        return;
+      }
+    }
+  });
+
+  // Focus the schedule table to enable arrow-key navigation when not read-only
+  useEffect(() => {
+    if (!readOnly && gridRef?.current) {
+      gridRef.current.focus();
+    }
+  }, [readOnly]);
+
+  // Reset selected employees when schedule changes
   useEffect(() => {
     if (schedule) {
-      // Initialize assignments without adding to undo history
-      // We do this by directly setting the state, not through setState
-      setAssignments(schedule.assignments || {});
-      setScheduleName(schedule.name || '');
-      setStartDate(schedule.startDate || '');
-      setEndDate(schedule.endDate || '');
-      setDarEntities(schedule.darEntities || {});
-      setDarCount(schedule.darCount || 5); // Load darCount from schedule
-    } else {
-      loadDefaultDarConfig();
+      setSelectedEmployees(new Set());
     }
-  }, [schedule, setAssignments]);
-
-  async function loadDefaultDarConfig() {
-    try {
-      const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
-      if (configDoc.exists()) {
-        const data = configDoc.data();
-        setDarEntities(data.config || {});
-        setDarCount(data.darCount || 5); // Load darCount from settings
-      }
-    } catch (error) {
-      logger.error('Error loading DAR config:', error);
-    }
-  }
+  }, [schedule?.id]);
 
   const handleAssignmentChange = useCallback((employeeId, field, value) => {
     if (readOnly) return;
+    const isCurrentlyAssigned = Boolean(assignments[employeeId]?.[field]);
+    const blocked = !isCurrentlyAssigned && isFieldBlockedByExclusiveAssignment(employeeId, field);
+    if (blocked) return;
+
     setAssignments(prev => ({
       ...prev,
       [employeeId]: {
@@ -151,8 +264,8 @@ export default function ScheduleGrid({
         [field]: value
       }
     }));
-    setHasChanges(true);
-  }, [readOnly, setAssignments]);
+    markDirty();
+  }, [readOnly, setAssignments, assignments, isFieldBlockedByExclusiveAssignment, markDirty]);
 
   const handleDARToggle = useCallback((employeeId, darIndex) => {
     if (readOnly) return;
@@ -162,6 +275,10 @@ export default function ScheduleGrid({
     if (!employee?.skills?.includes('DAR') && !employee?.skills?.includes('Float')) {
       return;
     }
+
+    const isAssigned = assignments[employeeId]?.dars?.includes(darIndex);
+    const blocked = !isAssigned && isFieldBlockedByExclusiveAssignment(employeeId, 'dars');
+    if (blocked) return;
 
     setAssignments(prev => {
       const currentDars = prev[employeeId]?.dars || [];
@@ -177,26 +294,12 @@ export default function ScheduleGrid({
         }
       };
     });
-    setHasChanges(true);
-  }, [readOnly, employees, setAssignments]);
-
-  const handleDarEntityToggle = useCallback((darIndex, entityName) => {
-    setDarEntities(prev => {
-      const current = prev[darIndex] || [];
-      const currentArray = Array.isArray(current) ? current : (current ? [current] : []);
-      const newArray = currentArray.includes(entityName)
-        ? currentArray.filter(e => e !== entityName)
-        : [...currentArray, entityName];
-
-      return {
-        ...prev,
-        [darIndex]: newArray
-      };
-    });
-    setHasChanges(true);
-  }, []);
+    markDirty();
+  }, [readOnly, employees, setAssignments, assignments, isFieldBlockedByExclusiveAssignment, markDirty]);
 
   const handleAssignmentEntityToggle = useCallback((employeeId, field, entityName) => {
+    const blocked = isFieldBlockedByExclusiveAssignment(employeeId, field);
+    if (blocked) return;
     setAssignments(prev => {
       const current = prev[employeeId]?.[field] || [];
       const currentArray = Array.isArray(current) ? current : (current ? [current] : []);
@@ -212,8 +315,8 @@ export default function ScheduleGrid({
         }
       };
     });
-    setHasChanges(true);
-  }, [setAssignments]);
+    markDirty();
+  }, [setAssignments, isFieldBlockedByExclusiveAssignment, markDirty]);
 
   const handleSpecialProjectToggle = useCallback((employeeId, field) => {
     setAssignments(prev => {
@@ -234,8 +337,8 @@ export default function ScheduleGrid({
         }
       };
     });
-    setHasChanges(true);
-  }, [setAssignments]);
+    markDirty();
+  }, [setAssignments, markDirty]);
 
   const handleSpecialProjectOtherChange = useCallback((employeeId, value) => {
     setAssignments(prev => {
@@ -256,15 +359,8 @@ export default function ScheduleGrid({
         }
       };
     });
-    setHasChanges(true);
-  }, [setAssignments]);
-
-  function handleDarCountChange(newCount) {
-    // Limit between 3 and 8 DARs
-    const count = Math.max(3, Math.min(8, newCount));
-    setDarCount(count);
-    setHasChanges(true);
-  }
+    markDirty();
+  }, [setAssignments, markDirty]);
 
   // Bulk assignment handlers
   const handleEmployeeSelect = useCallback((employeeId) => {
@@ -328,15 +424,21 @@ export default function ScheduleGrid({
       return newAssignments;
     });
 
-    setHasChanges(true);
+    markDirty();
     setShowBulkAssignmentModal(false);
     setSelectedEmployees(new Set()); // Clear selection after bulk assign
-  }, [setAssignments]);
+    // Announce bulk assign for screen readers
+    if (successfulAssignments && successfulAssignments.length > 0) {
+      setAnnouncementMessage(`Bulk assignment applied: ${successfulAssignments.length} update${successfulAssignments.length > 1 ? 's' : ''} completed.`);
+      // Clear announcement after short delay to allow re-announcement later
+      setTimeout(() => setAnnouncementMessage(''), 1500);
+    }
+  }, [setAssignments, markDirty]);
 
   function handleSave() {
     if (onSave) {
       onSave(scheduleData);
-      setHasChanges(false);
+      markClean();
     }
   }
 
@@ -403,13 +505,18 @@ export default function ScheduleGrid({
           onSave(scheduleData);
         }
       }
+      // ESC to exit fullscreen
+      if (e.key === 'Escape' && isFullscreen) {
+        e.preventDefault();
+        setIsFullscreen(false);
+      }
     };
 
     if (!readOnly) {
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [canUndo, canRedo, undo, redo, readOnly, onSave, scheduleData]);
+  }, [canUndo, canRedo, undo, redo, readOnly, onSave, scheduleData, isFullscreen]);
 
   const exportToExcel = useCallback(() => {
     exportScheduleToExcel({
@@ -429,13 +536,32 @@ export default function ScheduleGrid({
   }, []);
 
   // Calculate entity history for showing who last had each entity (memoized)
-  const entityHistory = useMemo(() => 
+  const entityHistory = useMemo(() =>
     getLastEntityAssignments(schedules || [], employees || [], entities || []),
     [schedules, employees, entities]
   );
 
+  // Calculate employee rotation data (memoized)
+  const employeesWithRotation = useMemo(() =>
+    calculateEmployeeRotation(employees || [], schedules || [], 10),
+    [employees, schedules]
+  );
+
+  // Create a map for quick rotation data lookup
+  const rotationDataMap = useMemo(() => {
+    const map = new Map();
+    employeesWithRotation.forEach(emp => {
+      map.set(emp.id, emp.rotationData);
+    });
+    return map;
+  }, [employeesWithRotation]);
+
   return (
-    <div className="space-y-0 flex flex-col animate-fade-in-up">
+    <div className={`space-y-0 flex flex-col animate-fade-in-up w-full ${
+      isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-slate-900 overflow-auto' : ''
+    }`}>
+      {/* Accessibility live announcements */}
+      <AriaLiveRegion message={announcementMessage} mode="polite" />
       {/* Header Section */}
       <ScheduleHeader
         readOnly={readOnly}
@@ -452,6 +578,9 @@ export default function ScheduleGrid({
         scheduleStatus={schedule?.status}
         selectedCount={selectedEmployees.size}
         onBulkAssign={handleBulkAssign}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+        onViewProductivity={() => navigate('/productivity-dashboard')}
       />
 
       {/* Date Banner */}
@@ -461,18 +590,9 @@ export default function ScheduleGrid({
         endDate={endDate}
         scheduleStatus={schedule?.status}
         readOnly={readOnly}
-        onScheduleNameChange={(value) => {
-          setScheduleName(value);
-          setHasChanges(true);
-        }}
-        onStartDateChange={(value) => {
-          setStartDate(value);
-          setHasChanges(true);
-        }}
-        onEndDateChange={(value) => {
-          setEndDate(value);
-          setHasChanges(true);
-        }}
+        onScheduleNameChange={setScheduleName}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
         onPreviousSchedule={handlePreviousSchedule}
         onNextSchedule={handleNextSchedule}
         canGoPrevious={canGoPrevious}
@@ -490,8 +610,69 @@ export default function ScheduleGrid({
         </div>
       )}
 
+      {/* Schedule Summary */}
+      <ScheduleSummary
+        totalEmployees={activeEmployees.length}
+        assignedEmployees={Object.keys(assignments).filter(empId => {
+          const assign = assignments[empId];
+          return assign && (
+            (assign.dars && assign.dars.length > 0) ||
+            assign.cpoe ||
+            (assign.newIncoming && assign.newIncoming.length > 0) ||
+            (assign.crossTraining && assign.crossTraining.length > 0) ||
+            (assign.specialProjects && (
+              assign.specialProjects.threePEmail ||
+              assign.specialProjects.threePBackupEmail ||
+              assign.specialProjects.float ||
+              (assign.specialProjects.other && assign.specialProjects.other.trim())
+            ))
+          );
+        }).length}
+        totalEntities={entities.length}
+        assignedEntities={(() => {
+          const assignedEntitySet = new Set();
+          Object.values(assignments).forEach(assign => {
+            if (assign.dars) assign.dars.forEach(darIdx => {
+              const entityList = darEntities[darIdx];
+              if (Array.isArray(entityList)) {
+                entityList.forEach(e => assignedEntitySet.add(e));
+              } else if (entityList) {
+                assignedEntitySet.add(entityList);
+              }
+            });
+            if (assign.newIncoming && Array.isArray(assign.newIncoming)) {
+              assign.newIncoming.forEach(e => assignedEntitySet.add(e));
+            }
+            if (assign.crossTraining && Array.isArray(assign.crossTraining)) {
+              assign.crossTraining.forEach(e => assignedEntitySet.add(e));
+            }
+          });
+          return assignedEntitySet.size;
+        })()}
+        totalAssignments={Object.values(assignments).reduce((total, assign) => {
+          let count = 0;
+          if (assign.dars) count += assign.dars.length;
+          if (assign.cpoe) count += 1;
+          if (assign.newIncoming) count += assign.newIncoming.length;
+          if (assign.crossTraining) count += assign.crossTraining.length;
+          if (assign.specialProjects) {
+            if (assign.specialProjects.threePEmail) count += 1;
+            if (assign.specialProjects.threePBackupEmail) count += 1;
+            if (assign.specialProjects.float) count += 1;
+            if (assign.specialProjects.other && assign.specialProjects.other.trim()) count += 1;
+          }
+          return total + count;
+        }, 0)}
+        conflicts={conflicts.length}
+      />
+
       {/* Schedule Table */}
-      <ScheduleTable>
+      <ScheduleTable
+        tableRef={gridRef}
+        ariaActivedescendant={getCellId(focusedCell.row, focusedCell.col)}
+        ariaRowCount={activeEmployees.length}
+        ariaColCount={navColCount}
+      >
         <ScheduleTableHeader
           darColumns={darColumns}
           darEntities={darEntities}
@@ -500,47 +681,11 @@ export default function ScheduleGrid({
           readOnly={readOnly}
           onDarClick={(idx) => setEditingDar(idx)}
           onDarEntityToggle={handleDarEntityToggle}
-          onDarInfoClick={(idx) => {
-            setSelectedDarIndex(idx);
-            setShowDarInfoPanel(true);
-            // Close other panels
-            setShowCpoeInfoPanel(false);
-            setShowNewIncomingInfoPanel(false);
-            setShowCrossTrainingInfoPanel(false);
-            setShowSpecialProjectsInfoPanel(false);
-          }}
-          onCpoeInfoClick={() => {
-            setShowCpoeInfoPanel(true);
-            // Close other panels
-            setShowDarInfoPanel(false);
-            setShowNewIncomingInfoPanel(false);
-            setShowCrossTrainingInfoPanel(false);
-            setShowSpecialProjectsInfoPanel(false);
-          }}
-          onNewIncomingInfoClick={() => {
-            setShowNewIncomingInfoPanel(true);
-            // Close other panels
-            setShowDarInfoPanel(false);
-            setShowCpoeInfoPanel(false);
-            setShowCrossTrainingInfoPanel(false);
-            setShowSpecialProjectsInfoPanel(false);
-          }}
-          onCrossTrainingInfoClick={() => {
-            setShowCrossTrainingInfoPanel(true);
-            // Close other panels
-            setShowDarInfoPanel(false);
-            setShowCpoeInfoPanel(false);
-            setShowNewIncomingInfoPanel(false);
-            setShowSpecialProjectsInfoPanel(false);
-          }}
-          onSpecialProjectsInfoClick={() => {
-            setShowSpecialProjectsInfoPanel(true);
-            // Close other panels
-            setShowDarInfoPanel(false);
-            setShowCpoeInfoPanel(false);
-            setShowNewIncomingInfoPanel(false);
-            setShowCrossTrainingInfoPanel(false);
-          }}
+          onDarInfoClick={(idx) => openPanel('dar', idx)}
+          onCpoeInfoClick={() => openPanel('cpoe')}
+          onNewIncomingInfoClick={() => openPanel('newIncoming')}
+          onCrossTrainingInfoClick={() => openPanel('crossTraining')}
+          onSpecialProjectsInfoClick={() => openPanel('specialProjects')}
           onEditingDarClose={() => setEditingDar(null)}
           showBulkSelect={!readOnly}
           allSelected={selectedEmployees.size === activeEmployees.length && activeEmployees.length > 0}
@@ -550,18 +695,22 @@ export default function ScheduleGrid({
             {activeEmployees.map((employee, empIdx) => {
               const assignment = assignments[employee.id] || {};
               const isDarTrained = canAssignDAR(employee);
-              const colorClass = employeeColors[empIdx % employeeColors.length];
+              const colorClass = EMPLOYEE_COLORS[empIdx % EMPLOYEE_COLORS.length];
+              const darBlocked = isFieldBlockedByExclusiveAssignment(employee.id, 'dars');
+              const darBlockMessage = getExclusiveBlockMessage(employee.id, 'dars');
+              const cpoeBlocked = isFieldBlockedByExclusiveAssignment(employee.id, 'cpoe');
+              const cpoeBlockMessage = getExclusiveBlockMessage(employee.id, 'cpoe');
 
               return (
-                <tr 
-                  key={employee.id} 
-                  className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30 ${
-                    empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/50 dark:bg-slate-800/50'
+                <tr
+                  key={employee.id}
+                  className={`group transition-all duration-200 hover:bg-gradient-to-r hover:from-slate-50 hover:via-white hover:to-slate-50 dark:hover:from-slate-700/40 dark:hover:via-slate-700/20 dark:hover:to-slate-700/40 border-b border-slate-100 dark:border-slate-700/50 ${
+                    empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/30 dark:bg-slate-800/30'
                   }`}
                 >
                   {/* Checkbox for bulk selection */}
                   {!readOnly && (
-                    <td className="sticky left-0 bg-inherit px-3 py-2 z-10 text-center">
+                    <td className="sticky left-0 bg-inherit px-3 py-3 z-10 text-center border-r border-slate-200 dark:border-slate-700">
                       <input
                         type="checkbox"
                         checked={selectedEmployees.has(employee.id)}
@@ -572,13 +721,19 @@ export default function ScheduleGrid({
                     </td>
                   )}
                   {/* Employee Name - Employee Chip Style */}
-                  <th scope="row" className="sticky left-0 bg-inherit px-3 py-2 z-10">
+                  <th scope="row" className="sticky left-0 bg-inherit px-4 py-3 z-10 border-r-2 border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-2">
-                      <div className="employee-chip inline-flex">
+                      <div className="employee-chip inline-flex bg-white dark:bg-slate-700/50 px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600">
                         <span className={`font-semibold text-sm ${colorClass} truncate`} title={employee.name}>
                           {employee.name}
                         </span>
                       </div>
+                      {!readOnly && rotationDataMap.get(employee.id) && (
+                        <RotationStatusBadge
+                          rotationStatus={rotationDataMap.get(employee.id).rotationStatus}
+                          compact={true}
+                        />
+                      )}
                       {!readOnly && (
                         <WorkloadIndicator
                           workload={calculateWorkload(assignment, darEntities)}
@@ -593,268 +748,150 @@ export default function ScheduleGrid({
                   {/* DAR Columns - Clickable Cells with modern styling */}
                   {darColumns.map((darName, darIdx) => {
                     const isAssigned = assignment.dars?.includes(darIdx);
-                    const entityCode = getEntityShortCode(darEntities[darIdx]);
+                    // P0-7: Show full entity names instead of abbreviations
+                    const entityNames = darEntities[darIdx];
+                    const entityDisplay = Array.isArray(entityNames) ? entityNames.join(', ') : (entityNames || '');
 
                     return (
                       <td
+                        id={getCellId(empIdx, darIdx)}
                         key={darIdx}
-                        className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
+                        title={entityDisplay || `${darName} - No entities assigned`}
+                        className={`px-2 py-3 text-center transition-all duration-200 border-r border-slate-100 dark:border-slate-700/50 ${
                           !isDarTrained
-                            ? 'bg-slate-100 dark:bg-slate-700/50'
+                            ? 'bg-slate-100/50 dark:bg-slate-700/30 cursor-not-allowed'
                             : isAssigned
-                              ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
-                              : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                        }`}
-                        onClick={() => isDarTrained && handleDARToggle(employee.id, darIdx)}
+                              ? 'bg-gradient-to-br from-thr-green-100 to-thr-green-50 dark:from-thr-green-900/40 dark:to-thr-green-900/20 hover:from-thr-green-200 hover:to-thr-green-100 dark:hover:from-thr-green-900/60 dark:hover:to-thr-green-900/40 cursor-pointer shadow-sm hover:shadow-md active:scale-95'
+                              : darBlocked
+                                ? 'bg-slate-100/50 dark:bg-slate-800/40 cursor-not-allowed opacity-60'
+                                : 'bg-white dark:bg-slate-800/20 hover:bg-gradient-to-br hover:from-thr-blue-50 hover:to-white dark:hover:from-thr-blue-900/20 dark:hover:to-slate-800/40 cursor-pointer hover:shadow-sm active:scale-95'
+                        } ${isCellFocused(empIdx, darIdx) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800' : ''}`}
+                        onClick={() => isDarTrained && !darBlocked && handleDARToggle(employee.id, darIdx)}
                         onKeyPress={(e) => {
-                          if ((e.key === 'Enter' || e.key === ' ') && isDarTrained) {
+                          if ((e.key === 'Enter' || e.key === ' ') && isDarTrained && !darBlocked) {
                             e.preventDefault();
                             handleDARToggle(employee.id, darIdx);
                           }
                         }}
-                        tabIndex={isDarTrained && !readOnly ? 0 : -1}
+                        tabIndex={(!readOnly && isDarTrained) ? -1 : -1}
                         role="gridcell"
-                        aria-label={`${isAssigned ? 'Remove' : 'Assign'} ${employee.name} to ${darName}`}
+                        aria-label={`${isAssigned ? 'Remove' : 'Assign'} ${employee.name} to ${darName}${darBlocked ? `. ${darBlockMessage}` : ''}`}
                         aria-pressed={isAssigned}
                       >
                         {isDarTrained ? (
                           isAssigned ? (
-                            <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                              X
+                            <div className="flex items-center justify-center">
+                              <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
+                                <span className="text-white text-xs font-bold">✓</span>
+                              </div>
                             </div>
                           ) : (
-                            <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                            <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                              <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                            </div>
                           )
                         ) : (
-                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                          <span className="text-slate-400 dark:text-slate-600 text-xs">N/A</span>
                         )}
                       </td>
                     );
                   })}
 
-                  {/* CPOE Column - Toggleable like DAR columns */}
+                  {/* CPOE Column - Modern toggle design matching DAR columns */}
                   <td
-                    className={`px-1 py-2 text-center transition-all duration-150 rounded-lg mx-0.5 ${
+                    id={getCellId(empIdx, (darColumns?.length || 0))}
+                    className={`px-2 py-3 text-center transition-all duration-200 border-r border-slate-100 dark:border-slate-700/50 ${
                       !employee.skills?.includes('CPOE')
-                        ? 'bg-slate-100 dark:bg-slate-700/50'
+                        ? 'bg-slate-100/50 dark:bg-slate-700/30 cursor-not-allowed'
                         : assignment.cpoe
-                          ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
-                          : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    }`}
-                    onClick={() => employee.skills?.includes('CPOE') && !readOnly && handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe)}
+                          ? 'bg-gradient-to-br from-thr-green-100 to-thr-green-50 dark:from-thr-green-900/40 dark:to-thr-green-900/20 hover:from-thr-green-200 hover:to-thr-green-100 dark:hover:from-thr-green-900/60 dark:hover:to-thr-green-900/40 cursor-pointer shadow-sm hover:shadow-md active:scale-95'
+                          : cpoeBlocked
+                            ? 'bg-slate-100/50 dark:bg-slate-800/40 cursor-not-allowed opacity-60'
+                            : 'bg-white dark:bg-slate-800/20 hover:bg-gradient-to-br hover:from-thr-blue-50 hover:to-white dark:hover:from-thr-blue-900/20 dark:hover:to-slate-800/40 cursor-pointer hover:shadow-sm active:scale-95'
+                    } ${isCellFocused(empIdx, (darColumns?.length || 0)) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800' : ''}`}
+                    onClick={() => employee.skills?.includes('CPOE') && !readOnly && !cpoeBlocked && handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe)}
                     onKeyPress={(e) => {
-                      if ((e.key === 'Enter' || e.key === ' ') && employee.skills?.includes('CPOE') && !readOnly) {
+                      if ((e.key === 'Enter' || e.key === ' ') && employee.skills?.includes('CPOE') && !readOnly && !cpoeBlocked) {
                         e.preventDefault();
                         handleAssignmentChange(employee.id, 'cpoe', !assignment.cpoe);
                       }
                     }}
-                    tabIndex={employee.skills?.includes('CPOE') && !readOnly ? 0 : -1}
+                    tabIndex={employee.skills?.includes('CPOE') && !readOnly ? -1 : -1}
                     role="gridcell"
-                    aria-label={`${assignment.cpoe ? 'Remove' : 'Assign'} ${employee.name} to CPOE`}
+                    aria-label={`${assignment.cpoe ? 'Remove' : 'Assign'} ${employee.name} to CPOE${cpoeBlocked ? `. ${cpoeBlockMessage}` : ''}`}
                     aria-pressed={assignment.cpoe}
                   >
                     {employee.skills?.includes('CPOE') ? (
                       assignment.cpoe ? (
-                        <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                          X
+                        <div className="flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
+                            <span className="text-white text-xs font-bold">✓</span>
+                          </div>
                         </div>
                       ) : (
-                        <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                        <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                          <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                        </div>
                       )
                     ) : (
-                      <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
+                      <span className="text-slate-400 dark:text-slate-600 text-xs">N/A</span>
                     )}
                   </td>
 
-                  {/* New Incoming Items - Clickable cell with popup */}
+                  {/* New Incoming Items */}
+                  <EntityAssignmentCell
+                    employee={employee}
+                    field="newIncoming"
+                    assignment={assignment}
+                    availableEntities={getAvailableEntitiesForAssignment(employee.id, 'newIncoming', assignments, darEntities, entities)}
+                    entityHistory={entityHistory}
+                    readOnly={readOnly}
+                    blocked={isFieldBlockedByExclusiveAssignment(employee.id, 'newIncoming')}
+                    blockMessage={getExclusiveBlockMessage(employee.id, 'newIncoming')}
+                    isEditing={editingCell?.employeeId === employee.id && editingCell?.field === 'newIncoming'}
+                    onStartEdit={() => setEditingCell({ employeeId: employee.id, field: 'newIncoming' })}
+                    onEndEdit={() => { setEditingCell(null); gridRef?.current?.focus(); }}
+                    onToggle={handleAssignmentEntityToggle}
+                    cellId={getCellId(empIdx, (darColumns?.length || 0) + 1)}
+                    useKeyboardNav={!readOnly}
+                    isFocused={isCellFocused(empIdx, (darColumns?.length || 0) + 1)}
+                  />
+
+                  {/* Cross-Training */}
+                  <EntityAssignmentCell
+                    employee={employee}
+                    field="crossTraining"
+                    assignment={assignment}
+                    availableEntities={getAvailableEntitiesForAssignment(employee.id, 'crossTraining', assignments, darEntities, entities)}
+                    entityHistory={entityHistory}
+                    readOnly={readOnly}
+                    blocked={false}
+                    blockMessage=""
+                    isEditing={editingCell?.employeeId === employee.id && editingCell?.field === 'crossTraining'}
+                    onStartEdit={() => setEditingCell({ employeeId: employee.id, field: 'crossTraining' })}
+                    onEndEdit={() => { setEditingCell(null); gridRef?.current?.focus(); }}
+                    onToggle={handleAssignmentEntityToggle}
+                    cellId={getCellId(empIdx, (darColumns?.length || 0) + 2)}
+                    useKeyboardNav={!readOnly}
+                    isFocused={isCellFocused(empIdx, (darColumns?.length || 0) + 2)}
+                  />
+
+                  {/* Special Projects/Assignments - Modern design */}
                   <td
-                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
-                      (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0)
-                        ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
-                        : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    }`}
-                    onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'newIncoming' })}
-                    onKeyPress={(e) => {
-                      if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
-                        e.preventDefault();
-                        setEditingCell({ employeeId: employee.id, field: 'newIncoming' });
-                      }
-                    }}
-                    tabIndex={!readOnly ? 0 : -1}
-                    role="gridcell"
-                    aria-label={`New incoming items for ${employee.name}: ${formatEntityList(assignment.newIncoming) || 'None'}`}
-                  >
-                    {readOnly ? (
-                      (Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-                          {getEmployeeInitials(employee.name)}
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
-                      )
-                    ) : (
-                      <>
-                        {(Array.isArray(assignment.newIncoming) && assignment.newIncoming.length > 0) ? (
-                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                            {getEmployeeInitials(employee.name)}
-                          </div>
-                        ) : (
-                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
-                        )}
-                        {editingCell?.employeeId === employee.id && editingCell?.field === 'newIncoming' && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for New Incoming">
-                            <div className="space-y-1 mb-3">
-                              {getAvailableEntitiesForAssignment(employee.id, 'newIncoming', assignments, darEntities, entities).map(entity => {
-                                const currentList = assignment.newIncoming || [];
-                                const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
-                                const isSelected = currentArray.includes(entity.name);
-                                const history = entityHistory[entity.name];
-                                const abbrev = getEntityShortCode([entity.name]);
-
-                                return (
-                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" title={entity.name}>
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={() => handleAssignmentEntityToggle(employee.id, 'newIncoming', entity.name)}
-                                      className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
-                                      aria-label={`Assign ${entity.name} to New Incoming`}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                        {abbrev}
-                                      </span>
-                                      {history?.employeeName && (
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                          Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
-                                        </div>
-                                      )}
-                                    </div>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                            {/* Entity Legend */}
-                            <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mb-2">
-                              <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Legend:</div>
-                              <div className="space-y-0.5 max-h-32 overflow-y-auto">
-                                {entities.map(entity => (
-                                  <div key={entity.id} className="text-xs text-slate-600 dark:text-slate-400">
-                                    <span className="font-bold text-thr-blue-600 dark:text-thr-blue-400">{getEntityShortCode([entity.name])}</span> = {entity.name}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
-                              className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
-                              aria-label="Close entity selection"
-                            >
-                              Done
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </td>
-
-                  {/* Cross-Training - Clickable cell with popup */}
-                  <td 
-                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
-                      (Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0)
-                        ? 'bg-thr-green-100 dark:bg-thr-green-900/30 hover:bg-thr-green-200 dark:hover:bg-thr-green-900/50 cursor-pointer shadow-soft'
-                        : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    }`}
-                    onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'crossTraining' })}
-                    onKeyPress={(e) => {
-                      if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
-                        e.preventDefault();
-                        setEditingCell({ employeeId: employee.id, field: 'crossTraining' });
-                      }
-                    }}
-                    tabIndex={!readOnly ? 0 : -1}
-                    role="gridcell"
-                    aria-label={`Cross-training for ${employee.name}: ${formatEntityList(assignment.crossTraining) || 'None'}`}
-                  >
-                    {readOnly ? (
-                      (Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-                          {getEntityShortCode(assignment.crossTraining)}
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
-                      )
-                    ) : (
-                      <>
-                        {(Array.isArray(assignment.crossTraining) && assignment.crossTraining.length > 0) ? (
-                          <div className="text-xs font-semibold text-thr-green-700 dark:text-thr-green-300 leading-tight">
-                            {getEntityShortCode(assignment.crossTraining)}
-                          </div>
-                        ) : (
-                          <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
-                        )}
-                        {editingCell?.employeeId === employee.id && editingCell?.field === 'crossTraining' && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select entities for Cross-Training">
-                            <div className="space-y-1 mb-3">
-                              {getAvailableEntitiesForAssignment(employee.id, 'crossTraining', assignments, darEntities, entities).map(entity => {
-                                const currentList = assignment.crossTraining || [];
-                                const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
-                                const isSelected = currentArray.includes(entity.name);
-                                const history = entityHistory[entity.name];
-                                const abbrev = getEntityShortCode([entity.name]);
-
-                                return (
-                                  <label key={entity.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors" title={entity.name}>
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={() => handleAssignmentEntityToggle(employee.id, 'crossTraining', entity.name)}
-                                      className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
-                                      aria-label={`Assign ${entity.name} to Cross-Training`}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                                        {abbrev}
-                                      </span>
-                                      {history?.employeeName && (
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                          Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
-                                        </div>
-                                      )}
-                                    </div>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                            {/* Entity Legend */}
-                            <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mb-2">
-                              <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Legend:</div>
-                              <div className="space-y-0.5 max-h-32 overflow-y-auto">
-                                {entities.map(entity => (
-                                  <div key={entity.id} className="text-xs text-slate-600 dark:text-slate-400">
-                                    <span className="font-bold text-thr-blue-600 dark:text-thr-blue-400">{getEntityShortCode([entity.name])}</span> = {entity.name}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
-                              className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
-                              aria-label="Close entity selection"
-                            >
-                              Done
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </td>
-
-                  {/* Special Projects/Assignments */}
-                  <td
-                    className={`px-1 py-2 text-center relative transition-all duration-150 rounded-lg mx-0.5 ${
-                      readOnly ? '' : 'hover:bg-thr-blue-50 dark:hover:bg-thr-blue-900/20 cursor-pointer'
-                    }`}
+                    id={getCellId(empIdx, (darColumns?.length || 0) + 3)}
+                    className={`px-2 py-3 text-center relative transition-all duration-200 ${
+                      (() => {
+                        const sp = assignment.specialProjects;
+                        const hasProjects = sp && (
+                          (typeof sp === 'object' && !Array.isArray(sp) && (sp.threePEmail || sp.threePBackupEmail || sp.float || sp.other)) ||
+                          (Array.isArray(sp) && sp.length > 0) ||
+                          (typeof sp === 'string' && sp)
+                        );
+                        return hasProjects
+                          ? 'bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/40 dark:to-purple-900/20 hover:from-purple-200 hover:to-purple-100 dark:hover:from-purple-900/60 dark:hover:to-purple-900/40 shadow-sm hover:shadow-md active:scale-95'
+                          : 'bg-white dark:bg-slate-800/20 hover:bg-gradient-to-br hover:from-thr-blue-50 hover:to-white dark:hover:from-thr-blue-900/20 dark:hover:to-slate-800/40 hover:shadow-sm active:scale-95';
+                      })()
+                    } ${readOnly ? '' : 'cursor-pointer'} ${isCellFocused(empIdx, (darColumns?.length || 0) + 3) ? 'ring-2 ring-thr-blue-500 dark:ring-thr-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800' : ''}`}
                     onClick={() => !readOnly && setEditingCell({ employeeId: employee.id, field: 'specialProjects' })}
                     onKeyPress={(e) => {
                       if ((e.key === 'Enter' || e.key === ' ') && !readOnly) {
@@ -862,23 +899,31 @@ export default function ScheduleGrid({
                         setEditingCell({ employeeId: employee.id, field: 'specialProjects' });
                       }
                     }}
-                    tabIndex={!readOnly ? 0 : -1}
+                    tabIndex={!readOnly ? -1 : -1}
                     role="gridcell"
                     aria-label={`Special projects for ${employee.name}`}
                   >
                     {readOnly ? (
                       (() => {
                         const sp = assignment.specialProjects;
-                        // Handle old format (array or string)
+                        // Handle old format (array or string) - P0-7: Show full names
                         if (Array.isArray(sp) && sp.length > 0) {
                           return (
-                            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-                              {getEntityShortCode(sp)}
+                            <div className="flex flex-wrap gap-1 justify-center">
+                              {sp.map((item, idx) => (
+                                <span key={idx} className="px-2 py-1 text-xs font-medium rounded-full bg-purple-200 text-purple-700 dark:bg-purple-800/40 dark:text-purple-300 shadow-sm">
+                                  {item}
+                                </span>
+                              ))}
                             </div>
                           );
                         }
                         if (typeof sp === 'string' && sp) {
-                          return <span className="text-xs text-slate-700 dark:text-slate-300">{sp}</span>;
+                          return (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-200 text-purple-700 dark:bg-purple-800/40 dark:text-purple-300 shadow-sm">
+                              {sp}
+                            </span>
+                          );
                         }
                         // Handle new format (object)
                         if (sp && typeof sp === 'object' && !Array.isArray(sp)) {
@@ -887,12 +932,12 @@ export default function ScheduleGrid({
                           if (sp.threePBackupEmail) badges.push('3P-B');
                           if (sp.float) badges.push('Float');
                           if (sp.other) badges.push(sp.other);
-                          
+
                           if (badges.length > 0) {
                             return (
                               <div className="flex flex-wrap gap-1 justify-center">
                                 {badges.map((badge, idx) => (
-                                  <span key={idx} className="px-1.5 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                                  <span key={idx} className="px-2 py-1 text-xs font-medium rounded-full bg-purple-200 text-purple-700 dark:bg-purple-800/40 dark:text-purple-300 shadow-sm">
                                     {badge}
                                   </span>
                                 ))}
@@ -900,35 +945,39 @@ export default function ScheduleGrid({
                             );
                           }
                         }
-                        return <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>;
+                        return <span className="text-slate-400 dark:text-slate-600 text-xs">N/A</span>;
                       })()
                     ) : (
                       <>
                         {(() => {
                           const sp = assignment.specialProjects;
                           // Normalize to object format for display
-                          const spObj = (sp && typeof sp === 'object' && !Array.isArray(sp)) 
-                            ? sp 
+                          const spObj = (sp && typeof sp === 'object' && !Array.isArray(sp))
+                            ? sp
                             : { threePEmail: false, threePBackupEmail: false, float: false, other: '' };
-                          
+
                           const badges = [];
                           if (spObj.threePEmail) badges.push('3P');
                           if (spObj.threePBackupEmail) badges.push('3P-B');
                           if (spObj.float) badges.push('Float');
                           if (spObj.other) badges.push(spObj.other);
-                          
+
                           if (badges.length > 0) {
                             return (
                               <div className="flex flex-wrap gap-1 justify-center">
                                 {badges.map((badge, idx) => (
-                                  <span key={idx} className="px-1.5 py-0.5 text-xs font-medium rounded bg-thr-green-100 text-thr-green-700 dark:bg-thr-green-900/30 dark:text-thr-green-300">
+                                  <span key={idx} className="px-2 py-1 text-xs font-medium rounded-full bg-purple-200 text-purple-700 dark:bg-purple-800/40 dark:text-purple-300 shadow-sm">
                                     {badge}
                                   </span>
                                 ))}
                               </div>
                             );
                           }
-                          return <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>;
+                          return (
+                            <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                              <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                            </div>
+                          );
                         })()}
                         {editingCell?.employeeId === employee.id && editingCell?.field === 'specialProjects' && (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 min-w-[220px] border border-slate-200 dark:border-slate-600" role="dialog" aria-label="Select special projects">
@@ -990,7 +1039,7 @@ export default function ScheduleGrid({
                               })()}
                             </div>
                             <button
-                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); }}
+                              onClick={(e) => { e.stopPropagation(); setEditingCell(null); gridRef?.current?.focus(); }}
                               className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
                               aria-label="Close special projects selection"
                             >
@@ -1053,17 +1102,14 @@ export default function ScheduleGrid({
           currentAssignments={assignments}
           schedules={schedules}
           isOpen={showDarInfoPanel}
-          onClose={() => {
-            setShowDarInfoPanel(false);
-            setSelectedDarIndex(null);
-          }}
+          onClose={closePanel}
         />
       )}
 
       {/* CPOE Info Panel */}
       <CpoeInfoPanel
         isOpen={showCpoeInfoPanel}
-        onClose={() => setShowCpoeInfoPanel(false)}
+        onClose={closePanel}
         employees={employees}
         currentAssignments={assignments}
         schedules={schedules}
@@ -1072,7 +1118,7 @@ export default function ScheduleGrid({
       {/* New Incoming Info Panel */}
       <EntityInfoPanel
         isOpen={showNewIncomingInfoPanel}
-        onClose={() => setShowNewIncomingInfoPanel(false)}
+        onClose={closePanel}
         assignmentType="newIncoming"
         entities={entities}
         employees={employees}
@@ -1083,7 +1129,7 @@ export default function ScheduleGrid({
       {/* Cross-Training Info Panel */}
       <EntityInfoPanel
         isOpen={showCrossTrainingInfoPanel}
-        onClose={() => setShowCrossTrainingInfoPanel(false)}
+        onClose={closePanel}
         assignmentType="crossTraining"
         entities={entities}
         employees={employees}
@@ -1094,7 +1140,7 @@ export default function ScheduleGrid({
       {/* Special Projects Info Panel */}
       <SpecialProjectsInfoPanel
         isOpen={showSpecialProjectsInfoPanel}
-        onClose={() => setShowSpecialProjectsInfoPanel(false)}
+        onClose={closePanel}
         employees={employees}
         currentAssignments={assignments}
         schedules={schedules}
@@ -1108,6 +1154,8 @@ export default function ScheduleGrid({
         employees={activeEmployees}
         entities={entities}
         darColumns={darColumns}
+        assignments={assignments}
+        darEntities={darEntities}
         onApply={handleApplyBulkAssignment}
       />
     </div>

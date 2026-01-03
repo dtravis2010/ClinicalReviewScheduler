@@ -68,6 +68,19 @@ export function useUndoRedo(initialState, options = {}) {
     }
   }, [updateFlags]);
 
+  // Reset state without adding to history
+  const resetState = useCallback((newState) => {
+    if (managerRef.current) {
+      const resolvedState = typeof newState === 'function' 
+        ? newState(managerRef.current.getCurrentState())
+        : newState;
+
+      managerRef.current.reset(resolvedState);
+      setStateInternal(resolvedState);
+      updateFlags();
+    }
+  }, [updateFlags]);
+
   // Initialize flags
   useEffect(() => {
     updateFlags();
@@ -80,6 +93,7 @@ export function useUndoRedo(initialState, options = {}) {
     redo,
     canUndo,
     canRedo,
-    clearHistory
+    clearHistory,
+    resetState
   };
 }

@@ -139,7 +139,7 @@ export default function DarEntityConfig({
                 ) : (
                   assignedEntities.map((entityName, idx) => {
                     const entity = entities.find(e => e.name === entityName);
-                    const abbrev = getEntityShortCode([entityName]);
+                    const abbrev = getEntityShortCode(entity ? [entity] : [entityName], entities);
                     const isBeingMoved = movingEntity?.darIndex === darIndex && movingEntity?.entityName === entityName;
 
                     return (
@@ -258,7 +258,7 @@ export default function DarEntityConfig({
         ) : (
           <div className="flex flex-wrap gap-2">
             {availableEntities.map(entity => {
-              const abbrev = getEntityShortCode([entity.name]);
+              const abbrev = getEntityShortCode([entity], entities);
               return (
                 <button
                   key={entity.id}
@@ -289,7 +289,7 @@ export default function DarEntityConfig({
               </summary>
               <div className="mt-2 flex flex-wrap gap-2">
                 {entities.map(entity => {
-                  const abbrev = getEntityShortCode([entity.name]);
+                  const abbrev = getEntityShortCode([entity], entities);
                   const isAssigned = allAssignedEntities.has(entity.name);
                   return (
                     <span

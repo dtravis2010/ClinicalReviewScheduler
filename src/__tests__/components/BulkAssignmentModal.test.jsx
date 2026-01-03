@@ -147,6 +147,29 @@ describe('BulkAssignmentModal', () => {
     expect(applyButton).toBeDisabled();
   });
 
+  it('should deduplicate entities in dropdown for newIncoming assignments', () => {
+    const propsWithDuplicates = {
+      ...defaultProps,
+      entities: [
+        { id: 'ent1', name: 'Entity A' },
+        { id: 'ent2', name: ' entity a ' }, // duplicate with different spacing/case
+        { id: 'ent3', name: 'Entity B' },
+        { id: 'ent4', name: 'ENTITY B' }, // duplicate with different case
+      ]
+    };
+
+    render(<BulkAssignmentModal {...propsWithDuplicates} />);
+    
+    // Change to newIncoming type
+    const typeSelect = screen.getByLabelText('Assignment Type');
+    fireEvent.change(typeSelect, { target: { value: 'newIncoming' } });
+
+    // Should only show deduplicated entities
+    const entityCheckboxes = screen.getAllByRole('checkbox');
+    // Should have 2 unique entities (Entity A and Entity B deduplicated)
+    expect(entityCheckboxes).toHaveLength(2);
+  });
+
   /**
    * Property 31: Bulk assignment validation
    * Validates: Requirements 14.3

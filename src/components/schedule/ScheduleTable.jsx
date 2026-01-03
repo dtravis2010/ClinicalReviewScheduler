@@ -5,12 +5,21 @@ import PropTypes from 'prop-types';
  * ScheduleTable component
  * Wrapper for the schedule table with scroll handling
  */
-function ScheduleTable({ children, className = '' }) {
+function ScheduleTable({ children, className = '', tableRef = null, ariaActivedescendant, ariaRowCount, ariaColCount }) {
   return (
-    <div className={`bg-slate-50 dark:bg-slate-900 p-3 ${className}`}>
-      <div className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-card border border-slate-100 dark:border-slate-700">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-max" role="grid" aria-label="Schedule assignments">
+    <div className={`bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-4 w-full ${className}`}>
+      <div className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 w-full overflow-visible">
+        <div className="overflow-x-auto overflow-y-visible w-full scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-slate-100 dark:scrollbar-track-slate-800">
+          <table
+            ref={tableRef}
+            className="w-full border-collapse"
+            role="grid"
+            aria-label="Schedule assignments"
+            tabIndex={0}
+            aria-activedescendant={ariaActivedescendant}
+            aria-rowcount={ariaRowCount}
+            aria-colcount={ariaColCount}
+          >
             {children}
           </table>
         </div>
@@ -21,7 +30,11 @@ function ScheduleTable({ children, className = '' }) {
 
 ScheduleTable.propTypes = {
   children: PropTypes.node.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
+  tableRef: PropTypes.any,
+  ariaActivedescendant: PropTypes.string,
+  ariaRowCount: PropTypes.number,
+  ariaColCount: PropTypes.number
 };
 
 export default memo(ScheduleTable);

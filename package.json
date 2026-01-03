@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "date-fns": "^3.6.0",
+    "dotenv": "^17.2.3",
     "firebase": "^10.14.1",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
@@ -24,6 +25,7 @@
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.26.0",
+    "recharts": "^3.6.0",
     "xlsx": "^0.18.5",
     "zod": "^4.1.13"
   },

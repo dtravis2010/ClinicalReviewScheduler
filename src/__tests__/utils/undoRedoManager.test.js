@@ -265,6 +265,22 @@ describe('UndoRedoManager', () => {
       expect(manager.canRedo()).toBe(false);
     });
 
+    it('should reset state and clear history', () => {
+      const manager = new UndoRedoManager(0);
+      manager.addChange(1);
+      manager.addChange(2);
+      manager.undo();
+
+      expect(manager.canUndo()).toBe(true);
+      expect(manager.canRedo()).toBe(true);
+
+      manager.reset(42);
+
+      expect(manager.getCurrentState()).toBe(42);
+      expect(manager.canUndo()).toBe(false);
+      expect(manager.canRedo()).toBe(false);
+    });
+
     it('should handle complex object states', () => {
       const state1 = { name: 'test1', count: 1 };
       const state2 = { name: 'test2', count: 2 };

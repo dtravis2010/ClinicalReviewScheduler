@@ -399,3 +399,194 @@ input[type="date"] {
   left: 0;
   top: 0;
 }
+
+/* Additional animations for Phase 4 UX/UI */
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Fade in up animation */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scale in animation */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Slide in right animation */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Slide in left animation */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Accessibility - Reduced Motion Support */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Accessibility - High Contrast Mode */
+.high-contrast {
+  --primary-blue: #0066cc;
+  --accent-green: #00aa88;
+  filter: contrast(1.2);
+}
+
+/* Accessibility - Large Text Mode */
+.large-text {
+  font-size: 112.5% !important;
+}
+
+.large-text h1 { font-size: 2.25rem !important; }
+.large-text h2 { font-size: 1.875rem !important; }
+.large-text h3 { font-size: 1.5rem !important; }
+.large-text .text-sm { font-size: 0.95rem !important; }
+.large-text .text-xs { font-size: 0.85rem !important; }
+
+/* Smooth transitions for interactive elements */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Button hover effects */
+.btn-hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Focus ring for better keyboard navigation */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-thr-blue-500 focus:ring-offset-2;
+}
+
+/* Improved focus styles for dark mode */
+.dark .focus-ring {
+  @apply focus:ring-offset-slate-800;
+}
+
+/* Touch-friendly button styles */
+.touch-target {
+  @apply min-w-[44px] min-h-[44px];
+}
+
+.touch-target-lg {
+  @apply min-w-[48px] min-h-[48px];
+}
+
+/* Improved link styles */
+.link {
+  @apply text-thr-blue-500 hover:text-thr-blue-600 dark:text-thr-blue-400 dark:hover:text-thr-blue-300;
+  @apply underline underline-offset-2 decoration-1;
+  @apply transition-colors duration-200;
+}
+
+/* Success/Error indicator colors */
+.indicator-success {
+  @apply bg-green-500 dark:bg-green-400;
+}
+
+.indicator-error {
+  @apply bg-red-500 dark:bg-red-400;
+}
+
+.indicator-warning {
+  @apply bg-amber-500 dark:bg-amber-400;
+}
+
+.indicator-info {
+  @apply bg-blue-500 dark:bg-blue-400;
+}
+
+/* Drag and drop styles */
+.draggable {
+  cursor: move;
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+.drag-over {
+  border: 2px dashed var(--primary-blue);
+  background-color: rgba(0, 92, 151, 0.05);
+}
+
+.drag-placeholder {
+  opacity: 0.5;
+  background-color: rgba(0, 92, 151, 0.1);
+}
