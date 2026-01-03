@@ -99,17 +99,24 @@ function ScheduleTableHeader({
                         <label 
                           key={entity.id} 
                           className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Label clicked for:', entity.name);
+                          }}
                         >
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={(e) => {
+                              console.log('Checkbox onChange fired for:', entity.name);
                               e.stopPropagation();
                               onDarEntityToggle(idx, entity.name);
                             }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
+                            onClick={(e) => {
+                              console.log('Checkbox onClick fired for:', entity.name);
+                              e.stopPropagation();
+                            }}
+                            className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600 pointer-events-auto"
                             aria-label={`Assign ${entity.name} to ${dar}`}
                           />
                           <span className="text-sm">{entity.name}</span>
