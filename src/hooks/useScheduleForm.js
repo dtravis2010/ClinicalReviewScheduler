@@ -80,13 +80,16 @@ export function useScheduleForm(schedule, resetAssignments) {
   }, []);
 
   const handleDarEntityToggle = useCallback((darIndex, entityName) => {
+    console.log('Toggle called:', darIndex, entityName); // Debug log
     setDarEntities(prev => {
+      console.log('Previous darEntities:', prev); // Debug log
       const current = prev[darIndex] || [];
       const currentArray = Array.isArray(current) ? current : (current ? [current] : []);
       const newArray = currentArray.includes(entityName)
         ? currentArray.filter(e => e !== entityName)
         : [...currentArray, entityName];
 
+      console.log('New array for DAR', darIndex, ':', newArray); // Debug log
       return {
         ...prev,
         [darIndex]: newArray
