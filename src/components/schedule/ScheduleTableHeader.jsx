@@ -72,7 +72,12 @@ function ScheduleTableHeader({
             </div>
             <div className="text-[11px] font-medium opacity-90">
               {editingDar === idx && !readOnly ? (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-4 z-50 max-h-64 overflow-y-auto min-w-[220px] border-2 border-thr-blue-200 dark:border-thr-blue-700" role="dialog" aria-label="Select entities for DAR">
+                <div 
+                  className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-4 z-[100] max-h-64 overflow-y-auto min-w-[220px] border-2 border-thr-blue-200 dark:border-thr-blue-700 pointer-events-auto" 
+                  role="dialog" 
+                  aria-label="Select entities for DAR"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {/* Unified entity bank: search + selected count */}
                   <div className="flex items-center gap-2 mb-2">
                     <input
