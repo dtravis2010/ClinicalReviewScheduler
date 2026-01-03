@@ -96,11 +96,19 @@ function ScheduleTableHeader({
                       const isSelected = currentArray.includes(entity.name);
 
                       return (
-                        <label key={entity.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors">
+                        <label 
+                          key={entity.id} 
+                          className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => onDarEntityToggle(idx, entity.name)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              onDarEntityToggle(idx, entity.name);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
                             className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600"
                             aria-label={`Assign ${entity.name} to ${dar}`}
                           />
