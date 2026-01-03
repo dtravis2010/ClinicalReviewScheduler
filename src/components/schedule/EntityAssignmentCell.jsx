@@ -115,7 +115,7 @@ function EntityAssignmentCell({
           {/* Entity Selection Popup */}
           {isEditing && (
             <div
-              className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600"
+              className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600 pointer-events-auto"
               role="dialog"
               aria-label={`Select entities for ${fieldLabel}`}
               onClick={(e) => e.stopPropagation()}
@@ -162,7 +162,7 @@ function EntityAssignmentCell({
                           handleEntityToggle(entity.name);
                         }}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600 disabled:opacity-50"
+                        className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600 disabled:opacity-50 pointer-events-auto"
                         aria-label={`Assign ${entity.name} to ${fieldLabel}`}
                       />
                       <div className="flex-1 min-w-0">
