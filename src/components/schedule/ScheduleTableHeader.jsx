@@ -171,7 +171,8 @@ ScheduleTableHeader.propTypes = {
   darEntities: PropTypes.object.isRequired,
   entities: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired
+    name: PropTypes.string.isRequired,
+    code: PropTypes.string
   })).isRequired,
   editingDar: PropTypes.number,
   readOnly: PropTypes.bool,

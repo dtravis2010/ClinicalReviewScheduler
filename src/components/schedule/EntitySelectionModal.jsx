@@ -39,12 +39,13 @@ export default function EntitySelectionModal({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter entities based on search query
+  // Filter entities based on search query (searches both name and code)
   const filteredEntities = useMemo(() => {
     if (!searchQuery.trim()) return entities;
     const query = searchQuery.toLowerCase().trim();
     return entities.filter(entity =>
-      entity.name.toLowerCase().includes(query)
+      entity.name.toLowerCase().includes(query) ||
+      (entity.code && entity.code.toLowerCase().includes(query))
     );
   }, [entities, searchQuery]);
 
@@ -81,8 +82,8 @@ export default function EntitySelectionModal({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 bg-white dark:bg-slate-700 dark:text-slate-100"
-            placeholder="Search entities..."
-            aria-label="Search entities"
+            placeholder="Search by name or code..."
+            aria-label="Search entities by name or code"
             autoFocus
           />
           <span className="text-sm font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">
@@ -185,7 +186,8 @@ EntitySelectionModal.propTypes = {
   title: PropTypes.string.isRequired,
   entities: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired
+    name: PropTypes.string.isRequired,
+    code: PropTypes.string
   })).isRequired,
   selectedEntities: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.string),
