@@ -1,8 +1,9 @@
-import { memo, useState, useMemo } from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Info } from 'lucide-react';
 import { formatEntityList, getEntityShortCode } from '../../utils/scheduleUtils';
 import { getAvailableEntitiesForDar } from '../../utils/assignmentLogic';
+import EntitySelectionModal from './EntitySelectionModal';
 
 /**
  * ScheduleTableHeader component
@@ -26,12 +27,6 @@ function ScheduleTableHeader({
   allSelected = false,
   onSelectAll
 }) {
-  const [query, setQuery] = useState('');
-  const filteredEntities = useMemo(() => {
-    if (!entities || query.trim() === '') return entities;
-    const q = query.trim().toLowerCase();
-    return entities.filter(e => (e.name || '').toLowerCase().includes(q));
-  }, [entities, query]);
   return (
     <thead className="sticky top-0 z-20 shadow-lg">
       <tr className="bg-gradient-to-r from-thr-blue-500 via-thr-blue-600 to-thr-blue-500 dark:from-thr-blue-600 dark:via-thr-blue-700 dark:to-thr-blue-600 text-white border-b-2 border-thr-blue-700 dark:border-thr-blue-800">
@@ -71,84 +66,27 @@ function ScheduleTableHeader({
               )}
             </div>
             <div className="text-[11px] font-medium opacity-90">
-              {editingDar === idx && !readOnly ? (
-                <div 
-                  className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-4 z-[100] max-h-64 overflow-y-auto min-w-[220px] border-2 border-thr-blue-200 dark:border-thr-blue-700 pointer-events-auto" 
-                  role="dialog" 
-                  aria-label="Select entities for DAR"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {/* Unified entity bank: search + selected count */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 bg-white dark:bg-slate-700 dark:text-slate-100"
-                      placeholder="Search entities..."
-                      aria-label={`Search entities for ${dar}`}
-                      role="search"
-                    />
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {(Array.isArray(darEntities[idx]) ? darEntities[idx] : (darEntities[idx] ? [darEntities[idx]] : [])).length} selected
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    {getAvailableEntitiesForDar(idx, darEntities, filteredEntities).map(entity => {
-                      const currentList = darEntities[idx] || [];
-                      const currentArray = Array.isArray(currentList) ? currentList : (currentList ? [currentList] : []);
-                      const isSelected = currentArray.includes(entity.name);
-
-                      return (
-                        <label 
-                          key={entity.id} 
-                          className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            console.log('Label clicked for:', entity.name);
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={(e) => {
-                              console.log('Checkbox onChange fired for:', entity.name);
-                              e.stopPropagation();
-                              onDarEntityToggle(idx, entity.name);
-                            }}
-                            onClick={(e) => {
-                              console.log('Checkbox onClick fired for:', entity.name);
-                              e.stopPropagation();
-                            }}
-                            className="w-4 h-4 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600 pointer-events-auto"
-                            aria-label={`Assign ${entity.name} to ${dar}`}
-                          />
-                          <span className="text-sm">{entity.name}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                  <button
-                    onClick={onEditingDarClose}
-                    className="mt-3 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
-                    aria-label="Close entity selection"
-                  >
-                    Done
-                  </button>
-                </div>
-              ) : (
-                <button
-                  className="cursor-pointer hover:bg-white/20 active:bg-white/30 rounded-lg px-2.5 py-1.5 truncate w-full focus:ring-2 focus:ring-white/60 transition-all duration-200 hover:scale-105 font-medium shadow-sm"
-                  onClick={() => !readOnly && onDarClick(idx)}
-                  title={formatEntityList(darEntities[idx])}
-                  aria-label={`Configure entities for ${dar}. Current: ${formatEntityList(darEntities[idx]) || 'None'}`}
-                  disabled={readOnly}
-                >
-                  {getEntityShortCode(darEntities[idx], entities) || '+ Entities'}
-                </button>
-              )}
+              <button
+                className="cursor-pointer hover:bg-white/20 active:bg-white/30 rounded-lg px-2.5 py-1.5 truncate w-full focus:ring-2 focus:ring-white/60 transition-all duration-200 hover:scale-105 font-medium shadow-sm"
+                onClick={() => !readOnly && onDarClick(idx)}
+                title={formatEntityList(darEntities[idx])}
+                aria-label={`Configure entities for ${dar}. Current: ${formatEntityList(darEntities[idx]) || 'None'}`}
+                disabled={readOnly}
+              >
+                {getEntityShortCode(darEntities[idx], entities) || '+ Entities'}
+              </button>
             </div>
+
+            {/* Entity Selection Modal - Rendered in portal, outside table DOM */}
+            <EntitySelectionModal
+              isOpen={editingDar === idx && !readOnly}
+              onClose={onEditingDarClose}
+              title={`Select Entities for ${dar}`}
+              entities={getAvailableEntitiesForDar(idx, darEntities, entities)}
+              selectedEntities={darEntities[idx] || []}
+              onToggle={(entityName) => onDarEntityToggle(idx, entityName)}
+              showShortCodes={false}
+            />
           </th>
         ))}
         <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[80px] border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors">

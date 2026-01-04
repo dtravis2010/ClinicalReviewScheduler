@@ -36,7 +36,7 @@ import {
 } from 'recharts';
 import Layout from '../components/Layout';
 import StatCard from '../components/StatCard';
-import ProductivityImportEnhanced from '../components/ProductivityImportEnhanced';
+import ProductivityImport from '../components/ProductivityImport';
 import { DashboardSkeleton } from '../components/Skeleton';
 import { ProductivityService } from '../services/productivityService';
 import { format } from 'date-fns';
@@ -490,7 +490,7 @@ export default function ProductivityDashboard() {
         {/* Import Tab */}
         {activeTab === 'import' && (
           <div>
-            <ProductivityImportEnhanced employees={employees} entities={entities} />
+            <ProductivityImport employees={employees} entities={entities} />
           </div>
         )}
       </div>

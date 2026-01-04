@@ -1,7 +1,7 @@
-import { memo, useState, useMemo } from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
-import { getEntityShortCode, formatEntityList } from '../../utils/scheduleUtils';
-import { formatHistoryDate } from '../../utils/entityHistory';
+import { formatEntityList } from '../../utils/scheduleUtils';
+import EntitySelectionModal from './EntitySelectionModal';
 
 /**
  * Reusable cell component for entity-based assignments (New Incoming, Cross-Training)
@@ -43,11 +43,6 @@ function EntityAssignmentCell({
     }
   };
 
-  const handleDoneClick = (e) => {
-    e.stopPropagation();
-    onEndEdit();
-  };
-
   const handleEntityToggle = (entityName) => {
     if (!blocked) {
       onToggle(employee.id, field, entityName);
@@ -55,16 +50,6 @@ function EntityAssignmentCell({
   };
 
   const fieldLabel = field === 'newIncoming' ? 'New Incoming' : 'Cross-Training';
-
-  // Search within available entities
-  const [query, setQuery] = useState('');
-  const filteredEntities = useMemo(() => {
-    if (!query) return availableEntities;
-    const q = query.toLowerCase();
-    return availableEntities.filter(e => e.name.toLowerCase().includes(q));
-  }, [availableEntities, query]);
-
-  const selectedCount = currentArray.length;
 
   return (
     <td
@@ -111,91 +96,20 @@ function EntityAssignmentCell({
               <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
             </div>
           )}
-          
-          {/* Entity Selection Popup */}
-          {isEditing && (
-            <div
-              className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-soft-lg p-3 z-50 max-h-64 overflow-y-auto min-w-[220px] border border-slate-200 dark:border-slate-600 pointer-events-auto"
-              role="dialog"
-              aria-label={`Select entities for ${fieldLabel}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Search and summary */}
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-thr-blue-500 dark:focus:ring-thr-blue-400 bg-white dark:bg-slate-700 dark:text-slate-100"
-                  placeholder="Search entities..."
-                  aria-label="Search entities"
-                  role="search"
-                />
-                <span className="text-xs text-slate-500 dark:text-slate-400">{selectedCount} selected</span>
-              </div>
-              {blocked && (
-                <div className="mb-2 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-2 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-200">
-                  {blockMessage || `Remove other primary assignments to add ${fieldLabel}.`}
-                </div>
-              )}
-              
-              <div className="space-y-1 mb-3">
-                {filteredEntities.map(entity => {
-                  const isSelected = currentArray.includes(entity.name);
-                  const history = entityHistory?.[entity.name];
-                  const entityShort = getEntityShortCode([entity], availableEntities);
 
-                  return (
-                    <label
-                      key={entity.id}
-                      className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 p-2 rounded-lg text-slate-900 dark:text-slate-100 transition-colors"
-                      title={entity.name}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        disabled={blocked}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleEntityToggle(entity.name);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 mt-0.5 text-thr-blue-500 dark:text-thr-blue-400 rounded-md focus:ring-thr-blue-500 dark:bg-slate-700 dark:border-slate-600 disabled:opacity-50 pointer-events-auto"
-                        aria-label={`Assign ${entity.name} to ${fieldLabel}`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-thr-blue-600 dark:text-thr-blue-400">
-                            {entityShort || entity.name}
-                          </span>
-                          {entityShort && entity.name !== entityShort && (
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
-                              {entity.name}
-                            </span>
-                          )}
-                        </div>
-                        {history?.employeeName && (
-                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            Last: {history.employeeName} ({formatHistoryDate(history.startDate)})
-                          </div>
-                        )}
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-              
-              <button
-                onClick={handleDoneClick}
-                className="mt-2 w-full px-3 py-2 bg-thr-blue-500 dark:bg-thr-blue-600 text-white rounded-lg text-sm font-medium hover:bg-thr-blue-600 dark:hover:bg-thr-blue-500 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 transition-colors"
-                aria-label="Close entity selection"
-              >
-                Done
-              </button>
-            </div>
-          )}
+          {/* Entity Selection Modal - Rendered in portal, outside table DOM */}
+          <EntitySelectionModal
+            isOpen={isEditing}
+            onClose={onEndEdit}
+            title={`Select Entities for ${fieldLabel}`}
+            entities={availableEntities}
+            selectedEntities={currentArray}
+            onToggle={handleEntityToggle}
+            entityHistory={entityHistory}
+            showShortCodes={true}
+            disabled={blocked}
+            disabledMessage={blockMessage || `Remove other primary assignments to add ${fieldLabel}.`}
+          />
         </>
       )}
     </td>
