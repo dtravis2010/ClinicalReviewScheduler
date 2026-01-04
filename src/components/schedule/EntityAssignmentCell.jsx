@@ -126,6 +126,7 @@ EntityAssignmentCell.propTypes = {
   availableEntities: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
+    code: PropTypes.string
   })).isRequired,
   entityHistory: PropTypes.object,
   readOnly: PropTypes.bool,
