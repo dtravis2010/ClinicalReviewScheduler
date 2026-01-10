@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { formatEntityList, getEntityShortCode } from '../../utils/scheduleUtils';
 import EntitySelectionModal from './EntitySelectionModal';
@@ -28,10 +28,11 @@ function EntityAssignmentCell({
   const currentArray = Array.isArray(currentValues) ? currentValues : (currentValues ? [currentValues] : []);
   const hasAssignments = currentArray.length > 0;
 
-  // Get entity abbreviations for display
-  const entityAbbreviations = hasAssignments 
-    ? getEntityShortCode(currentArray, availableEntities)
-    : '';
+  // Get entity abbreviations for display (memoized to avoid recalculation)
+  const entityAbbreviations = useMemo(() => 
+    hasAssignments ? getEntityShortCode(currentArray, availableEntities) : '',
+    [hasAssignments, currentArray, availableEntities]
+  );
 
   const handleCellClick = (e) => {
     // Only open the popup if we're not already editing
