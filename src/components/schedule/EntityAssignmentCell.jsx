@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
-import { formatEntityList } from '../../utils/scheduleUtils';
+import { formatEntityList, getEntityShortCode } from '../../utils/scheduleUtils';
 import EntitySelectionModal from './EntitySelectionModal';
 
 /**
@@ -27,6 +27,11 @@ function EntityAssignmentCell({
   const currentValues = assignment?.[field] || [];
   const currentArray = Array.isArray(currentValues) ? currentValues : (currentValues ? [currentValues] : []);
   const hasAssignments = currentArray.length > 0;
+
+  // Get entity abbreviations for display
+  const entityAbbreviations = hasAssignments 
+    ? getEntityShortCode(currentArray, availableEntities)
+    : '';
 
   const handleCellClick = (e) => {
     // Only open the popup if we're not already editing
@@ -70,12 +75,9 @@ function EntityAssignmentCell({
       {readOnly ? (
         hasAssignments ? (
           <div className="flex items-center justify-center gap-1" title={formatEntityList(currentArray)}>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-thr-green-200 dark:bg-thr-green-800/40 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-thr-green-600 dark:bg-thr-green-400"></span>
-              <span className="text-xs font-bold text-thr-green-700 dark:text-thr-green-300">
-                {currentArray.length}
-              </span>
-            </div>
+            <span className="text-xs font-bold text-thr-green-700 dark:text-thr-green-300 px-2 py-1 bg-thr-green-200 dark:bg-thr-green-800/40 rounded-lg shadow-sm">
+              {entityAbbreviations}
+            </span>
           </div>
         ) : (
           <span className="text-slate-400 dark:text-slate-600 text-xs">N/A</span>
@@ -84,12 +86,9 @@ function EntityAssignmentCell({
         <>
           {hasAssignments ? (
             <div className="flex items-center justify-center gap-1" title={formatEntityList(currentArray)}>
-              <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-thr-green-200 dark:bg-thr-green-800/40 shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-thr-green-600 dark:bg-thr-green-400"></span>
-                <span className="text-xs font-bold text-thr-green-700 dark:text-thr-green-300">
-                  {currentArray.length}
-                </span>
-              </div>
+              <span className="text-xs font-bold text-thr-green-700 dark:text-thr-green-300 px-2 py-1 bg-thr-green-200 dark:bg-thr-green-800/40 rounded-lg shadow-sm">
+                {entityAbbreviations}
+              </span>
             </div>
           ) : (
             <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">

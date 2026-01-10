@@ -30,25 +30,25 @@ function WorkloadIndicator({ workload, avgWorkload, employeeName, assignment }) 
     const parts = [];
     
     if (assignment.dars && assignment.dars.length > 0) {
-      parts.push(`${assignment.dars.length} DAR${assignment.dars.length !== 1 ? 's' : ''} (${assignment.dars.length * 3} pts)`);
+      parts.push(`DAR: ${assignment.dars.length} assignment${assignment.dars.length !== 1 ? 's' : ''} (${assignment.dars.length * 3} pts)`);
     }
     
     if (assignment.cpoe) {
-      parts.push('CPOE (2 pts)');
+      parts.push('CPOE: 1 assignment (2 pts)');
     }
     
     if (assignment.newIncoming) {
       const count = Array.isArray(assignment.newIncoming) ? assignment.newIncoming.length : 1;
-      parts.push(`${count} New Incoming (${count * 2} pts)`);
+      parts.push(`New Incoming: ${count} assignment${count !== 1 ? 's' : ''} (${count * 2} pts)`);
     }
     
     if (assignment.crossTraining) {
       const count = Array.isArray(assignment.crossTraining) ? assignment.crossTraining.length : 1;
-      parts.push(`${count} Cross-Training (${count} pt${count !== 1 ? 's' : ''})`);
+      parts.push(`Cross-Training: ${count} assignment${count !== 1 ? 's' : ''} (${count} pt${count !== 1 ? 's' : ''})`);
     }
     
     if (hasSpecialProjects(assignment.specialProjects)) {
-      parts.push('Special Project (1 pt)');
+      parts.push('Special Projects: 1 assignment (1 pt)');
     }
 
     return parts.length > 0 ? parts.join('\n') : 'No assignments';
