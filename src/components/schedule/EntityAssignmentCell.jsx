@@ -31,7 +31,7 @@ function EntityAssignmentCell({
   // Get entity abbreviations for display (memoized to avoid recalculation)
   const entityAbbreviations = useMemo(() => 
     hasAssignments ? getEntityShortCode(currentArray, availableEntities) : '',
-    [hasAssignments, currentArray, availableEntities]
+    [currentArray, availableEntities]
   );
 
   const handleCellClick = (e) => {
@@ -56,6 +56,9 @@ function EntityAssignmentCell({
   };
 
   const fieldLabel = field === 'newIncoming' ? 'New Incoming' : 'Cross-Training';
+  
+  // Shared styling for abbreviation display
+  const abbreviationClassName = "text-xs font-bold text-thr-green-700 dark:text-thr-green-300 px-2 py-1 bg-thr-green-200 dark:bg-thr-green-800/40 rounded-lg shadow-sm";
 
   return (
     <td
@@ -76,7 +79,7 @@ function EntityAssignmentCell({
       {readOnly ? (
         hasAssignments ? (
           <div className="flex items-center justify-center gap-1" title={formatEntityList(currentArray)}>
-            <span className="text-xs font-bold text-thr-green-700 dark:text-thr-green-300 px-2 py-1 bg-thr-green-200 dark:bg-thr-green-800/40 rounded-lg shadow-sm">
+            <span className={abbreviationClassName}>
               {entityAbbreviations}
             </span>
           </div>
@@ -87,7 +90,7 @@ function EntityAssignmentCell({
         <>
           {hasAssignments ? (
             <div className="flex items-center justify-center gap-1" title={formatEntityList(currentArray)}>
-              <span className="text-xs font-bold text-thr-green-700 dark:text-thr-green-300 px-2 py-1 bg-thr-green-200 dark:bg-thr-green-800/40 rounded-lg shadow-sm">
+              <span className={abbreviationClassName}>
                 {entityAbbreviations}
               </span>
             </div>
