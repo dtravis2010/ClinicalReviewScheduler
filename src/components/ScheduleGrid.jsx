@@ -199,7 +199,76 @@ export default function ScheduleGrid({
     colCount: navColCount,
     enabled: !readOnly,
     onActivate: (row, col) => {
-      // Basic navigation placeholder - detailed implementation requires updating with new column structure
+      if (readOnly) return;
+      const employee = activeEmployees[row];
+      if (!employee) return;
+
+      // 0: Checkbox
+      if (col === 0) {
+        handleEmployeeSelect(employee.id);
+        return;
+      }
+
+      // 1: Name
+      if (col === 1) return;
+
+      let currentCol = 2;
+
+      // DAR Columns
+      const darIndex = col - currentCol;
+      if (darIndex >= 0 && darIndex < darColumns.length) {
+        if (canAssignDAR(employee)) {
+          handleDARToggle(employee.id, darIndex);
+        }
+        return;
+      }
+      currentCol += darColumns.length;
+
+      // Incoming Columns
+      const incIndex = col - currentCol;
+      const incCount = incomingColumns?.length || 0;
+      if (incIndex >= 0 && incIndex < incCount) {
+        const currentInc = assignments[employee.id]?.incoming || [];
+        const newInc = currentInc.includes(incIndex)
+          ? currentInc.filter(i => i !== incIndex)
+          : [...currentInc, incIndex];
+        handleAssignmentChange(employee.id, 'incoming', newInc);
+        return;
+      }
+      currentCol += incCount;
+
+      // CPOE
+      if (col === currentCol) {
+        if (employee.skills?.includes('CPOE')) {
+          handleAssignmentChange(employee.id, 'cpoe', !assignments[employee.id]?.cpoe);
+        }
+        return;
+      }
+      currentCol++;
+
+      // Cross Training & Special Projects (Text fields - skip toggle)
+      if (col === currentCol || col === currentCol + 1) return;
+      currentCol += 2;
+
+      // 3P Primary
+      if (col === currentCol) {
+        handleAssignmentChange(employee.id, 'threePPrimary', !assignments[employee.id]?.threePPrimary);
+        return;
+      }
+      currentCol++;
+
+      // 3P Backup
+      if (col === currentCol) {
+        handleAssignmentChange(employee.id, 'threePBackup', !assignments[employee.id]?.threePBackup);
+        return;
+      }
+      currentCol++;
+
+      // Float
+      if (col === currentCol) {
+        handleAssignmentChange(employee.id, 'float', !assignments[employee.id]?.float);
+        return;
+      }
     }
   });
 
@@ -785,11 +854,14 @@ export default function ScheduleGrid({
                     const entityDisplay = Array.isArray(entityNames) ? entityNames.join(', ') : (entityNames || '');
                     // Use the helper to get short codes for display
                     const shortCodes = getEntityShortCode(entityNames, entities);
+                    // Use custom header text as fallback if no entities are configured
+                    const headerText = headerTexts[`inc-${incIdx}`];
+                    const displayText = shortCodes || headerText || 'Incoming';
 
                     return (
                        <td
                         key={`inc-${incIdx}`}
-                        title={entityDisplay || `${incName} - No entities assigned`}
+                        title={entityDisplay || headerText || `${incName} - No entities assigned`}
                         className={`px-2 py-3 text-center transition-all duration-200 border-r border-slate-100 dark:border-slate-700/50 ${
                           isAssigned
                               ? 'bg-gradient-to-br from-thr-green-100 to-thr-green-50 dark:from-thr-green-900/40 dark:to-thr-green-900/20 hover:from-thr-green-200 hover:to-thr-green-100 cursor-pointer'
@@ -800,7 +872,7 @@ export default function ScheduleGrid({
                         {isAssigned ? (
                            <div className="flex items-center justify-center">
                               <span className="text-thr-green-700 dark:text-thr-green-300 text-xs font-bold px-1 py-0.5 bg-white/50 dark:bg-black/20 rounded">
-                                {shortCodes || 'Incoming'}
+                                {displayText}
                               </span>
                             </div>
                         ) : (
