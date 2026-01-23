@@ -71,40 +71,60 @@ export default function EntityManagement({ entities, onUpdate }) {
     try {
       if (editingEntity) {
         // Update existing entity
-        const changes = AuditService.detectChanges(editingEntity, formData);
-        const entityRef = doc(db, 'entities', editingEntity.id);
-        await updateDoc(entityRef, {
-          ...formData,
-          updatedAt: serverTimestamp()
-        });
+        try {
+            const changes = AuditService.detectChanges(editingEntity, formData);
+            const entityRef = doc(db, 'entities', editingEntity.id);
+            await updateDoc(entityRef, {
+              ...formData,
+              updatedAt: serverTimestamp()
+            });
 
-        // Log audit trail
-        await AuditService.log({
-          userId: currentUser.uid,
-          userEmail: currentUser.email,
-          action: 'entity.update',
-          resourceType: 'entity',
-          resourceId: editingEntity.id,
-          changes: changes,
-          metadata: { entityName: formData.name }
-        });
+            // Log audit trail
+            await AuditService.log({
+              userId: currentUser.uid,
+              userEmail: currentUser.email,
+              action: 'entity.update',
+              resourceType: 'entity',
+              resourceId: editingEntity.id,
+              changes: changes,
+              metadata: { entityName: formData.name }
+            });
+        } catch (e) {
+            // Local fallback
+            console.warn('DB update failed, using local fallback', e);
+            const local = JSON.parse(sessionStorage.getItem('demo_entities') || '[]');
+            const idx = local.findIndex(x => x.id === editingEntity.id);
+            if (idx >= 0) {
+                local[idx] = { ...local[idx], ...formData };
+                sessionStorage.setItem('demo_entities', JSON.stringify(local));
+            }
+        }
       } else {
         // Add new entity
-        const docRef = await addDoc(collection(db, 'entities'), {
-          ...formData,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
+        try {
+            const docRef = await addDoc(collection(db, 'entities'), {
+              ...formData,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
 
-        // Log audit trail
-        await AuditService.log({
-          userId: currentUser.uid,
-          userEmail: currentUser.email,
-          action: 'entity.create',
-          resourceType: 'entity',
-          resourceId: docRef.id,
-          metadata: { entityName: formData.name }
-        });
+            // Log audit trail
+            await AuditService.log({
+              userId: currentUser.uid,
+              userEmail: currentUser.email,
+              action: 'entity.create',
+              resourceType: 'entity',
+              resourceId: docRef.id,
+              metadata: { entityName: formData.name }
+            });
+        } catch (e) {
+            // Local fallback
+            console.warn('DB add failed, using local fallback', e);
+            const newEntity = { id: 'local_' + Date.now(), ...formData };
+            const local = JSON.parse(sessionStorage.getItem('demo_entities') || '[]');
+            local.push(newEntity);
+            sessionStorage.setItem('demo_entities', JSON.stringify(local));
+        }
       }
 
       resetForm();

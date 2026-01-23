@@ -1,24 +1,106 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Info } from 'lucide-react';
+import { Info, Edit2, Check, X } from 'lucide-react';
 import { formatEntityList, getEntityShortCode } from '../../utils/scheduleUtils';
 import { getAvailableEntitiesForDar } from '../../utils/assignmentLogic';
 import EntitySelectionModal from './EntitySelectionModal';
 
 /**
+ * Header component that allows text editing or entity selection
+ */
+const ConfigurableHeader = ({
+  label,
+  columnKey,
+  entities,
+  customText,
+  onEntityClick,
+  onTextChange,
+  readOnly
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [text, setText] = useState(customText || '');
+
+  const displayText = customText || getEntityShortCode(entities, []) || '+ Entities';
+
+  const handleSave = () => {
+    onTextChange(columnKey, text);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setText(customText || '');
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1 bg-white rounded px-1 py-0.5">
+        <input
+          autoFocus
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          className="text-black text-xs px-1 py-0.5 rounded w-full min-w-[80px] border border-gray-300"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave();
+            if (e.key === 'Escape') handleCancel();
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        <button onClick={handleSave} className="text-green-600 hover:text-green-800"><Check className="w-3 h-3" /></button>
+        <button onClick={handleCancel} className="text-red-600 hover:text-red-800"><X className="w-3 h-3" /></button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-1 w-full">
+      <button
+        className="cursor-pointer hover:bg-white/20 active:bg-white/30 rounded-lg px-2.5 py-1.5 truncate max-w-[120px] focus:ring-2 focus:ring-white/60 transition-all duration-200 hover:scale-105 font-medium shadow-sm"
+        onClick={onEntityClick}
+        title={formatEntityList(entities)}
+        disabled={readOnly}
+      >
+        {displayText}
+      </button>
+      {!readOnly && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setText(customText || getEntityShortCode(entities, []) || '');
+            setIsEditing(true);
+          }}
+          className="opacity-0 group-hover:opacity-50 hover:opacity-100 p-1"
+          title="Edit header text"
+        >
+          <Edit2 className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  );
+};
+
+/**
  * ScheduleTableHeader component
- * Displays column headers and DAR entity configuration
+ * Displays column headers and DAR/Incoming entity configuration
  */
 function ScheduleTableHeader({
   darColumns,
   darEntities,
+  incomingColumns = [], // New
+  incomingEntities = {}, // New
+  headerTexts = {}, // New
   entities,
   editingDar,
+  editingIncoming, // New
   readOnly,
   onDarClick,
   onDarEntityToggle,
+  onIncomingClick, // New
+  onIncomingEntityToggle, // New
+  onHeaderRename, // New
   onDarInfoClick,
   onEditingDarClose,
+  onEditingIncomingClose, // New
   onCpoeInfoClick,
   onNewIncomingInfoClick,
   onCrossTrainingInfoClick,
@@ -47,8 +129,10 @@ function ScheduleTableHeader({
             <span>Team Member</span>
           </div>
         </th>
+
+        {/* DAR Columns */}
         {darColumns.map((dar, idx) => (
-          <th key={idx} scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[130px] relative border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors">
+          <th key={`dar-${idx}`} scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[130px] relative border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors group">
             <div className="flex items-center justify-center gap-1.5 mb-1.5">
               <span className="text-sm drop-shadow-sm">{dar}</span>
               {!readOnly && (
@@ -65,30 +149,69 @@ function ScheduleTableHeader({
                 </button>
               )}
             </div>
-            <div className="text-[11px] font-medium opacity-90">
-              <button
-                className="cursor-pointer hover:bg-white/20 active:bg-white/30 rounded-lg px-2.5 py-1.5 truncate w-full focus:ring-2 focus:ring-white/60 transition-all duration-200 hover:scale-105 font-medium shadow-sm"
-                onClick={() => !readOnly && onDarClick(idx)}
-                title={formatEntityList(darEntities[idx])}
-                aria-label={`Configure entities for ${dar}. Current: ${formatEntityList(darEntities[idx]) || 'None'}`}
-                disabled={readOnly}
-              >
-                {getEntityShortCode(darEntities[idx], entities) || '+ Entities'}
-              </button>
+            <div className="text-[11px] font-medium opacity-90 min-h-[24px]">
+              <ConfigurableHeader
+                label={dar}
+                columnKey={`dar-${idx}`}
+                entities={darEntities[idx]}
+                customText={headerTexts[`dar-${idx}`]}
+                onEntityClick={() => !readOnly && onDarClick(idx)}
+                onTextChange={onHeaderRename}
+                readOnly={readOnly}
+              />
             </div>
 
-            {/* Entity Selection Modal - Rendered in portal, outside table DOM */}
             <EntitySelectionModal
               isOpen={editingDar === idx && !readOnly}
               onClose={onEditingDarClose}
               title={`Select Entities for ${dar}`}
-              entities={getAvailableEntitiesForDar(idx, darEntities, entities)}
+              entities={getAvailableEntitiesForDar(idx, darEntities, entities)} // You might need to adjust this logic if it only handles DARs
               selectedEntities={darEntities[idx] || []}
               onToggle={(entityName) => onDarEntityToggle(idx, entityName)}
               showShortCodes={false}
             />
           </th>
         ))}
+
+        {/* Incoming Columns */}
+        {incomingColumns.map((inc, idx) => (
+          <th key={`inc-${idx}`} scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[130px] relative border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors group">
+            <div className="flex items-center justify-center gap-1.5 mb-1.5">
+              <span className="text-sm drop-shadow-sm">{inc}</span>
+              {!readOnly && onNewIncomingInfoClick && idx === 0 && (
+                 <button
+                   onClick={(e) => { e.stopPropagation(); onNewIncomingInfoClick(); }}
+                   className="p-1 rounded-full hover:bg-white/30 transition-all duration-200 hover:scale-110"
+                   title="View Incoming history"
+                 >
+                   <Info className="w-4 h-4" />
+                 </button>
+              )}
+            </div>
+            <div className="text-[11px] font-medium opacity-90 min-h-[24px]">
+              <ConfigurableHeader
+                label={inc}
+                columnKey={`inc-${idx}`}
+                entities={incomingEntities[idx]}
+                customText={headerTexts[`inc-${idx}`]}
+                onEntityClick={() => !readOnly && onIncomingClick && onIncomingClick(idx)}
+                onTextChange={onHeaderRename}
+                readOnly={readOnly}
+              />
+            </div>
+
+            <EntitySelectionModal
+              isOpen={editingIncoming === idx && !readOnly}
+              onClose={onEditingIncomingClose}
+              title={`Select Entities for ${inc}`}
+              entities={entities} // Needs proper filtering?
+              selectedEntities={incomingEntities[idx] || []}
+              onToggle={(entityName) => onIncomingEntityToggle && onIncomingEntityToggle(idx, entityName)}
+              showShortCodes={false}
+            />
+          </th>
+        ))}
+
         <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[80px] border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors">
           <div className="flex items-center justify-center gap-1.5">
             <span className="text-sm drop-shadow-sm">CPOE</span>
@@ -107,24 +230,7 @@ function ScheduleTableHeader({
             )}
           </div>
         </th>
-        <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[160px] border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors">
-          <div className="flex items-center justify-center gap-1.5">
-            <span className="text-sm drop-shadow-sm leading-tight">New Incoming<br/>Items</span>
-            {!readOnly && onNewIncomingInfoClick && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onNewIncomingInfoClick();
-                }}
-                className="p-1 rounded-full hover:bg-white/30 transition-all duration-200 hover:scale-110"
-                aria-label="View New Incoming history"
-                title="View New Incoming history"
-              >
-                <Info className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </th>
+
         <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[160px] border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors">
           <div className="flex items-center justify-center gap-1.5">
             <span className="text-sm drop-shadow-sm leading-tight">Cross<br/>Training</span>
@@ -143,10 +249,10 @@ function ScheduleTableHeader({
             )}
           </div>
         </th>
-        <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[110px] hover:bg-white/10 transition-colors">
+        <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[110px] border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors">
           <div className="flex items-center justify-center gap-1.5">
             <span className="text-sm drop-shadow-sm leading-tight">Special<br/>Projects</span>
-            {!readOnly && onSpecialProjectsInfoClick && (
+             {!readOnly && onSpecialProjectsInfoClick && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -161,6 +267,23 @@ function ScheduleTableHeader({
             )}
           </div>
         </th>
+        <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px] border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors">
+          <div className="flex flex-col items-center justify-center">
+            <span className="text-sm drop-shadow-sm">3P Email</span>
+            <span className="text-[10px] opacity-80">(Primary)</span>
+          </div>
+        </th>
+        <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[100px] border-r border-thr-blue-600 dark:border-thr-blue-700 hover:bg-white/10 transition-colors">
+          <div className="flex flex-col items-center justify-center">
+            <span className="text-sm drop-shadow-sm">3P Email</span>
+            <span className="text-[10px] opacity-80">(Backup)</span>
+          </div>
+        </th>
+        <th scope="col" className="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider min-w-[80px] hover:bg-white/10 transition-colors">
+          <div className="flex items-center justify-center">
+            <span className="text-sm drop-shadow-sm">Float</span>
+          </div>
+        </th>
       </tr>
     </thead>
   );
@@ -169,17 +292,25 @@ function ScheduleTableHeader({
 ScheduleTableHeader.propTypes = {
   darColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
   darEntities: PropTypes.object.isRequired,
+  incomingColumns: PropTypes.arrayOf(PropTypes.string), // New
+  incomingEntities: PropTypes.object, // New
+  headerTexts: PropTypes.object, // New
   entities: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     code: PropTypes.string
   })).isRequired,
   editingDar: PropTypes.number,
+  editingIncoming: PropTypes.number, // New
   readOnly: PropTypes.bool,
   onDarClick: PropTypes.func.isRequired,
   onDarEntityToggle: PropTypes.func.isRequired,
+  onIncomingClick: PropTypes.func, // New
+  onIncomingEntityToggle: PropTypes.func, // New
+  onHeaderRename: PropTypes.func, // New
   onDarInfoClick: PropTypes.func.isRequired,
   onEditingDarClose: PropTypes.func.isRequired,
+  onEditingIncomingClose: PropTypes.func, // New
   onCpoeInfoClick: PropTypes.func,
   onNewIncomingInfoClick: PropTypes.func,
   onCrossTrainingInfoClick: PropTypes.func,

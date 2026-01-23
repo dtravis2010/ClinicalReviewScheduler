@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 // Simple password for supervisor login
-const SUPERVISOR_PASSWORD = '123456';
+const SUPERVISOR_PASSWORD = '1234';
 
 export function useAuth() {
   return useContext(AuthContext);
