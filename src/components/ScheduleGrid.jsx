@@ -763,7 +763,7 @@ export default function ScheduleGrid({
                           isAssigned ? (
                             <div className="flex items-center justify-center">
                               <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
-                                <span className="text-white text-xs font-bold">✓</span>
+                                <span className="text-white text-xs font-bold">X</span>
                               </div>
                             </div>
                           ) : (
@@ -783,6 +783,8 @@ export default function ScheduleGrid({
                     const isAssigned = assignment.incoming?.includes(incIdx);
                     const entityNames = incomingEntities[incIdx];
                     const entityDisplay = Array.isArray(entityNames) ? entityNames.join(', ') : (entityNames || '');
+                    // Use the helper to get short codes for display
+                    const shortCodes = getEntityShortCode(entityNames, entities);
 
                     return (
                        <td
@@ -797,9 +799,9 @@ export default function ScheduleGrid({
                       >
                         {isAssigned ? (
                            <div className="flex items-center justify-center">
-                              <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
+                              <span className="text-thr-green-700 dark:text-thr-green-300 text-xs font-bold px-1 py-0.5 bg-white/50 dark:bg-black/20 rounded">
+                                {shortCodes || 'Incoming'}
+                              </span>
                             </div>
                         ) : (
                            <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
@@ -827,7 +829,7 @@ export default function ScheduleGrid({
                       assignment.cpoe ? (
                         <div className="flex items-center justify-center">
                           <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
-                            <span className="text-white text-xs font-bold">✓</span>
+                            <span className="text-white text-xs font-bold">X</span>
                           </div>
                         </div>
                       ) : (

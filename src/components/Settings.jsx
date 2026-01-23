@@ -36,6 +36,7 @@ export default function Settings({ employees = [], onUpdate }) {
 
   async function loadDarConfig() {
     try {
+      if (!db) throw new Error('No DB');
       const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
       if (configDoc.exists()) {
         const data = configDoc.data();
@@ -43,12 +44,16 @@ export default function Settings({ employees = [], onUpdate }) {
         setDarCount(data.darCount || 5);
       }
     } catch (error) {
-      logger.error('Error loading DAR config:', error);
+      console.warn('Using local DAR config (DB unavailable)');
+      const local = JSON.parse(sessionStorage.getItem('demo_darConfig') || '{}');
+      setDarConfig(local.config || {});
+      setDarCount(local.darCount || 5);
     }
   }
 
   async function loadIncomingConfig() {
     try {
+      if (!db) throw new Error('No DB');
       const configDoc = await getDoc(doc(db, 'settings', 'incomingConfig'));
       if (configDoc.exists()) {
         const data = configDoc.data();
@@ -56,12 +61,16 @@ export default function Settings({ employees = [], onUpdate }) {
         setIncomingCount(data.incomingCount || 1);
       }
     } catch (error) {
-      logger.error('Error loading Incoming config:', error);
+      console.warn('Using local Incoming config (DB unavailable)');
+      const local = JSON.parse(sessionStorage.getItem('demo_incomingConfig') || '{}');
+      setIncomingConfig(local.config || {});
+      setIncomingCount(local.incomingCount || 1);
     }
   }
 
   async function loadEntities() {
     try {
+      if (!db) throw new Error('No DB');
       const entitiesRef = collection(db, 'entities');
       const snapshot = await getDocs(entitiesRef);
       const entitiesList = snapshot.docs.map(doc => ({
@@ -70,7 +79,9 @@ export default function Settings({ employees = [], onUpdate }) {
       }));
       setEntities(entitiesList);
     } catch (error) {
-      logger.error('Error loading entities:', error);
+      console.warn('Using local entities (DB unavailable)');
+      const local = JSON.parse(sessionStorage.getItem('demo_entities') || '[]');
+      setEntities(local);
     }
   }
 
@@ -100,18 +111,33 @@ export default function Settings({ employees = [], onUpdate }) {
 
   async function saveSettings() {
     try {
-      await Promise.all([
-        setDoc(doc(db, 'settings', 'darConfig'), {
-          config: darConfig,
-          darCount: darCount,
-          updatedAt: new Date()
-        }),
-        setDoc(doc(db, 'settings', 'incomingConfig'), {
-          config: incomingConfig,
-          incomingCount: incomingCount,
-          updatedAt: new Date()
-        })
-      ]);
+        try {
+            if (!db) throw new Error('No DB');
+            await Promise.all([
+                setDoc(doc(db, 'settings', 'darConfig'), {
+                config: darConfig,
+                darCount: darCount,
+                updatedAt: new Date()
+                }),
+                setDoc(doc(db, 'settings', 'incomingConfig'), {
+                config: incomingConfig,
+                incomingCount: incomingCount,
+                updatedAt: new Date()
+                })
+            ]);
+        } catch (dbError) {
+             console.warn('Saving settings locally (DB unavailable)');
+             sessionStorage.setItem('demo_darConfig', JSON.stringify({
+                 config: darConfig,
+                 darCount: darCount,
+                 updatedAt: new Date()
+             }));
+             sessionStorage.setItem('demo_incomingConfig', JSON.stringify({
+                 config: incomingConfig,
+                 incomingCount: incomingCount,
+                 updatedAt: new Date()
+             }));
+        }
       setHasChanges(false);
       alert('Settings saved successfully!');
       if (onUpdate) onUpdate();
@@ -306,7 +332,13 @@ export default function Settings({ employees = [], onUpdate }) {
             </p>
           </div>
         </div>
-        <EntityManagement entities={entities} onUpdate={loadEntities} />
+        <EntityManagement
+          entities={entities}
+          onUpdate={() => {
+            loadEntities();
+            if (onUpdate) onUpdate();
+          }}
+        />
       </div>
 
       {/* Productivity Import */}

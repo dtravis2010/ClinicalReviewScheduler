@@ -43,6 +43,7 @@ export function useScheduleForm(schedule, resetAssignments) {
 
   async function loadDefaultConfigs() {
     try {
+      if (!db) throw new Error('No DB');
       const [darDoc, incDoc] = await Promise.all([
         getDoc(doc(db, 'settings', 'darConfig')),
         getDoc(doc(db, 'settings', 'incomingConfig'))
@@ -60,7 +61,18 @@ export function useScheduleForm(schedule, resetAssignments) {
         setIncomingCount(data.incomingCount || 1);
       }
     } catch (error) {
-      logger.error('Error loading configs:', error);
+      console.warn('Using local configs (DB unavailable)');
+      const darLocal = JSON.parse(sessionStorage.getItem('demo_darConfig') || '{}');
+      if (darLocal.config) {
+         setDarEntities(darLocal.config);
+         setDarCount(darLocal.darCount || 5);
+      }
+
+      const incLocal = JSON.parse(sessionStorage.getItem('demo_incomingConfig') || '{}');
+      if (incLocal.config) {
+         setIncomingEntities(incLocal.config);
+         setIncomingCount(incLocal.incomingCount || 1);
+      }
     }
   }
 
