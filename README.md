@@ -151,6 +151,12 @@ Open your browser and go to: `http://localhost:5173/ClinicalReviewScheduler/`
    - Example: "Texas Health Dallas"
    - etc.
 
+**Demo / Offline Mode:**
+- If Firebase configuration is missing or the database is unreachable, the application automatically enters "Demo Mode".
+- In this mode, data is saved to your browser's session storage.
+- You can create entities, employees, and schedules to test the UI functionality.
+- **Note:** Data will be lost when you close the browser tab.
+
 **Add Employees:**
 
 1. Go to "Employee Management" tab

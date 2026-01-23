@@ -18,6 +18,9 @@ export function useScheduleForm(schedule, resetAssignments) {
   const [endDate, setEndDate] = useState('');
   const [darEntities, setDarEntities] = useState({});
   const [darCount, setDarCount] = useState(5);
+  const [incomingEntities, setIncomingEntities] = useState({});
+  const [incomingCount, setIncomingCount] = useState(1);
+  const [headerTexts, setHeaderTexts] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
 
   // Initialize form from schedule or load defaults
@@ -29,22 +32,35 @@ export function useScheduleForm(schedule, resetAssignments) {
       setEndDate(schedule.endDate || '');
       setDarEntities(schedule.darEntities || {});
       setDarCount(schedule.darCount || 5);
+      setIncomingEntities(schedule.incomingEntities || {});
+      setIncomingCount(schedule.incomingCount || 1);
+      setHeaderTexts(schedule.headerTexts || {});
       setHasChanges(false);
     } else {
-      loadDefaultDarConfig();
+      loadDefaultConfigs();
     }
   }, [schedule, resetAssignments]);
 
-  async function loadDefaultDarConfig() {
+  async function loadDefaultConfigs() {
     try {
-      const configDoc = await getDoc(doc(db, 'settings', 'darConfig'));
-      if (configDoc.exists()) {
-        const data = configDoc.data();
+      const [darDoc, incDoc] = await Promise.all([
+        getDoc(doc(db, 'settings', 'darConfig')),
+        getDoc(doc(db, 'settings', 'incomingConfig'))
+      ]);
+
+      if (darDoc.exists()) {
+        const data = darDoc.data();
         setDarEntities(data.config || {});
         setDarCount(data.darCount || 5);
       }
+
+      if (incDoc.exists()) {
+        const data = incDoc.data();
+        setIncomingEntities(data.config || {});
+        setIncomingCount(data.incomingCount || 1);
+      }
     } catch (error) {
-      logger.error('Error loading DAR config:', error);
+      logger.error('Error loading configs:', error);
     }
   }
 
@@ -79,6 +95,18 @@ export function useScheduleForm(schedule, resetAssignments) {
     setHasChanges(true);
   }, []);
 
+  const updateIncomingCount = useCallback((newCount) => {
+    // Limit between 1 and 5 Incoming
+    const count = Math.max(1, Math.min(5, newCount));
+    setIncomingCount(count);
+    setHasChanges(true);
+  }, []);
+
+  const setHeaderText = useCallback((key, text) => {
+    setHeaderTexts(prev => ({ ...prev, [key]: text }));
+    setHasChanges(true);
+  }, []);
+
   const handleDarEntityToggle = useCallback((darIndex, entityName) => {
     setDarEntities(prev => {
       const current = prev[darIndex] || [];
@@ -90,6 +118,22 @@ export function useScheduleForm(schedule, resetAssignments) {
       return {
         ...prev,
         [darIndex]: newArray
+      };
+    });
+    setHasChanges(true);
+  }, []);
+
+  const handleIncomingEntityToggle = useCallback((index, entityName) => {
+    setIncomingEntities(prev => {
+      const current = prev[index] || [];
+      const currentArray = Array.isArray(current) ? current : (current ? [current] : []);
+      const newArray = currentArray.includes(entityName)
+        ? currentArray.filter(e => e !== entityName)
+        : [...currentArray, entityName];
+
+      return {
+        ...prev,
+        [index]: newArray
       };
     });
     setHasChanges(true);
@@ -109,14 +153,23 @@ export function useScheduleForm(schedule, resetAssignments) {
     [darCount]
   );
 
+  // Generate Incoming columns dynamically based on count
+  const incomingColumns = useMemo(() =>
+    Array.from({ length: incomingCount }, (_, i) => `Incoming ${i + 1}`),
+    [incomingCount]
+  );
+
   // Aggregated schedule data for saving
   const scheduleData = useMemo(() => ({
     name: scheduleName,
     startDate,
     endDate,
     darEntities,
-    darCount
-  }), [scheduleName, startDate, endDate, darEntities, darCount]);
+    darCount,
+    incomingEntities,
+    incomingCount,
+    headerTexts
+  }), [scheduleName, startDate, endDate, darEntities, darCount, incomingEntities, incomingCount, headerTexts]);
 
   return {
     // State values
@@ -126,6 +179,10 @@ export function useScheduleForm(schedule, resetAssignments) {
     darEntities,
     darCount,
     darColumns,
+    incomingEntities,
+    incomingCount,
+    incomingColumns,
+    headerTexts,
     hasChanges,
     scheduleData,
     
@@ -135,9 +192,12 @@ export function useScheduleForm(schedule, resetAssignments) {
     setEndDate: updateEndDate,
     setDarEntities: updateDarEntities,
     setDarCount: updateDarCount,
+    setIncomingCount: updateIncomingCount,
+    setHeaderText,
     
     // Handlers
     handleDarEntityToggle,
+    handleIncomingEntityToggle,
     markClean,
     markDirty,
   };

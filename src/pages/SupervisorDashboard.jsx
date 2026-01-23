@@ -55,7 +55,9 @@ export default function SupervisorDashboard() {
   const [schedules, setSchedules] = useState([]);
   const [currentSchedule, setCurrentSchedule] = useState(null);
   const [defaultDarConfig, setDefaultDarConfig] = useState({});
-  const [defaultDarCount, setDefaultDarCount] = useState(5); // Default to 5 DARs
+  const [defaultDarCount, setDefaultDarCount] = useState(5);
+  const [defaultIncomingConfig, setDefaultIncomingConfig] = useState({});
+  const [defaultIncomingCount, setDefaultIncomingCount] = useState(1);
   const [loading, setLoading] = useState(true);
   const [creatingSchedule, setCreatingSchedule] = useState(false);
   const scheduleStatus = currentSchedule?.status || 'draft';
@@ -70,13 +72,16 @@ export default function SupervisorDashboard() {
 
   async function loadData() {
     try {
-      const darConfigData = await loadDarConfig();
+      const [darConfigData, incomingConfigData] = await Promise.all([
+        loadDarConfig(),
+        loadIncomingConfig()
+      ]);
 
       // Use Promise.allSettled to allow partial data loading if one fails
       const results = await Promise.allSettled([
         loadEmployees(),
         loadEntities(),
-        loadSchedules(darConfigData.config)
+        loadSchedules(darConfigData.config, incomingConfigData.config)
       ]);
 
       // Log any failures but continue with successfully loaded data
@@ -96,25 +101,39 @@ export default function SupervisorDashboard() {
   }
 
   async function loadEmployees() {
-    const employeesRef = collection(db, 'employees');
-    const q = query(employeesRef, orderBy('name'));
-    const snapshot = await getDocs(q);
-    const employeesList = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    setEmployees(employeesList);
+    try {
+      if (!db) throw new Error('No DB');
+      const employeesRef = collection(db, 'employees');
+      const q = query(employeesRef, orderBy('name'));
+      const snapshot = await getDocs(q);
+      const employeesList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setEmployees(employeesList);
+    } catch (e) {
+      console.warn('Using local employees (DB unavailable)');
+      const local = JSON.parse(sessionStorage.getItem('demo_employees') || '[]');
+      setEmployees(local);
+    }
   }
 
   async function loadEntities() {
-    const entitiesRef = collection(db, 'entities');
-    const q = query(entitiesRef, orderBy('name'));
-    const snapshot = await getDocs(q);
-    const entitiesList = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    setEntities(entitiesList);
+    try {
+      if (!db) throw new Error('No DB');
+      const entitiesRef = collection(db, 'entities');
+      const q = query(entitiesRef, orderBy('name'));
+      const snapshot = await getDocs(q);
+      const entitiesList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setEntities(entitiesList);
+    } catch (e) {
+      console.warn('Using local entities (DB unavailable)');
+      const local = JSON.parse(sessionStorage.getItem('demo_entities') || '[]');
+      setEntities(local);
+    }
   }
 
   async function loadDarConfig() {
@@ -135,25 +154,59 @@ export default function SupervisorDashboard() {
     }
   }
 
-  async function loadSchedules(darConfig = defaultDarConfig) {
-    const schedulesRef = collection(db, 'schedules');
-    const q = query(schedulesRef, orderBy('createdAt', 'desc'), limit(50)); // Limit to 50 most recent schedules
-    const snapshot = await getDocs(q);
-    const schedulesList = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        status: data.status || 'draft',
-        darEntities: data.darEntities || darConfig,
-        ...data
-      };
-    });
-    setSchedules(schedulesList);
+  async function loadIncomingConfig() {
+    try {
+      const configDoc = await getDoc(doc(db, 'settings', 'incomingConfig'));
+      if (configDoc.exists()) {
+        const data = configDoc.data();
+        const config = data.config || {};
+        const incomingCount = data.incomingCount || 1;
+        setDefaultIncomingConfig(config);
+        setDefaultIncomingCount(incomingCount);
+        return { config, incomingCount };
+      }
+      return { config: {}, incomingCount: 1 };
+    } catch (error) {
+      logger.error('Error loading Incoming defaults:', error);
+      return { config: {}, incomingCount: 1 };
+    }
+  }
 
-    // Prefer the most recent draft, otherwise show the latest schedule
-    const draftSchedule = schedulesList.find(s => s.status === 'draft');
-    const latestSchedule = schedulesList[0] || null;
-    setCurrentSchedule(draftSchedule || latestSchedule);
+  async function loadSchedules(darConfig = defaultDarConfig, incomingConfig = defaultIncomingConfig) {
+    try {
+      if (!db) throw new Error('No DB');
+      const schedulesRef = collection(db, 'schedules');
+      const q = query(schedulesRef, orderBy('createdAt', 'desc'), limit(50)); // Limit to 50 most recent schedules
+      const snapshot = await getDocs(q);
+      const schedulesList = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          status: data.status || 'draft',
+          darEntities: data.darEntities || darConfig,
+          incomingEntities: data.incomingEntities || incomingConfig,
+          ...data
+        };
+      });
+      setSchedules(schedulesList);
+
+      // Prefer the most recent draft, otherwise show the latest schedule
+      const draftSchedule = schedulesList.find(s => s.status === 'draft');
+      const latestSchedule = schedulesList[0] || null;
+      setCurrentSchedule(draftSchedule || latestSchedule);
+    } catch (e) {
+      console.warn('Using local schedules (DB unavailable)');
+      const local = JSON.parse(sessionStorage.getItem('demo_schedules') || '[]');
+      const schedulesList = local.map(s => ({
+         ...s,
+         darEntities: s.darEntities || darConfig,
+         incomingEntities: s.incomingEntities || incomingConfig
+      }));
+      setSchedules(schedulesList);
+      const draftSchedule = schedulesList.find(s => s.status === 'draft');
+      const latestSchedule = schedulesList[0] || null;
+      setCurrentSchedule(draftSchedule || latestSchedule);
+    }
   }
 
   async function createNewSchedule() {
@@ -172,11 +225,18 @@ export default function SupervisorDashboard() {
     try {
       let darConfig = defaultDarConfig;
       let darCount = defaultDarCount;
+      let incomingConfig = defaultIncomingConfig;
+      let incomingCount = defaultIncomingCount;
       
       if (!Object.keys(defaultDarConfig || {}).length) {
         const configData = await loadDarConfig();
         darConfig = configData.config;
         darCount = configData.darCount;
+      }
+      if (!Object.keys(defaultIncomingConfig || {}).length) {
+        const configData = await loadIncomingConfig();
+        incomingConfig = configData.config;
+        incomingCount = configData.incomingCount;
       }
 
       const newSchedule = {
@@ -187,28 +247,43 @@ export default function SupervisorDashboard() {
         assignments: {},
         darEntities: darConfig,
         darCount: darCount,
+        incomingEntities: incomingConfig,
+        incomingCount: incomingCount,
+        headerTexts: {},
         version: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
 
-      const docRef = await addDoc(collection(db, 'schedules'), newSchedule);
-      const created = { id: docRef.id, ...newSchedule };
+      let created;
+      try {
+          const docRef = await addDoc(collection(db, 'schedules'), newSchedule);
+          created = { id: docRef.id, ...newSchedule };
+
+          // Log audit trail
+          await AuditService.log({
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            action: 'schedule.create',
+            resourceType: 'schedule',
+            resourceId: docRef.id,
+            metadata: {
+              scheduleName: newSchedule.name,
+              darCount: newSchedule.darCount
+            }
+          });
+      } catch (dbError) {
+          console.warn('DB create failed, using local fallback', dbError);
+          // Fallback to local
+          created = { id: 'local_' + Date.now(), ...newSchedule };
+          const currentLocal = JSON.parse(sessionStorage.getItem('demo_schedules') || '[]');
+          sessionStorage.setItem('demo_schedules', JSON.stringify([created, ...currentLocal]));
+          showSuccess('Schedule created locally (Demo Mode)');
+      }
+
       setCurrentSchedule(created);
       setSchedules((prev) => [created, ...prev]);
 
-      // Log audit trail
-      await AuditService.log({
-        userId: currentUser.uid,
-        userEmail: currentUser.email,
-        action: 'schedule.create',
-        resourceType: 'schedule',
-        resourceId: docRef.id,
-        metadata: {
-          scheduleName: newSchedule.name,
-          darCount: newSchedule.darCount
-        }
-      });
     } catch (error) {
       logger.error('Error creating schedule:', error);
       showError('Failed to create new schedule');

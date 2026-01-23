@@ -7,12 +7,14 @@ import EntityManagement from './EntityManagement';
 import ProductivityImport from './ProductivityImport';
 import ProductivityUpload from './ProductivityUpload';
 import ProductivityViewer from './ProductivityViewer';
-import DarEntityConfig from './DarEntityConfig';
+import ColumnEntityConfig from './ColumnEntityConfig';
 import UserPreferencesPanel from './UserPreferencesPanel';
 
 export default function Settings({ employees = [], onUpdate }) {
   const [darConfig, setDarConfig] = useState({});
   const [darCount, setDarCount] = useState(5); // Default to 5 DARs
+  const [incomingConfig, setIncomingConfig] = useState({});
+  const [incomingCount, setIncomingCount] = useState(1); // Default to 1 Incoming
   const [entities, setEntities] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ export default function Settings({ employees = [], onUpdate }) {
 
   async function loadData() {
     try {
-      await Promise.all([loadDarConfig(), loadEntities()]);
+      await Promise.all([loadDarConfig(), loadIncomingConfig(), loadEntities()]);
     } catch (error) {
       logger.error('Error loading settings:', error);
     } finally {
@@ -38,10 +40,23 @@ export default function Settings({ employees = [], onUpdate }) {
       if (configDoc.exists()) {
         const data = configDoc.data();
         setDarConfig(data.config || {});
-        setDarCount(data.darCount || 5); // Default to 5 if not set
+        setDarCount(data.darCount || 5);
       }
     } catch (error) {
       logger.error('Error loading DAR config:', error);
+    }
+  }
+
+  async function loadIncomingConfig() {
+    try {
+      const configDoc = await getDoc(doc(db, 'settings', 'incomingConfig'));
+      if (configDoc.exists()) {
+        const data = configDoc.data();
+        setIncomingConfig(data.config || {});
+        setIncomingCount(data.incomingCount || 1);
+      }
+    } catch (error) {
+      logger.error('Error loading Incoming config:', error);
     }
   }
 
@@ -59,35 +74,50 @@ export default function Settings({ employees = [], onUpdate }) {
     }
   }
 
-  // Handle DAR config change - accepts array of entity names
+  // Handle DAR config change
   const handleDarConfigChange = useCallback((darIndex, entityNames) => {
-    setDarConfig(prev => ({
-      ...prev,
-      [darIndex]: entityNames
-    }));
+    setDarConfig(prev => ({ ...prev, [darIndex]: entityNames }));
+    setHasChanges(true);
+  }, []);
+
+  // Handle Incoming config change
+  const handleIncomingConfigChange = useCallback((index, entityNames) => {
+    setIncomingConfig(prev => ({ ...prev, [index]: entityNames }));
     setHasChanges(true);
   }, []);
 
   function handleDarCountChange(newCount) {
-    // Limit between 3 and 8 DARs
     const count = Math.max(3, Math.min(8, newCount));
     setDarCount(count);
     setHasChanges(true);
   }
 
-  async function saveDarConfig() {
+  function handleIncomingCountChange(newCount) {
+    const count = Math.max(1, Math.min(5, newCount));
+    setIncomingCount(count);
+    setHasChanges(true);
+  }
+
+  async function saveSettings() {
     try {
-      await setDoc(doc(db, 'settings', 'darConfig'), {
-        config: darConfig,
-        darCount: darCount,
-        updatedAt: new Date()
-      });
+      await Promise.all([
+        setDoc(doc(db, 'settings', 'darConfig'), {
+          config: darConfig,
+          darCount: darCount,
+          updatedAt: new Date()
+        }),
+        setDoc(doc(db, 'settings', 'incomingConfig'), {
+          config: incomingConfig,
+          incomingCount: incomingCount,
+          updatedAt: new Date()
+        })
+      ]);
       setHasChanges(false);
-      alert('DAR configuration saved successfully!');
+      alert('Settings saved successfully!');
       if (onUpdate) onUpdate();
     } catch (error) {
-      logger.error('Error saving DAR config:', error);
-      alert('Failed to save DAR configuration');
+      logger.error('Error saving settings:', error);
+      alert('Failed to save settings');
     }
   }
 
@@ -177,31 +207,85 @@ export default function Settings({ employees = [], onUpdate }) {
 
         {/* Entity-based DAR Configuration */}
         <div className="mt-6">
-          <DarEntityConfig
-            darCount={darCount}
-            darConfig={darConfig}
+          <ColumnEntityConfig
+            columnCount={darCount}
+            columnConfig={darConfig}
             entities={entities}
             onConfigChange={handleDarConfigChange}
+            labelPrefix="DAR"
           />
         </div>
+      </div>
 
-        <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
-          <div>
-            {hasChanges && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
-                Unsaved changes
-              </span>
-            )}
+      {/* Incoming Configuration */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-thr-blue-500/10 to-thr-blue-500/5 flex items-center justify-center">
+              <SettingsIcon className="w-5 h-5 text-thr-blue-500" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Default Incoming Entity Assignments
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Set default entity codes for each Incoming column.
+              </p>
+            </div>
           </div>
-          <button
-            onClick={saveDarConfig}
-            disabled={!hasChanges}
-            className={`btn-primary flex items-center gap-2 ${!hasChanges ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <Save className="w-4 h-4" />
-            Save DAR Configuration
-          </button>
+
+          {/* Incoming Count Controls */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-600 dark:text-slate-400 mr-2">Incoming Columns:</span>
+            <button
+              onClick={() => handleIncomingCountChange(incomingCount - 1)}
+              disabled={incomingCount <= 1}
+              className={`p-2 rounded-lg border transition-colors ${
+                incomingCount <= 1
+                  ? 'border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                  : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+            <span className="w-8 text-center font-semibold text-slate-900 dark:text-slate-100">{incomingCount}</span>
+            <button
+              onClick={() => handleIncomingCountChange(incomingCount + 1)}
+              disabled={incomingCount >= 5}
+              className={`p-2 rounded-lg border transition-colors ${
+                incomingCount >= 5
+                  ? 'border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                  : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+
+        {/* Entity-based Incoming Configuration */}
+        <div className="mt-6">
+          <ColumnEntityConfig
+            columnCount={incomingCount}
+            columnConfig={incomingConfig}
+            entities={entities}
+            onConfigChange={handleIncomingConfigChange}
+            labelPrefix="Incoming"
+          />
+        </div>
+      </div>
+
+      {/* Save Bar */}
+      <div className="fixed bottom-6 right-6 z-50">
+         {hasChanges && (
+            <button
+              onClick={saveSettings}
+              className="px-6 py-3 bg-thr-blue-500 hover:bg-thr-blue-600 text-white rounded-2xl font-semibold text-sm shadow-soft-lg hover:shadow-glow flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-slate-900 transform hover:-translate-y-0.5 transition-all duration-200"
+            >
+              <Save className="w-5 h-5" />
+              Save Settings
+            </button>
+         )}
       </div>
 
       {/* Entity Management */}
