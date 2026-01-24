@@ -55,7 +55,7 @@ const ConfigurableHeader = ({
   return (
     <div className="flex items-center justify-center gap-1 w-full">
       <button
-        className="cursor-pointer hover:bg-white/20 active:bg-white/30 rounded-lg px-2.5 py-1.5 truncate max-w-[120px] focus:ring-2 focus:ring-white/60 transition-all duration-200 hover:scale-105 font-medium shadow-sm"
+        className="cursor-pointer hover:bg-white/30 active:bg-white/40 rounded-lg px-3 py-1.5 truncate max-w-[140px] focus:ring-2 focus:ring-white/60 transition-all duration-200 hover:scale-105 font-bold text-sm shadow-sm"
         onClick={onEntityClick}
         title={formatEntityList(entities)}
         disabled={readOnly}
@@ -69,7 +69,7 @@ const ConfigurableHeader = ({
             setText(customText || getEntityShortCode(entities, []) || '');
             setIsEditing(true);
           }}
-          className="opacity-0 group-hover:opacity-50 hover:opacity-100 p-1"
+          className="opacity-0 group-hover:opacity-60 hover:opacity-100 p-1"
           title="Edit header text"
         >
           <Edit2 className="w-3 h-3" />
@@ -188,7 +188,7 @@ function ScheduleTableHeader({
                  </button>
               )}
             </div>
-            <div className="text-[11px] font-medium opacity-90 min-h-[24px]">
+            <div className="text-xs font-bold opacity-95 min-h-[24px] bg-white/10 rounded-md px-2 py-1">
               <ConfigurableHeader
                 label={inc}
                 columnKey={`inc-${idx}`}

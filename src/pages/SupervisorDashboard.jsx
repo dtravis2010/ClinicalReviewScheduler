@@ -511,38 +511,38 @@ export default function SupervisorDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
+      {/* Header - Simplified */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Calendar className="w-8 h-8 text-thr-blue-500 dark:text-thr-blue-400" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                   Supervisor Dashboard
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Clinical Review Scheduling
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <ThemeToggle />
               <button
                 onClick={() => navigate('/schedule')}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors dark:text-gray-200 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-800"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors dark:text-gray-200"
                 aria-label="View public schedule"
               >
                 <Eye className="w-4 h-4" aria-hidden="true" />
-                <span className="text-sm font-medium">View Public Schedule</span>
+                <span className="hidden sm:inline">Public View</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
                 aria-label="Logout"
               >
                 <LogOut className="w-4 h-4" aria-hidden="true" />
-                <span className="text-sm font-medium">Logout</span>
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
@@ -626,8 +626,8 @@ export default function SupervisorDashboard() {
         {activeTab === 'overview' && (
           <div id="overview-panel" role="tabpanel" aria-labelledby="overview-tab">
             <div className="space-y-6">
-              {/* Core Stats Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Core Stats Row - Simplified */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard
                   title="Active Employees"
                   value={employees.filter(emp => !emp.archived).length}
@@ -649,20 +649,13 @@ export default function SupervisorDashboard() {
                   color={currentSchedule?.status === 'published' ? 'green' : 'orange'}
                   description={currentSchedule ? currentSchedule.name : 'No active schedule'}
                 />
-                <StatCard
-                  title="Total Assignments"
-                  value={currentSchedule ? Object.keys(currentSchedule.assignments || {}).length : 0}
-                  icon={Activity}
-                  color="purple"
-                  description="In current schedule"
-                />
               </div>
 
-              {/* Schedule Health Row */}
+              {/* Schedule Health Row - Only show when schedule exists */}
               {currentSchedule && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <StatCard
-                    title="Conflicts"
+                    title="Schedule Conflicts"
                     value={(() => {
                       const conflicts = detectConflicts(
                         currentSchedule.assignments || {},
@@ -690,86 +683,43 @@ export default function SupervisorDashboard() {
                     })()}
                   />
                   <StatCard
-                    title="Coverage Rate"
-                    value={(() => {
-                      const assignments = currentSchedule.assignments || {};
-                      const assignedEntities = new Set();
-                      Object.values(assignments).forEach(assignment => {
-                        if (assignment.dars) assignment.dars.forEach(e => assignedEntities.add(e));
-                        if (assignment.newIncoming) assignment.newIncoming.forEach(e => assignedEntities.add(e));
-                        if (assignment.crossTraining) assignment.crossTraining.forEach(e => assignedEntities.add(e));
-                      });
-                      return entities.length > 0 ? `${Math.round((assignedEntities.size / entities.length) * 100)}%` : '0%';
-                    })()}
-                    icon={TrendingUp}
-                    color="purple"
-                    description="Entities with assignments"
-                  />
-                  <StatCard
-                    title="Avg Workload"
-                    value={(() => {
-                      const assignments = currentSchedule.assignments || {};
-                      const employeesWithWork = Object.keys(assignments).length;
-                      if (employeesWithWork === 0) return '0';
-                      let totalWork = 0;
-                      Object.values(assignments).forEach(assignment => {
-                        if (assignment.dars) totalWork += assignment.dars.length;
-                        if (assignment.newIncoming) totalWork += assignment.newIncoming.length;
-                        if (assignment.crossTraining) totalWork += assignment.crossTraining.length;
-                        if (assignment.cpoe) totalWork += 1;
-                      });
-                      return (totalWork / employeesWithWork).toFixed(1);
-                    })()}
+                    title="Employee Assignments"
+                    value={Object.keys(currentSchedule.assignments || {}).length}
                     icon={Activity}
-                    color="teal"
-                    description="Assignments per employee"
+                    color="purple"
+                    description="Employees with assignments"
                   />
                 </div>
               )}
 
-              {/* Quick Actions */}
+              {/* Quick Actions - Streamlined */}
               <div className="card dark:bg-gray-800 dark:border-gray-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   Quick Actions
                 </h3>
-                <div className="flex flex-wrap gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <button
                     onClick={createNewSchedule}
-                    className="btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700"
+                    disabled={creatingSchedule}
+                    className="btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 justify-center"
                   >
                     <Calendar className="w-4 h-4 inline mr-2" />
-                    Create New Schedule
+                    {creatingSchedule ? 'Creating...' : 'Create Schedule'}
                   </button>
                   <button
                     onClick={() => setActiveTab('schedule')}
-                    className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600"
+                    className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600 justify-center"
                   >
                     <FileText className="w-4 h-4 inline mr-2" />
                     Manage Schedules
                   </button>
                   <button
-                    onClick={() => navigate('/rotation')}
-                    className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600"
-                  >
-                    <RotateCcw className="w-4 h-4 inline mr-2" />
-                    Rotation Tracker
-                  </button>
-                  <button
                     onClick={() => navigate('/analytics')}
-                    className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600"
+                    className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600 justify-center"
                   >
                     <TrendingUp className="w-4 h-4 inline mr-2" />
-                    View Analytics
+                    Analytics
                   </button>
-                  {currentSchedule && (
-                    <button
-                      onClick={() => setActiveTab('schedule')}
-                      className="btn-secondary dark:bg-gray-700 dark:hover:bg-gray-600"
-                    >
-                      <Upload className="w-4 h-4 inline mr-2" />
-                      Export Schedule
-                    </button>
-                  )}
                 </div>
               </div>
 
@@ -855,91 +805,89 @@ export default function SupervisorDashboard() {
 
         {activeTab === 'schedule' && (
           <div id="schedule-panel" role="tabpanel" aria-labelledby="schedule-tab">
-            {/* Schedule Actions */}
-            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex-1">
-                {currentSchedule ? (
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                      {currentSchedule.name}
-                    </h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Status:{' '}
-                      <span
-                        className={`font-medium ${
-                          scheduleStatus === 'published'
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-yellow-600 dark:text-yellow-400'
-                        }`}
-                      >
-                        {scheduleStatus.toUpperCase()}
-                      </span>
-                    </p>
-                  </div>
-                ) : (
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                    No Active Schedule
-                  </h2>
-                )}
-                
-                {/* Schedule Selector */}
-                {schedules.length > 0 && (
-                  <div className="mt-3">
-                    <label htmlFor="schedule-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Load Schedule
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <select
-                        id="schedule-select"
-                        value={currentSchedule?.id || ''}
-                        onChange={(e) => {
-                          const selected = schedules.find(s => s.id === e.target.value);
-                          setCurrentSchedule(selected || null);
-                        }}
-                        className="block w-full max-w-xs px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-thr-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Select a schedule...</option>
-                        {schedules.map(schedule => (
-                          <option key={schedule.id} value={schedule.id}>
-                            {schedule.name} ({schedule.status})
-                          </option>
-                        ))}
-                      </select>
-                      {currentSchedule && (
-                        <button
-                          onClick={() => deleteSchedule(currentSchedule.id)}
-                          className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                          aria-label="Delete current schedule"
+            {/* Schedule Actions - Simplified */}
+            <div className="mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    {currentSchedule ? (
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            {currentSchedule.name}
+                          </h2>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                scheduleStatus === 'published'
+                                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                  : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400'
+                              }`}
+                            >
+                              {scheduleStatus}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        Select or Create a Schedule
+                      </h2>
+                    )}
+
+                    {/* Schedule Selector - More compact */}
+                    {schedules.length > 0 && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <select
+                          id="schedule-select"
+                          value={currentSchedule?.id || ''}
+                          onChange={(e) => {
+                            const selected = schedules.find(s => s.id === e.target.value);
+                            setCurrentSchedule(selected || null);
+                          }}
+                          className="block w-full max-w-sm px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-thr-blue-500 focus:border-transparent"
                         >
-                          Delete
-                        </button>
-                      )}
-                    </div>
+                          <option value="">Select a schedule...</option>
+                          {schedules.map(schedule => (
+                            <option key={schedule.id} value={schedule.id}>
+                              {schedule.name} ({schedule.status})
+                            </option>
+                          ))}
+                        </select>
+                        {currentSchedule && (
+                          <button
+                            onClick={() => deleteSchedule(currentSchedule.id)}
+                            className="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-sm font-medium transition-colors border border-red-200 dark:border-red-800"
+                            aria-label="Delete current schedule"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={createNewSchedule}
-                  disabled={creatingSchedule}
-                  className={`btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-900 ${creatingSchedule ? 'opacity-70 cursor-not-allowed' : ''}`}
-                  aria-label="Create new schedule"
-                >
-                  <Plus className="w-4 h-4 inline mr-2" aria-hidden="true" />
-                  {creatingSchedule ? 'Creating...' : currentSchedule ? 'Start New Schedule' : 'Create New Schedule'}
-                </button>
-                {currentSchedule && scheduleStatus !== 'published' && (
-                  <>
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={publishSchedule}
-                      className="btn-secondary dark:bg-thr-green-700 dark:hover:bg-thr-green-800 dark:text-white focus:ring-2 focus:ring-offset-2 focus:ring-thr-green-500 dark:focus:ring-offset-gray-900"
-                      aria-label="Publish schedule"
+                      onClick={createNewSchedule}
+                      disabled={creatingSchedule}
+                      className={`btn-primary dark:bg-thr-blue-600 dark:hover:bg-thr-blue-700 ${creatingSchedule ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      aria-label="Create new schedule"
                     >
-                      <Upload className="w-4 h-4 inline mr-2" aria-hidden="true" />
-                      Publish Schedule
+                      <Plus className="w-4 h-4 inline mr-2" aria-hidden="true" />
+                      {creatingSchedule ? 'Creating...' : 'New Schedule'}
                     </button>
-                  </>
-                )}
+                    {currentSchedule && scheduleStatus !== 'published' && (
+                      <button
+                        onClick={publishSchedule}
+                        className="px-4 py-2 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-800 text-white rounded-lg text-sm font-medium transition-colors"
+                        aria-label="Publish schedule"
+                      >
+                        <CheckCircle2 className="w-4 h-4 inline mr-2" aria-hidden="true" />
+                        Publish
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 

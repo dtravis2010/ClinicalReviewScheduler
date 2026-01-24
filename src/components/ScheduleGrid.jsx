@@ -786,26 +786,36 @@ export default function ScheduleGrid({
                     // Use the helper to get short codes for display
                     const shortCodes = getEntityShortCode(entityNames, entities);
 
+                    // Create tooltip showing both codes and full names
+                    const tooltipText = entityDisplay
+                      ? `${shortCodes}\n${entityDisplay}${isAssigned ? ' (Click to unassign)' : ' (Click to assign)'}`
+                      : `${incName} - No entities configured`;
+
                     return (
                        <td
                         key={`inc-${incIdx}`}
-                        title={entityDisplay || `${incName} - No entities assigned`}
+                        title={tooltipText}
                         className={`px-2 py-3 text-center transition-all duration-200 border-r border-slate-100 dark:border-slate-700/50 ${
                           isAssigned
                               ? 'bg-gradient-to-br from-thr-green-100 to-thr-green-50 dark:from-thr-green-900/40 dark:to-thr-green-900/20 hover:from-thr-green-200 hover:to-thr-green-100 cursor-pointer'
-                              : 'bg-white dark:bg-slate-800/20 hover:bg-slate-50 cursor-pointer'
+                              : 'bg-white dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer'
                         }`}
                         onClick={() => toggleIncoming(incIdx)}
                       >
                         {isAssigned ? (
                            <div className="flex items-center justify-center">
-                              <span className="text-thr-green-700 dark:text-thr-green-300 text-xs font-bold px-1 py-0.5 bg-white/50 dark:bg-black/20 rounded">
+                              <span className="text-thr-green-700 dark:text-thr-green-300 text-sm font-bold px-2 py-1 bg-white/70 dark:bg-black/30 rounded shadow-sm">
                                 {shortCodes || 'Incoming'}
                               </span>
                             </div>
                         ) : (
-                           <div className="flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                           <div className="flex flex-col items-center justify-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
                               <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                              {shortCodes && (
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                  {shortCodes}
+                                </span>
+                              )}
                             </div>
                         )}
                       </td>
