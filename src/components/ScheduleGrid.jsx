@@ -805,7 +805,7 @@ export default function ScheduleGrid({
                         {isAssigned ? (
                            <div className="flex items-center justify-center">
                               <span className="text-thr-green-700 dark:text-thr-green-300 text-sm font-bold px-2 py-1 bg-white/70 dark:bg-black/30 rounded shadow-sm">
-                                {shortCodes || 'Incoming'}
+                                {shortCodes || <span className="opacity-50">—</span>}
                               </span>
                             </div>
                         ) : (
