@@ -2,6 +2,7 @@ import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { History, Settings, FileDown, Plus, Eye, Undo, Redo, Users, Maximize, Minimize, BarChart3 } from 'lucide-react';
 import AutoSaveIndicator from '../AutoSaveIndicator';
+import Button from '../atoms/Button';
 
 /**
  * ScheduleHeader component
@@ -46,14 +47,15 @@ function ScheduleHeader({
           <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
             {/* Bulk Assignment button */}
             {selectedCount > 0 && onBulkAssign && (
-              <button
+              <Button
                 onClick={onBulkAssign}
-                className="px-3 py-1.5 bg-thr-blue-600 hover:bg-thr-blue-700 text-white rounded-lg flex items-center gap-1.5 text-sm font-medium transition-colors"
+                variant="primary"
+                size="sm"
+                icon={<Users className="w-4 h-4" />}
                 aria-label={`Bulk assign ${selectedCount} selected employee${selectedCount > 1 ? 's' : ''}`}
               >
-                <Users className="w-4 h-4" aria-hidden="true" />
-                <span>Bulk ({selectedCount})</span>
-              </button>
+                Bulk ({selectedCount})
+              </Button>
             )}
 
             {/* Undo/Redo buttons - Compact */}

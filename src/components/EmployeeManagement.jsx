@@ -4,9 +4,12 @@ import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/fi
 import { db } from '../firebase';
 import { AuditService } from '../services/auditService';
 import { useAuth } from '../hooks/useAuth';
-import { Plus, Edit2, Archive, Save, UserPlus, Check, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Archive, Save, UserPlus, Check, Loader2, Users, HelpCircle } from 'lucide-react';
 import Modal from './Modal';
 import ConfirmDialog from './ConfirmDialog';
+import Button from './atoms/Button';
+import EmptyState from './EmptyState';
+import FormInput from './FormInput';
 import { useFormValidation, validationPresets } from '../hooks/useFormValidation';
 import { useToast } from '../hooks/useToast';
 
@@ -189,13 +192,13 @@ export default function EmployeeManagement({ employees, onUpdate }) {
             Manage employees and their skills/training
           </p>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddModal(true)}
-          className="btn-primary flex items-center gap-2"
+          variant="primary"
+          icon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-4 h-4" />
           Add Employee
-        </button>
+        </Button>
       </div>
 
       {/* Active Employees */}
@@ -311,10 +314,15 @@ export default function EmployeeManagement({ employees, onUpdate }) {
           </table>
 
           {activeEmployees.length === 0 && (
-            <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-              <UserPlus className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
-              <p>No employees yet. Click "Add Employee" to get started.</p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="No employees yet"
+              description="Get started by adding your first employee. You can assign skills, positions, and manage their schedule assignments."
+              action={() => setShowAddModal(true)}
+              actionLabel="Add First Employee"
+              actionIcon={<Plus className="w-4 h-4" />}
+              variant="primary"
+            />
           )}
         </div>
       </div>
@@ -356,33 +364,21 @@ export default function EmployeeManagement({ employees, onUpdate }) {
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="label">Employee Name *</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                onBlur={() => handleBlur('name')}
-                className={`input-field pr-10 ${
-                  touched.name && errors.name
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : touched.name && formData.name
-                    ? 'border-green-500 focus:border-green-500 focus:ring-green-500'
-                    : ''
-                }`}
-                placeholder="Enter full name"
-              />
-              {touched.name && !errors.name && formData.name && (
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Check className="w-5 h-5 text-green-500" />
-                </div>
-              )}
-            </div>
-            {touched.name && errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-            )}
-          </div>
+          <FormInput
+            id="employee-name"
+            name="name"
+            label="Employee Name"
+            type="text"
+            value={formData.name}
+            onChange={(e) => handleChange('name', e.target.value)}
+            onBlur={() => handleBlur('name')}
+            error={errors.name}
+            touched={touched.name}
+            required={true}
+            placeholder="Enter full name"
+            autoComplete="name"
+            autoCapitalize="words"
+          />
 
           <div>
             <label className="label">Skills/Training *</label>
@@ -434,36 +430,27 @@ export default function EmployeeManagement({ employees, onUpdate }) {
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Can do 3P Email
               </span>
+              <span title="Employees who can receive and process third-party emails" className="cursor-help">
+                <HelpCircle className="w-4 h-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" />
+              </span>
             </label>
           </div>
 
-          <div>
-            <label className="label">Email</label>
-            <div className="relative">
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                onBlur={() => handleBlur('email')}
-                className={`input-field pr-10 ${
-                  touched.email && errors.email
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : touched.email && formData.email
-                    ? 'border-green-500 focus:border-green-500 focus:ring-green-500'
-                    : ''
-                }`}
-                placeholder="employee@email.com"
-              />
-              {touched.email && !errors.email && formData.email && (
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Check className="w-5 h-5 text-green-500" />
-                </div>
-              )}
-            </div>
-            {touched.email && errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-            )}
-          </div>
+          <FormInput
+            id="employee-email"
+            name="email"
+            label="Email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleChange('email', e.target.value)}
+            onBlur={() => handleBlur('email')}
+            error={errors.email}
+            touched={touched.email}
+            placeholder="employee@email.com"
+            autoComplete="email"
+            inputMode="email"
+            helpText="Optional: Employee's email address for notifications"
+          />
 
           <div>
             <label className="label">Notes</label>
@@ -477,31 +464,25 @@ export default function EmployeeManagement({ employees, onUpdate }) {
           </div>
 
           <div className="flex items-center gap-3 pt-4">
-            <button
+            <Button
               type="submit"
-              className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              fullWidth={true}
               disabled={!isValid || isSubmitting}
+              loading={isSubmitting}
+              icon={<Save className="w-4 h-4" />}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 inline mr-2" />
-                  {editingEmployee ? 'Update Employee' : 'Add Employee'}
-                </>
-              )}
-            </button>
-            <button
+              {editingEmployee ? 'Update Employee' : 'Add Employee'}
+            </Button>
+            <Button
               type="button"
               onClick={resetForm}
-              className="btn-outline flex-1"
+              variant="outline"
+              fullWidth={true}
               disabled={isSubmitting}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>

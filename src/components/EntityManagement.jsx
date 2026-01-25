@@ -6,6 +6,9 @@ import { AuditService } from '../services/auditService';
 import { useAuth } from '../hooks/useAuth';
 import { Plus, Edit2, Trash2, Save, Building2, Check, Loader2 } from 'lucide-react';
 import Modal from './Modal';
+import Button from './atoms/Button';
+import EmptyState from './EmptyState';
+import FormInput from './FormInput';
 import { useFormValidation, validationPresets } from '../hooks/useFormValidation';
 import { useToast } from '../hooks/useToast';
 
@@ -181,13 +184,13 @@ export default function EntityManagement({ entities, onUpdate }) {
             Manage locations and entities for assignment
           </p>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddModal(true)}
-          className="btn-primary flex items-center gap-2"
+          variant="primary"
+          icon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-4 h-4" />
           Add Entity
-        </button>
+        </Button>
       </div>
 
       {/* Entities Grid - 3 columns responsive */}
@@ -241,9 +244,16 @@ export default function EntityManagement({ entities, onUpdate }) {
         ))}
 
         {entities.length === 0 && (
-          <div className="col-span-full card text-center py-12">
-            <Building2 className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
-            <p className="text-slate-500 dark:text-slate-400">No entities yet. Click "Add Entity" to get started.</p>
+          <div className="col-span-full">
+            <EmptyState
+              icon={Building2}
+              title="No entities yet"
+              description="Start by adding your first entity or location. Entities represent the different facilities or departments where employees can be assigned."
+              action={() => setShowAddModal(true)}
+              actionLabel="Add First Entity"
+              actionIcon={<Plus className="w-4 h-4" />}
+              variant="primary"
+            />
           </div>
         )}
       </div>
@@ -256,47 +266,32 @@ export default function EntityManagement({ entities, onUpdate }) {
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="label">Entity Name *</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                onBlur={() => handleBlur('name')}
-                className={`input-field pr-10 ${
-                  touched.name && errors.name
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : touched.name && formData.name
-                    ? 'border-green-500 focus:border-green-500 focus:ring-green-500'
-                    : ''
-                }`}
-                placeholder="e.g., Texas Health Arlington Memorial"
-              />
-              {touched.name && !errors.name && formData.name && (
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Check className="w-5 h-5 text-green-500" />
-                </div>
-              )}
-            </div>
-            {touched.name && errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-            )}
-          </div>
+          <FormInput
+            id="entity-name"
+            name="name"
+            label="Entity Name"
+            type="text"
+            value={formData.name}
+            onChange={(e) => handleChange('name', e.target.value)}
+            onBlur={() => handleBlur('name')}
+            error={errors.name}
+            touched={touched.name}
+            required={true}
+            placeholder="e.g., Texas Health Arlington Memorial"
+            autoComplete="organization"
+            autoCapitalize="words"
+          />
 
-          <div>
-            <label className="label">Entity Code</label>
-            <input
-              type="text"
-              value={formData.code}
-              onChange={(e) => handleChange('code', e.target.value)}
-              className="input-field"
-              placeholder="e.g., THAM"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Optional short code for the entity
-            </p>
-          </div>
+          <FormInput
+            id="entity-code"
+            name="code"
+            label="Entity Code"
+            type="text"
+            value={formData.code}
+            onChange={(e) => handleChange('code', e.target.value)}
+            placeholder="e.g., THAM"
+            helpText="Optional short code for the entity (used in abbreviations)"
+          />
 
           <div>
             <label className="label">Description</label>
@@ -310,31 +305,25 @@ export default function EntityManagement({ entities, onUpdate }) {
           </div>
 
           <div className="flex items-center gap-3 pt-4">
-            <button
+            <Button
               type="submit"
-              className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              fullWidth={true}
               disabled={!isValid || isSubmitting}
+              loading={isSubmitting}
+              icon={<Save className="w-4 h-4" />}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 inline mr-2" />
-                  {editingEntity ? 'Update Entity' : 'Add Entity'}
-                </>
-              )}
-            </button>
-            <button
+              {editingEntity ? 'Update Entity' : 'Add Entity'}
+            </Button>
+            <Button
               type="button"
               onClick={resetForm}
-              className="btn-outline flex-1"
+              variant="outline"
+              fullWidth={true}
               disabled={isSubmitting}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>
