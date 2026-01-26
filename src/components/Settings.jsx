@@ -2,15 +2,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus, User, TrendingUp } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Building2, BarChart3, Plus, Minus, User, TrendingUp, HelpCircle } from 'lucide-react';
 import EntityManagement from './EntityManagement';
 import ProductivityImport from './ProductivityImport';
 import ProductivityUpload from './ProductivityUpload';
 import ProductivityViewer from './ProductivityViewer';
 import ColumnEntityConfig from './ColumnEntityConfig';
 import UserPreferencesPanel from './UserPreferencesPanel';
+import Button from './atoms/Button';
+import Tooltip from './Tooltip';
+import { useToast } from '../hooks/useToast';
 
 export default function Settings({ employees = [], onUpdate }) {
+  const { showSuccess, showError } = useToast();
   const [darConfig, setDarConfig] = useState({});
   const [darCount, setDarCount] = useState(5); // Default to 5 DARs
   const [incomingConfig, setIncomingConfig] = useState({});
@@ -18,6 +22,7 @@ export default function Settings({ employees = [], onUpdate }) {
   const [entities, setEntities] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [productivityRefreshKey, setProductivityRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -110,6 +115,7 @@ export default function Settings({ employees = [], onUpdate }) {
   }
 
   async function saveSettings() {
+    setIsSaving(true);
     try {
         try {
             if (!db) throw new Error('No DB');
@@ -139,11 +145,13 @@ export default function Settings({ employees = [], onUpdate }) {
              }));
         }
       setHasChanges(false);
-      alert('Settings saved successfully!');
+      showSuccess('Settings saved successfully!');
       if (onUpdate) onUpdate();
     } catch (error) {
       logger.error('Error saving settings:', error);
-      alert('Failed to save settings');
+      showError('Failed to save settings');
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -191,18 +199,23 @@ export default function Settings({ employees = [], onUpdate }) {
               <SettingsIcon className="w-5 h-5 text-thr-blue-500" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 Default DAR Entity Assignments
+                <Tooltip content="DAR (Daily Activity Report) - Configure which entities are assigned to each DAR column in new schedules" position="right">
+                  <HelpCircle className="w-4 h-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-help" />
+                </Tooltip>
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 Set default entity codes for each DAR column. These will be used when creating new schedules.
               </p>
             </div>
           </div>
-          
+
           {/* DAR Count Controls */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-600 dark:text-slate-400 mr-2">DAR Columns:</span>
+            <span className="text-sm text-slate-600 dark:text-slate-400 mr-2">
+              DAR Columns:
+            </span>
             <button
               onClick={() => handleDarCountChange(darCount - 1)}
               disabled={darCount <= 3}
@@ -304,13 +317,17 @@ export default function Settings({ employees = [], onUpdate }) {
       {/* Save Bar */}
       <div className="fixed bottom-6 right-6 z-50">
          {hasChanges && (
-            <button
+            <Button
               onClick={saveSettings}
-              className="px-6 py-3 bg-thr-blue-500 hover:bg-thr-blue-600 text-white rounded-2xl font-semibold text-sm shadow-soft-lg hover:shadow-glow flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-slate-900 transform hover:-translate-y-0.5 transition-all duration-200"
+              variant="primary"
+              size="lg"
+              icon={<Save className="w-5 h-5" />}
+              loading={isSaving}
+              disabled={isSaving}
+              className="shadow-soft-lg hover:shadow-glow transform hover:-translate-y-0.5 transition-all duration-200"
             >
-              <Save className="w-5 h-5" />
               Save Settings
-            </button>
+            </Button>
          )}
       </div>
 

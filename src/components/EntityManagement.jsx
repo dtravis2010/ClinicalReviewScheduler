@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -9,6 +9,7 @@ import Modal from './Modal';
 import Button from './atoms/Button';
 import EmptyState from './EmptyState';
 import FormInput from './FormInput';
+import SearchFilter from './SearchFilter';
 import { useFormValidation, validationPresets } from '../hooks/useFormValidation';
 import { useToast } from '../hooks/useToast';
 
@@ -19,6 +20,22 @@ export default function EntityManagement({ entities, onUpdate }) {
   const [editingEntity, setEditingEntity] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter and search entities
+  const filteredEntities = useMemo(() => {
+    if (!searchQuery) return entities;
+
+    const query = searchQuery.toLowerCase();
+    return entities.filter(entity => {
+      const matchesName = entity.name?.toLowerCase().includes(query);
+      const matchesCode = entity.code?.toLowerCase().includes(query);
+      const matchesDescription = entity.description?.toLowerCase().includes(query);
+      return matchesName || matchesCode || matchesDescription;
+    });
+  }, [entities, searchQuery]);
 
   // Form validation
   const {
@@ -193,9 +210,18 @@ export default function EntityManagement({ entities, onUpdate }) {
         </Button>
       </div>
 
+      {/* Search Filter */}
+      <SearchFilter
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search entities by name, code, or description..."
+        filters={[]}
+        showClearFilters={false}
+      />
+
       {/* Entities Grid - 3 columns responsive */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {entities.map(entity => (
+        {filteredEntities.map(entity => (
           <div 
             key={entity.id} 
             className="card card-interactive group"
@@ -243,7 +269,7 @@ export default function EntityManagement({ entities, onUpdate }) {
           </div>
         ))}
 
-        {entities.length === 0 && (
+        {filteredEntities.length === 0 && (
           <div className="col-span-full">
             <EmptyState
               icon={Building2}

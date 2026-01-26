@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -10,6 +10,7 @@ import ConfirmDialog from './ConfirmDialog';
 import Button from './atoms/Button';
 import EmptyState from './EmptyState';
 import FormInput from './FormInput';
+import SearchFilter from './SearchFilter';
 import { useFormValidation, validationPresets } from '../hooks/useFormValidation';
 import { useToast } from '../hooks/useToast';
 
@@ -21,6 +22,11 @@ export default function EmployeeManagement({ employees, onUpdate }) {
   const [employeeToArchive, setEmployeeToArchive] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterSkill, setFilterSkill] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('active');
 
   const availableSkills = ['DAR', 'Trace', 'CPOE', 'Float'];
 
@@ -179,8 +185,39 @@ export default function EmployeeManagement({ employees, onUpdate }) {
     }
   }
 
-  const activeEmployees = employees.filter(e => !e.archived);
-  const archivedEmployees = employees.filter(e => e.archived);
+  // Filter and search employees
+  const filteredEmployees = useMemo(() => {
+    return employees.filter(employee => {
+      // Status filter
+      if (filterStatus === 'active' && employee.archived) return false;
+      if (filterStatus === 'archived' && !employee.archived) return false;
+
+      // Search filter (name, position, email)
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = employee.name?.toLowerCase().includes(query);
+        const matchesPosition = employee.position?.toLowerCase().includes(query);
+        const matchesEmail = employee.email?.toLowerCase().includes(query);
+        if (!matchesName && !matchesPosition && !matchesEmail) return false;
+      }
+
+      // Skill filter
+      if (filterSkill !== 'all') {
+        if (!employee.skills?.includes(filterSkill)) return false;
+      }
+
+      return true;
+    });
+  }, [employees, searchQuery, filterSkill, filterStatus]);
+
+  const activeEmployees = filteredEmployees.filter(e => !e.archived);
+  const archivedEmployees = filteredEmployees.filter(e => e.archived);
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setFilterSkill('all');
+    setFilterStatus('active');
+  };
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -200,6 +237,37 @@ export default function EmployeeManagement({ employees, onUpdate }) {
           Add Employee
         </Button>
       </div>
+
+      {/* Search and Filter */}
+      <SearchFilter
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search employees by name, position, or email..."
+        filters={[
+          {
+            label: 'Skill',
+            value: filterSkill,
+            onChange: setFilterSkill,
+            allValue: 'all',
+            options: availableSkills.map(skill => ({
+              value: skill,
+              label: skill
+            }))
+          },
+          {
+            label: 'Status',
+            value: filterStatus,
+            onChange: setFilterStatus,
+            allValue: 'all',
+            options: [
+              { value: 'active', label: 'Active Only' },
+              { value: 'archived', label: 'Archived Only' }
+            ]
+          }
+        ]}
+        onClearFilters={handleClearFilters}
+        showClearFilters={true}
+      />
 
       {/* Active Employees */}
       <div className="card card-hover">
