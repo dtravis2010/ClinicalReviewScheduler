@@ -9,6 +9,14 @@ import ProductivityDashboard from './pages/ProductivityDashboard';
 import InsightsDashboard from './pages/InsightsDashboard';
 import RotationDashboard from './pages/RotationDashboard';
 import UserView from './pages/UserView';
+import LandingPage from './pages/rotation/LandingPage';
+import RotationEditor from './pages/rotation/RotationEditor';
+import TeamRoster from './pages/rotation/TeamRoster';
+import TrainingRecord from './pages/rotation/TrainingRecord';
+import RulesEditor from './pages/rotation/RulesEditor';
+import ClusterRebalance from './pages/rotation/ClusterRebalance';
+import FairnessHeatmap from './pages/rotation/FairnessHeatmap';
+import ReviewerView from './pages/rotation/ReviewerView';
 import ConfigurationError from './components/ConfigurationError';
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -69,6 +77,16 @@ function AppContent() {
             }
           />
           <Route path="/schedule" element={<UserView />} />
+          {/* Rotation Intelligence — supervisor-facing pages */}
+          <Route path="/rotation/overview" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
+          <Route path="/rotation/editor/:rotationId" element={<ProtectedRoute><RotationEditor /></ProtectedRoute>} />
+          <Route path="/rotation/team" element={<ProtectedRoute><TeamRoster /></ProtectedRoute>} />
+          <Route path="/rotation/team/:name" element={<ProtectedRoute><TrainingRecord /></ProtectedRoute>} />
+          <Route path="/rotation/rules" element={<ProtectedRoute><RulesEditor /></ProtectedRoute>} />
+          <Route path="/rotation/rules/clusters" element={<ProtectedRoute><ClusterRebalance /></ProtectedRoute>} />
+          <Route path="/rotation/fairness" element={<ProtectedRoute><FairnessHeatmap /></ProtectedRoute>} />
+          {/* Reviewer view — accessible without supervisor auth */}
+          <Route path="/rotation/my-rotation" element={<ReviewerView />} />
         </Routes>
       </div>
     </Router>
