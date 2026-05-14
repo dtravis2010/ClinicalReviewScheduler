@@ -1,0 +1,3737 @@
+[
+  {
+    "id": "2026-05",
+    "label": "MAY · JUNE 2026",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      },
+      "trn": {
+        "label": "Training DAR",
+        "entities": [
+          "THS",
+          "THF",
+          "WP"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar2"
+      },
+      "CASEY": {
+        "incoming": "THDN/THK/THAZ"
+      },
+      "CHASITY": {
+        "incoming": "THD/THPS"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "spec": "FLOAT"
+      },
+      "GAYLA": {
+        "incoming": "THFM"
+      },
+      "JACQUE": {
+        "dar": "dar5",
+        "spec": "3:01PM EMAIL BACK-UP"
+      },
+      "LINH": {
+        "dar": "dar3",
+        "spec": "3:01PM EMAIL"
+      },
+      "MARIA": {
+        "cpoe": true
+      },
+      "NACHOLE": {
+        "dar": "dar4"
+      },
+      "RAQUEL": {
+        "incoming": "THK/THAZ"
+      },
+      "SHEILA": {
+        "trn": true
+      },
+      "STEPHANIE": {},
+      "TRISH": {
+        "incoming": "SW"
+      },
+      "VENUS": {
+        "incoming": "THC"
+      },
+      "BRIANNA": {
+        "incoming": "THA"
+      },
+      "DOMINIQUE": {
+        "incoming": "THP"
+      },
+      "MARIA LOPEZ GALINDO": {
+        "incoming": "THFW/WP"
+      },
+      "RAVEN": {
+        "incoming": "AMF/THF"
+      },
+      "JORDAN": {
+        "incoming": "HEB/THS"
+      },
+      "DANETTE": {
+        "incoming": "RW"
+      }
+    }
+  },
+  {
+    "id": "2026-03",
+    "label": "MAR · APRIL 2026",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      },
+      "trn": {
+        "label": "Training DAR",
+        "entities": [
+          "THS",
+          "THF",
+          "WP"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar1"
+      },
+      "CASEY": {
+        "incoming": "THC/THAL/THB"
+      },
+      "CHASITY": {
+        "incoming": "THD"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "spec": "FLOAT"
+      },
+      "GAYLA": {
+        "incoming": "THFM"
+      },
+      "JACQUE": {
+        "dar": "dar4",
+        "spec": "3:01PM EMAIL BACK-UP"
+      },
+      "LINH": {
+        "dar": "dar2",
+        "spec": "3:01PM EMAIL"
+      },
+      "MARIA": {
+        "cpoe": true
+      },
+      "NACHOLE": {
+        "dar": "dar3"
+      },
+      "RAQUEL": {
+        "incoming": "THDN/THPS"
+      },
+      "SHEILA": {
+        "dar": "dar5"
+      },
+      "STEPHANIE": {
+        "trn": true,
+        "cross": "DAR TRAINING"
+      },
+      "TRISH": {
+        "incoming": "SW"
+      },
+      "VENUS": {
+        "incoming": "THK/THAZ"
+      },
+      "BRIANNA": {
+        "incoming": "RW"
+      },
+      "DOMINIQUE": {
+        "incoming": "THFW/WP"
+      },
+      "MARIA LOPEZ GALINDO": {
+        "incoming": "THP"
+      },
+      "RAVEN": {
+        "incoming": "THA"
+      },
+      "JORDAN": {
+        "incoming": "AMF/THF"
+      },
+      "DANETTE": {
+        "incoming": "HEB/THS",
+        "cross": "TRAINING"
+      }
+    }
+  },
+  {
+    "id": "2026-01",
+    "label": "JAN · FEB 2026",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar5"
+      },
+      "CASEY": {
+        "incoming": "AMH/THF"
+      },
+      "CHASITY": {
+        "incoming": "THK/THAZ"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "spec": "ERIKA ENVISION PROJECT UNTIL 1/19 **THEN THC/THAL/THB"
+      },
+      "GAYLA": {
+        "incoming": "THDN/THPS"
+      },
+      "JACQUE": {
+        "dar": "dar2"
+      },
+      "LINH": {
+        "dar": "dar3",
+        "spec": "3:01PM EMAIL BACK-UP"
+      },
+      "MARIA": {
+        "cpoe": true
+      },
+      "MELBA": {
+        "dar": "dar2"
+      },
+      "NACHOLE": {
+        "dar": "dar1",
+        "spec": "3:01PM EMAIL"
+      },
+      "RAQUEL": {
+        "incoming": "FM"
+      },
+      "SHEILA": {
+        "dar": "dar4"
+      },
+      "SHAMEKA": {},
+      "STEPHANIE": {
+        "incoming": "SW"
+      },
+      "TERESA": {},
+      "TRISH": {
+        "spec": "FLOAT & THC/THAL/THB UNTIL 1/19"
+      },
+      "VENUS": {
+        "incoming": "HEB/THS"
+      },
+      "BRIANNA": {
+        "incoming": "THFW/WP"
+      },
+      "DOMINIQUE": {
+        "incoming": "THD"
+      },
+      "MARIA LOPEZ GALINDO": {
+        "incoming": "THA"
+      },
+      "RAVEN": {
+        "incoming": "THP"
+      },
+      "JORDAN": {
+        "incoming": "RW"
+      }
+    }
+  },
+  {
+    "id": "2025-09",
+    "label": "SEP THRU DEC 2025",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar2",
+        "spec": "3:01PM EMAIL"
+      },
+      "CASEY": {
+        "incoming": "SW"
+      },
+      "CHASITY": {
+        "incoming": "THC/THAL/THB"
+      },
+      "CHEKEERA": {
+        "incoming": "THFM"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "spec": "FLOAT"
+      },
+      "GAYLA": {
+        "incoming": "THP"
+      },
+      "JACQUE": {
+        "dar": "dar3"
+      },
+      "LINH": {
+        "dar": "dar4"
+      },
+      "MARIA": {
+        "dar": "dar1",
+        "cross": "CPOE TRAINING SECOND PART OF ROTATION (Tenatively**)"
+      },
+      "MELBA": {
+        "dar": "dar2"
+      },
+      "NACHOLE": {
+        "dar": "dar5",
+        "spec": "3:01PM EMAIL BACK- UP"
+      },
+      "RAQUEL": {
+        "incoming": "THFW/THWP"
+      },
+      "SHEILA": {
+        "cross": "DAR TRAINING FIRST PART OF ROTATION (Tenatively**)"
+      },
+      "SHAMEKA": {},
+      "STEPHANIE": {
+        "incoming": "AMH/THF"
+      },
+      "TERESA": {},
+      "TRISH": {
+        "cpoe": true
+      },
+      "VENUS": {
+        "incoming": "RW"
+      },
+      "BRIANNA": {
+        "incoming": "THDN/THPS"
+      },
+      "DOMINIQUE": {
+        "incoming": "HEB/THS"
+      },
+      "MARIA LOPEZ GALINDO": {
+        "incoming": "THK/THAZ"
+      },
+      "RAVEN": {
+        "incoming": "THD"
+      },
+      "JORDAN": {
+        "incoming": "THA"
+      }
+    }
+  },
+  {
+    "id": "2025-07",
+    "label": "JULY · AUG 2025",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar3",
+        "spec": "3:01PM EMAIL BACK-UP"
+      },
+      "CASEY": {
+        "incoming": "THK/THAZ"
+      },
+      "CHASITY": {
+        "incoming": "THDN/THPS"
+      },
+      "CHEKEERA": {
+        "incoming": "THFW/THWP"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "cpoe": true
+      },
+      "GAYLA": {
+        "incoming": "THD"
+      },
+      "JACQUE": {
+        "dar": "dar5"
+      },
+      "LINH": {
+        "dar": "dar2",
+        "spec": "3:01PM EMAIL"
+      },
+      "MARIA": {
+        "dar": "dar1"
+      },
+      "MELBA": {
+        "dar": "dar2"
+      },
+      "NACHOLE": {
+        "dar": "dar4"
+      },
+      "RAQUEL": {
+        "incoming": "THP"
+      },
+      "SHEILA": {
+        "incoming": "AMF/THF"
+      },
+      "SHAMEKA": {},
+      "STEPHANIE": {
+        "incoming": "RW"
+      },
+      "TERESA": {},
+      "TRISH": {
+        "spec": "FLOAT"
+      },
+      "VENUS": {
+        "incoming": "SW"
+      },
+      "BRIANNA": {
+        "incoming": "THC/THAL/THB"
+      },
+      "DOMINIQUE": {
+        "incoming": "THFM"
+      },
+      "MARIA LOPEZ GALINDO": {},
+      "RAVEN": {
+        "incoming": "THHEB/THS"
+      },
+      "JORDAN": {
+        "incoming": "THA"
+      }
+    }
+  },
+  {
+    "id": "2025-05",
+    "label": "MAY · JUNE 2025",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar1"
+      },
+      "CASEY": {
+        "incoming": "THAL/THB/THS"
+      },
+      "CHASITY": {
+        "incoming": "THA/HEB"
+      },
+      "CHEKEERA": {
+        "incoming": "THAZ/THPS/THWP"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "incoming": "FW"
+      },
+      "GAYLA": {
+        "incoming": "AMH/THF"
+      },
+      "JACQUE": {
+        "dar": "dar4"
+      },
+      "LINH": {
+        "dar": "dar5",
+        "spec": "3:01PM EMAIL BACK-UP"
+      },
+      "MARIA": {
+        "dar": "dar3",
+        "spec": "3:01PM EMAIL"
+      },
+      "MELBA": {
+        "dar": "dar2"
+      },
+      "NACHOLE": {
+        "dar": "dar2"
+      },
+      "RAQUEL": {
+        "incoming": "THD"
+      },
+      "SHEILA": {
+        "incoming": "THSW"
+      },
+      "SHAMEKA": {},
+      "STEPHANIE": {},
+      "TERESA": {},
+      "TRISH": {
+        "cpoe": true
+      },
+      "VENUS": {
+        "incoming": "THRW"
+      },
+      "BRIANNA": {
+        "incoming": "THP"
+      },
+      "DOMINIQUE": {
+        "incoming": "THDN"
+      },
+      "MARIA LOPEZ GALINDO": {},
+      "RAVEN": {
+        "incoming": "THFM"
+      },
+      "JORDAN": {
+        "incoming": "THC"
+      }
+    }
+  },
+  {
+    "id": "2025-03",
+    "label": "MAR · APRIL 2025",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar2"
+      },
+      "CASEY": {
+        "incoming": "FW"
+      },
+      "CHASITY": {
+        "incoming": "THF/AMH/THWP"
+      },
+      "CHEKEERA": {
+        "incoming": "THD"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "dar": "dar4"
+      },
+      "GAYLA": {
+        "cpoe": true
+      },
+      "JACQUE": {
+        "cross": "TRAINING ON THE DAR"
+      },
+      "LINH": {
+        "dar": "dar1"
+      },
+      "MARIA": {
+        "dar": "dar5",
+        "spec": "3:01PM EMAIL BACK UP"
+      },
+      "MELBA": {
+        "dar": "dar2"
+      },
+      "NACHOLE": {
+        "dar": "dar3"
+      },
+      "RAQUEL": {
+        "incoming": "SW"
+      },
+      "SHEILA": {
+        "incoming": "THP/THPS"
+      },
+      "SHAMEKA": {},
+      "STEPHANIE": {
+        "incoming": "THC/THK"
+      },
+      "TERESA": {},
+      "TRISH": {
+        "cross": "FLOAT",
+        "spec": "3:01PM EMAIL"
+      },
+      "VENUS": {
+        "incoming": "HEB/THDN"
+      },
+      "BRIANNA": {
+        "incoming": "THFM/THA"
+      },
+      "DOMINIQUE": {
+        "incoming": "THRW"
+      },
+      "MARIA LOPEZ GALINDO": {
+        "incoming": "THB/THAZ"
+      },
+      "RAVEN": {
+        "incoming": "THAL/THS"
+      }
+    }
+  },
+  {
+    "id": "2025-01",
+    "label": "JAN · FEB 2025",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar4"
+      },
+      "CASEY": {
+        "incoming": "HEB/DN"
+      },
+      "CHASITY": {
+        "incoming": "THC/THK"
+      },
+      "CHEKEERA": {
+        "incoming": "SW"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "dar": "dar2"
+      },
+      "GAYLA": {},
+      "JACQUE": {
+        "incoming": "FW"
+      },
+      "LINH": {
+        "dar": "dar5"
+      },
+      "MARIA": {
+        "dar": "dar1",
+        "spec": "3:01PM EMAIL BACK UP"
+      },
+      "MELBA": {
+        "dar": "dar2"
+      },
+      "NACHOLE": {
+        "dar": "dar3",
+        "incoming": "THRW",
+        "cross": "TRAINING ON DAR"
+      },
+      "RAQUEL": {
+        "cpoe": true
+      },
+      "SHEILA": {
+        "incoming": "THFM/THA"
+      },
+      "SHAMEKA": {},
+      "STEPHANIE": {
+        "incoming": "THP"
+      },
+      "TERESA": {},
+      "TRISH": {
+        "cross": "FLOAT",
+        "spec": "3:01PM EMAIL"
+      },
+      "VENUS": {
+        "incoming": "THD"
+      },
+      "BRIANNA": {
+        "incoming": "THB/THAL/THS"
+      },
+      "DOMINIQUE": {
+        "incoming": "THF/AMH/THWP"
+      }
+    }
+  },
+  {
+    "id": "2024-11",
+    "label": "NOV · DEC 2024",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar1"
+      },
+      "CASEY": {
+        "incoming": "THP"
+      },
+      "CHASITY": {
+        "incoming": "RW"
+      },
+      "CHEKEERA": {
+        "incoming": "HEB/DN"
+      },
+      "CLARA": {
+        "spec": "SPECIAL PROJECT"
+      },
+      "ERIKA": {
+        "dar": "dar3",
+        "spec": "3:01PM EMAIL"
+      },
+      "GAYLA": {},
+      "JACQUE": {
+        "incoming": "THSW"
+      },
+      "LINH": {
+        "dar": "dar2"
+      },
+      "MARIA": {
+        "dar": "dar5"
+      },
+      "MELBA": {
+        "cpoe": true
+      },
+      "NACHOLE": {
+        "incoming": "THC/THK"
+      },
+      "RAQUEL": {
+        "dar": "dar4",
+        "spec": "3:01PM EMAIL BACK UP"
+      },
+      "SHEILA": {
+        "incoming": "THD"
+      },
+      "SHAMEKA": {},
+      "STEPHANIE": {
+        "incoming": "THFM/THA"
+      },
+      "TERESA": {},
+      "TRISH": {
+        "incoming": "FLOAT",
+        "spec": "FLOAT"
+      },
+      "VENUS": {
+        "incoming": "FW"
+      },
+      "BRIANNA": {
+        "incoming": "THF/AMH"
+      },
+      "DOMINIQUE": {
+        "incoming": "THB/THAL"
+      }
+    }
+  },
+  {
+    "id": "2024-09",
+    "label": "SEPT · OCT 2024",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "dar": "dar5"
+      },
+      "CASEY": {
+        "incoming": "RW"
+      },
+      "CHASITY": {
+        "incoming": "THAZ/THPS/THWP"
+      },
+      "CHEKEERA": {
+        "incoming": "THAL/THB/THS"
+      },
+      "CLARA": {
+        "spec": "3:01PM EMAIL"
+      },
+      "ERIKA": {
+        "cpoe": true
+      },
+      "CECILY R": {},
+      "GAYLA": {
+        "dar": "dar1"
+      },
+      "JACQUE": {
+        "incoming": "THC/THK"
+      },
+      "LINH": {
+        "dar": "dar4"
+      },
+      "MARIA": {
+        "dar": "dar2"
+      },
+      "MELBA": {
+        "incoming": "THSW"
+      },
+      "NACHOLE": {
+        "incoming": "THFM/THA"
+      },
+      "RAQUEL": {
+        "dar": "dar3"
+      },
+      "SHAMEKA": {},
+      "SHEILA(SHAYLA)": {
+        "incoming": "HEB/DN"
+      },
+      "STEPHANIE": {
+        "incoming": "THD"
+      },
+      "TERESA": {
+        "incoming": "THP"
+      },
+      "TRISH": {
+        "incoming": "AMH/THF",
+        "spec": "3:01PM EMAIL BACK UP"
+      },
+      "VENUS": {
+        "incoming": "FW"
+      }
+    }
+  },
+  {
+    "id": "2024-08",
+    "label": "AUG · JULY 2024",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "incoming": "TRAINING"
+      },
+      "CASEY": {
+        "incoming": "RW"
+      },
+      "CHASITY": {
+        "incoming": "THAL/THB/THS"
+      },
+      "CHEKEERA": {
+        "incoming": "AMH/THF"
+      },
+      "CLARA": {
+        "dar": "dar1"
+      },
+      "ERIKA": {
+        "dar": "dar5",
+        "spec": "3:01 EMAIL BACK UP"
+      },
+      "CECILY R": {},
+      "GAYLA": {
+        "cpoe": true
+      },
+      "JACQUE": {
+        "incoming": "THD"
+      },
+      "LINH": {
+        "dar": "dar3"
+      },
+      "MARIA": {
+        "dar": "dar4"
+      },
+      "MELBA": {
+        "incoming": "FM/THA"
+      },
+      "NACHOLE": {
+        "incoming": "SW"
+      },
+      "RAQUEL": {
+        "dar": "dar2",
+        "spec": "3:01PM EMAIL"
+      },
+      "SHAMEKA": {},
+      "SHEILA(SHAYLA)": {
+        "incoming": "THAZ/THPS/THWP"
+      },
+      "STEPHANIE": {
+        "incoming": "HEB/DN"
+      },
+      "TERESA": {
+        "incoming": "THP"
+      },
+      "TRISH": {
+        "spec": "FLOAT"
+      },
+      "VENUS": {
+        "incoming": "THC/THK"
+      },
+      "PETRONA": {
+        "incoming": "FW"
+      }
+    }
+  },
+  {
+    "id": "2024-05",
+    "label": "MAY · JUNE 2024",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {},
+      "CASEY": {},
+      "CHASITY": {},
+      "CHEKEERA": {},
+      "CLARA": {
+        "dar": "dar5",
+        "spec": "3:01pm BACK UP"
+      },
+      "DIETRA": {},
+      "CECILY R": {},
+      "ERIKA": {},
+      "GAYLA": {
+        "dar": "dar4"
+      },
+      "JACQUE": {},
+      "LINH": {
+        "cross": "DAR TRAINING"
+      },
+      "MARIA": {
+        "dar": "dar3"
+      },
+      "MELBA": {
+        "cross": "FLOAT",
+        "spec": "3:01PM EMAIL"
+      },
+      "NACHOLE": {},
+      "RAQUEL": {
+        "cpoe": true
+      },
+      "SHAMEKA": {
+        "dar": "dar2"
+      },
+      "SHEILA(SHAYLA)": {},
+      "STEPHANIE": {},
+      "TERESA": {},
+      "TRISH": {
+        "dar": "dar1"
+      },
+      "VENUS": {},
+      "PETRONA": {}
+    }
+  },
+  {
+    "id": "2024-03",
+    "label": "MAR · APRIL 2024",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "incoming": "THC/THK/THS"
+      },
+      "CASEY": {
+        "dar": "dar4",
+        "spec": "3:01PM EMAIL"
+      },
+      "CHASITY": {
+        "incoming": "THAMH/THF"
+      },
+      "CHEKEERA": {
+        "incoming": "THAZ/THPS/THWP"
+      },
+      "CLARA": {
+        "incoming": "FLOAT",
+        "spec": "3:01pm BACK UP"
+      },
+      "DIETRA": {
+        "incoming": "THDN/THAL"
+      },
+      "CECILY R": {},
+      "ERIKA": {
+        "dar": "dar1"
+      },
+      "GAYLA": {
+        "dar": "dar5"
+      },
+      "JACQUE": {
+        "incoming": "THA/HEB"
+      },
+      "LINH": {
+        "cross": "DAR TRAINING"
+      },
+      "MARIA": {
+        "cross": "DAR TRAINING"
+      },
+      "MELBA": {
+        "cpoe": true
+      },
+      "NACHOLE": {
+        "incoming": "RW/THF"
+      },
+      "RAQUEL": {},
+      "SHAMEKA": {
+        "dar": "dar3"
+      },
+      "SHEILA(SHAYLA)": {
+        "incoming": "THFW"
+      },
+      "STEPHANIE": {
+        "incoming": "SW"
+      },
+      "TERESA": {
+        "incoming": "THRW"
+      },
+      "TRISH": {
+        "dar": "dar2"
+      },
+      "VENUS": {
+        "incoming": "THP"
+      },
+      "PETRONA": {
+        "incoming": "FM/THB",
+        "cross": "****FREE FOR ALL UNTIL PETRONA RETURNS"
+      }
+    }
+  },
+  {
+    "id": "2023-05",
+    "label": "MAY · JUNE 2023",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "incoming": "FW"
+      },
+      "CASEY": {},
+      "CHASITY": {},
+      "CHEKEERA": {
+        "incoming": "THA"
+      },
+      "CLARA": {},
+      "DIETRA": {
+        "incoming": "THC"
+      },
+      "CECILY R": {},
+      "ERIKA": {},
+      "GAYLA": {},
+      "JACQUE": {
+        "incoming": "THDN"
+      },
+      "LINH": {
+        "incoming": "SW"
+      },
+      "MARIA": {
+        "incoming": "THD"
+      },
+      "MELBA": {
+        "incoming": "FLOAT",
+        "spec": "3PM EMAIL"
+      },
+      "NACHOLE": {
+        "incoming": "RW/THF"
+      },
+      "RAQUEL": {
+        "spec": "BACK-UP EMAIL"
+      },
+      "SHAMEKA": {
+        "incoming": "THHEB/THK",
+        "cross": "CPOE TRAIN"
+      },
+      "SHEILA(SHAYLA)": {
+        "incoming": "THAL/THB/THS"
+      },
+      "STEPHANIE": {
+        "incoming": "RW"
+      },
+      "TERESA": {
+        "incoming": "AMH/THF"
+      },
+      "TRISH": {},
+      "VENUS": {
+        "incoming": "THAZ, THPS, WP"
+      },
+      "PETRONA": {
+        "incoming": "FM"
+      }
+    }
+  },
+  {
+    "id": "2022-10",
+    "label": "Oct, Nov, Dec 2022",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "ALYSSA": {
+        "incoming": "THD"
+      },
+      "CASEY": {
+        "incoming": "THFM"
+      },
+      "CHASITY": {},
+      "CHEKEERA": {
+        "incoming": "THAL"
+      },
+      "CLARA": {
+        "spec": "FLOAT/ 3PM EMAIL"
+      },
+      "DIETRA": {
+        "incoming": "THRW"
+      },
+      "CECILY R": {},
+      "ERIKA": {},
+      "GAYLA": {},
+      "JACQUE": {
+        "incoming": "FW/THS"
+      },
+      "LINH": {
+        "incoming": "THP ALL (RAD &BC)"
+      },
+      "MARIA": {
+        "incoming": "THK/ THA ALL (RAD & BC)"
+      },
+      "MELBA": {
+        "spec": "3pm Email Backup"
+      },
+      "NACHOLE": {
+        "incoming": "RW/THF"
+      },
+      "RAQUEL": {},
+      "SHAMEKA": {},
+      "SHEILA(SHAYLA)": {
+        "incoming": "THAZ"
+      },
+      "STEPHANIE": {
+        "incoming": "THC"
+      },
+      "TERESA": {
+        "incoming": "THHEB/THWP/THB"
+      },
+      "TRISH": {},
+      "VENUS": {
+        "incoming": "THDN"
+      },
+      "PETRONA": {
+        "incoming": "AMH/THF"
+      }
+    }
+  },
+  {
+    "id": "2022-08",
+    "label": "August 2022",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "SHAMEKA": {
+        "spec": "3pm Email Backup"
+      },
+      "ERIKA": {},
+      "TRISH": {},
+      "CLARA": {
+        "incoming": "THDN"
+      },
+      "DIETRA": {
+        "incoming": "SW"
+      },
+      "CASEY": {
+        "spec": "3pm Email"
+      },
+      "VENUS": {
+        "incoming": "THK, THP BC"
+      },
+      "RAQUEL": {
+        "incoming": "THD"
+      },
+      "CECILY R": {},
+      "PETRONA": {
+        "incoming": "OUT",
+        "cross": "*TRAINING"
+      },
+      "GAYLA": {
+        "incoming": "CPOE"
+      },
+      "ALYSSA": {
+        "incoming": "THP RAD/ AMH",
+        "cross": "*TRAINING"
+      },
+      "NACHOLE": {
+        "incoming": "RW/THF"
+      },
+      "TERESA": {
+        "incoming": "THA RAD & BC, THPS, THWP"
+      },
+      "MARIA": {
+        "incoming": "THAZ/THAL"
+      },
+      "JACQUE": {
+        "incoming": "THRW/THF"
+      },
+      "MELBA": {
+        "incoming": "THB/FM"
+      },
+      "LINH": {
+        "incoming": "THC/HEB"
+      },
+      "CHEKEERA": {},
+      "STEPHANIE": {},
+      "SHEILA": {},
+      "CHASITY": {}
+    }
+  },
+  {
+    "id": "2022-04",
+    "label": "April · May 2022",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RAQUEL": {
+        "incoming": "CPOE"
+      },
+      "DIETRA": {
+        "incoming": "SW"
+      },
+      "AYANA": {
+        "incoming": "THD"
+      },
+      "CASEY": {
+        "spec": "3pm Email Backup"
+      },
+      "VENUS": {
+        "incoming": "THK, THP BC"
+      },
+      "SHAMEKA": {},
+      "CECILY R": {},
+      "ERIKA": {},
+      "OPEN": {
+        "incoming": "FLOAT",
+        "spec": "3pm Email"
+      },
+      "GAYLA": {},
+      "JESS": {
+        "incoming": "THDN"
+      },
+      "MELBA": {
+        "incoming": "THP RAD"
+      },
+      "CLARA": {},
+      "TERESA": {
+        "incoming": "THA RAD &  BC, THPS, THWP"
+      },
+      "LINH": {
+        "incoming": "THAZ/THAL/THS"
+      },
+      "TRISH": {
+        "incoming": "AMH/THFW"
+      },
+      "NACHOLE": {
+        "incoming": "RW/THF"
+      },
+      "JACQUE": {
+        "incoming": "THB/FM"
+      },
+      "MARIA": {
+        "incoming": "THC/HEB/THS"
+      }
+    }
+  },
+  {
+    "id": "2022-02",
+    "label": "February 2022",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "SCHEDULING ASSIST": {
+        "incoming": "CPOE"
+      },
+      "MELISSA S": {
+        "incoming": "SW"
+      },
+      "CLARA M": {
+        "incoming": "THD"
+      },
+      "TRISH M": {
+        "spec": "3pm Email Backup"
+      },
+      "TERESA W": {
+        "incoming": "THK, THP BC"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {
+        "incoming": "THFW/THS/THB",
+        "spec": "3pm Email"
+      },
+      "GAYLA M": {},
+      "SHAMEKA K": {},
+      "DIETRA T": {
+        "incoming": "THDN"
+      },
+      "VENUS C": {
+        "incoming": "THP RAD"
+      },
+      "CASEY W": {},
+      "AYANA W": {
+        "incoming": "THA RAD &  BC, THPS, THWP"
+      },
+      "AUNJOLI S": {
+        "incoming": "THAZ/THAL"
+      },
+      "RAQUEL": {
+        "incoming": "AMH/THF"
+      },
+      "JESS J-C": {
+        "incoming": "THC/HEB"
+      },
+      "OPEN/EVERYONE ON TEAM": {
+        "incoming": "RW"
+      },
+      "NACHOLE R": {
+        "incoming": "THFM"
+      }
+    }
+  },
+  {
+    "id": "2022-01",
+    "label": "January 2022",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "SCHEDULING ASSIST": {
+        "incoming": "CPOE"
+      },
+      "MELISSA S": {
+        "incoming": "SW"
+      },
+      "CLARA M": {
+        "incoming": "THD"
+      },
+      "TRISH M": {
+        "spec": "3pm Email Backup"
+      },
+      "TERESA W": {
+        "incoming": "THK, THP BC"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {
+        "incoming": "THFW/THS/THB",
+        "spec": "3pm Email"
+      },
+      "GAYLA M": {},
+      "SHAMEKA K": {},
+      "DIETRA T": {
+        "incoming": "THDN"
+      },
+      "VENUS C": {
+        "incoming": "THP RAD"
+      },
+      "CASEY W": {},
+      "AYANA W": {
+        "incoming": "THA RAD &  BC, THPS, THWP"
+      },
+      "AUNJOLI S": {
+        "incoming": "THAZ/THAL"
+      },
+      "RAQUEL": {
+        "incoming": "AMH/THF"
+      },
+      "JESS J-C": {
+        "incoming": "THC/HEB"
+      },
+      "OPEN/EVERYONE ON TEAM": {
+        "incoming": "RW"
+      },
+      "NACHOLE R": {
+        "incoming": "THFM"
+      }
+    }
+  },
+  {
+    "id": "2021-12",
+    "label": "December 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THF, THDN"
+      },
+      "MELISSA S": {
+        "incoming": "THFM, THRW"
+      },
+      "CLARA M": {},
+      "TRISH M": {
+        "incoming": "Float, AMH",
+        "spec": "3pm Email"
+      },
+      "TERESA W": {
+        "incoming": "THS, THAL, THC"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {},
+      "GAYLA M": {
+        "spec": "3pm Email Backup"
+      },
+      "SHAMEKA K": {},
+      "DIETRA T": {
+        "incoming": "THPS, THP Rad, THB"
+      },
+      "VENUS C": {
+        "incoming": "HEB, THA Rad, THR Enterprise"
+      },
+      "CASEY W": {
+        "incoming": "SW"
+      },
+      "AYANA W": {
+        "incoming": "THP BC, THK, THA BC"
+      },
+      "JESS J-C": {
+        "cross": "Training"
+      },
+      "ANGELA C": {},
+      "JESSICA L": {
+        "incoming": "FTW, THAZ, THWP"
+      },
+      "NACHOLE R": {
+        "incoming": "THD"
+      }
+    }
+  },
+  {
+    "id": "2021-11",
+    "label": "November 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THF, THDN"
+      },
+      "MELISSA S": {
+        "incoming": "THFM, THRW"
+      },
+      "CLARA M": {},
+      "TRISH M": {
+        "incoming": "Float, AMH",
+        "spec": "3pm Email"
+      },
+      "TERESA W": {
+        "incoming": "THS, THAL, THC"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {},
+      "GAYLA M": {
+        "spec": "3pm Email Backup"
+      },
+      "SHAMEKA K": {},
+      "DIETRA T": {
+        "incoming": "THPS, THP Rad, THB"
+      },
+      "VENUS C": {
+        "incoming": "HEB, THA Rad, THR Enterprise"
+      },
+      "CASEY W": {
+        "incoming": "SW"
+      },
+      "AYANA W": {
+        "incoming": "THP BC, THK, THA BC"
+      },
+      "JESS J-C": {
+        "cross": "Training"
+      },
+      "ANGELA C": {},
+      "JESSICA L": {
+        "incoming": "FTW, THAZ, THWP"
+      },
+      "NACHOLE R": {
+        "incoming": "THD"
+      }
+    }
+  },
+  {
+    "id": "2021-10",
+    "label": "October 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THF, THDN"
+      },
+      "MELISSA S": {
+        "incoming": "THFM, THRW"
+      },
+      "CLARA M": {},
+      "TRISH M": {
+        "incoming": "Float, AMH",
+        "spec": "3pm Email"
+      },
+      "TERESA W": {
+        "incoming": "THS, THAL, THC"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {},
+      "GAYLA M": {
+        "spec": "3pm Email Backup"
+      },
+      "SHAMEKA K": {},
+      "DIETRA T": {
+        "incoming": "THPS, THP Rad, THB"
+      },
+      "VENUS C": {
+        "incoming": "HEB, THA Rad, THR Enterprise"
+      },
+      "CASEY W": {
+        "incoming": "SW"
+      },
+      "AYANA W": {
+        "incoming": "THP BC, THK, THA BC"
+      },
+      "ANGELA C": {},
+      "JESSICA L": {
+        "incoming": "FTW, THAZ, THWP"
+      },
+      "NACHOLE R": {
+        "incoming": "THD"
+      }
+    }
+  },
+  {
+    "id": "2021-09",
+    "label": "September 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "AMH, THF"
+      },
+      "MELISSA S": {
+        "incoming": "THD"
+      },
+      "CLARA M": {},
+      "TRISH M": {
+        "incoming": "Float",
+        "spec": "3pm Email"
+      },
+      "TERESA W": {
+        "incoming": "THS, THAL, THC"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {},
+      "GAYLA M": {},
+      "SHAMEKA K": {
+        "spec": "3pm Email Backup"
+      },
+      "DIETRA T": {
+        "incoming": "THPS, THP Rad, THB"
+      },
+      "VENUS C": {
+        "incoming": "HEB, THA Rad, THR Enterprise"
+      },
+      "CASEY W": {
+        "incoming": "SW"
+      },
+      "AYANA W": {
+        "incoming": "THP BC, THK"
+      },
+      "ASHEIGH L": {
+        "incoming": "THDN, THA BC"
+      },
+      "JESSICA L": {
+        "incoming": "FTW, THAZ, THWP"
+      },
+      "NACHOLE R": {}
+    }
+  },
+  {
+    "id": "2021-08",
+    "label": "August 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THDN, THA BC"
+      },
+      "MELISSA S": {
+        "incoming": "Float",
+        "spec": "3pm Email"
+      },
+      "CLARA M": {},
+      "TRISH M": {},
+      "TERESA W": {
+        "incoming": "HEB, THA Rad, THR Enterprise"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {},
+      "GAYLA M": {},
+      "SHAMEKA K": {
+        "spec": "3pm Email Backup"
+      },
+      "DIETRA T": {
+        "incoming": "THPS, THP Rad, THB"
+      },
+      "VENUS C": {
+        "incoming": "THS, THAL, THC"
+      },
+      "CASEY W": {
+        "incoming": "SW"
+      },
+      "AYANA W": {
+        "incoming": "FTW, THAZ, THWP"
+      },
+      "ASHEIGH L": {
+        "incoming": "AMH, THF"
+      },
+      "JESSICA L": {
+        "incoming": "THP BC, THK"
+      },
+      "NACHOLE R": {
+        "incoming": "THD"
+      }
+    }
+  },
+  {
+    "id": "2021-07",
+    "label": "July 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "FTW, THAZ, THWP"
+      },
+      "MELISSA S": {
+        "incoming": "Float",
+        "spec": "3pm Email"
+      },
+      "CLARA M": {
+        "incoming": "SW"
+      },
+      "TRISH M": {},
+      "TERESA W": {
+        "incoming": "THDN, THA BC"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {},
+      "GAYLA M": {
+        "spec": "3pm Email Backup"
+      },
+      "SHAMEKA K": {},
+      "DIETRA T": {
+        "incoming": "HEB, THA RAD, THR Enterprise"
+      },
+      "VENUS C": {
+        "incoming": "THS, THAL, THC"
+      },
+      "CASEY W": {},
+      "AYANA W": {
+        "incoming": "THPS, THP RAD, THB"
+      },
+      "ASHEIGH L": {
+        "incoming": "AMH, THF"
+      },
+      "JESSICA L": {
+        "incoming": "THP BC, THK"
+      },
+      "NACHOLE R": {
+        "incoming": "THD"
+      }
+    }
+  },
+  {
+    "id": "2021-06",
+    "label": "June 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "FTW, THAZ, THWP"
+      },
+      "MELISSA S": {},
+      "CLARA M": {
+        "incoming": "SW"
+      },
+      "TRISH M": {
+        "spec": "3pm Email Backup"
+      },
+      "TERESA W": {
+        "incoming": "THDN, THA BC"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {
+        "incoming": "Float",
+        "spec": "3pm Email"
+      },
+      "GAYLA M": {},
+      "SHAMEKA K": {
+        "incoming": "THD"
+      },
+      "DIETRA T": {
+        "incoming": "HEB, THA RAD, THR Enterprise"
+      },
+      "VENUS C": {
+        "incoming": "THS, THAL, THC"
+      },
+      "CASEY W": {},
+      "AYANA W": {
+        "incoming": "THPS, THP RAD, THB"
+      },
+      "ASHEIGH L": {
+        "incoming": "THP BC, THK"
+      },
+      "JESSICA L": {},
+      "NACHOLE R": {
+        "incoming": "AMH,THF"
+      }
+    }
+  },
+  {
+    "id": "2021-05",
+    "label": "May 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THPS, THP RAD, THB",
+        "cross": "CPOE"
+      },
+      "MELISSA S": {
+        "incoming": "Float",
+        "cross": "DAR 3"
+      },
+      "CLARA M": {
+        "cross": "SW, THR Enterprise"
+      },
+      "TRISH M": {
+        "cross": "DAR 5",
+        "spec": "3pm Email Backup"
+      },
+      "TERESA W": {
+        "cross": "THDN, THA BC"
+      },
+      "CHASITY H": {
+        "cross": "DAR 1"
+      },
+      "CECILY R": {},
+      "ERIKA C": {
+        "incoming": "SW",
+        "cross": "Float",
+        "spec": "3pm Email"
+      },
+      "GAYLA M": {
+        "cross": "DAR 4"
+      },
+      "SHAMEKA K": {
+        "incoming": "THD",
+        "cross": "THD"
+      },
+      "DIETRA T": {
+        "incoming": "THS, THAL, THC",
+        "cross": "FTW, THAZ, THWP"
+      },
+      "VENUS C": {
+        "incoming": "THDN",
+        "cross": "THS, THAL, THC"
+      },
+      "CASEY W": {
+        "cross": "DAR 2"
+      },
+      "AYANA W": {
+        "incoming": "FTW, THAZ, THWP",
+        "cross": "THPS, THP RAD, THB"
+      },
+      "ASHEIGH L": {
+        "incoming": "THP BC, THK",
+        "cross": "THP BC, THK, THA RAD"
+      },
+      "JESSICA L": {},
+      "NACHOLE R": {
+        "incoming": "AMH,THF",
+        "cross": "AMH,THF, HEB"
+      }
+    }
+  },
+  {
+    "id": "2021-04",
+    "label": "April 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THP BC, THK"
+      },
+      "MELISSA S": {
+        "incoming": "SW"
+      },
+      "CLARA M": {},
+      "TRISH M": {},
+      "TERESA W": {
+        "incoming": "THPS, THP Rad, THB"
+      },
+      "CHASITY H": {},
+      "CECILY R": {},
+      "ERIKA C": {
+        "spec": "3 PM Email"
+      },
+      "GAYLA M": {
+        "incoming": "THS, THAL, THC"
+      },
+      "SHAMEKA K": {
+        "incoming": "HEB, THA, THR Enterprise"
+      },
+      "DIETRA T": {
+        "incoming": "THD"
+      },
+      "VENUS C": {
+        "incoming": "THDN"
+      },
+      "CASEY W": {
+        "spec": "3pm Email Backup"
+      },
+      "AYANA W": {
+        "incoming": "FTW,THAZ, THWP"
+      },
+      "ASHEIGH L": {},
+      "JESSICA L": {
+        "incoming": "AMH, THF"
+      }
+    }
+  },
+  {
+    "id": "2021-03",
+    "label": "March 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THP BC, THK"
+      },
+      "MELISSA S": {
+        "incoming": "SW",
+        "spec": "3pm Email Backup"
+      },
+      "CLARA M": {},
+      "TRISH M": {
+        "spec": "3 PM Email"
+      },
+      "TERESA W": {
+        "incoming": "THS, THAL, THC"
+      },
+      "CHASITY H": {
+        "incoming": "HEB, THA, THR Enterprise"
+      },
+      "CECILY R": {},
+      "ERIKA C": {},
+      "GAYLA M": {},
+      "SHAMEKA K": {
+        "incoming": "FTW,THAZ, THWP"
+      },
+      "DIETRA T": {
+        "incoming": "THD"
+      },
+      "VENUS C": {
+        "incoming": "THPS, THP Rad, THB"
+      },
+      "CASEY W": {},
+      "AYANA W": {
+        "incoming": "THDN"
+      },
+      "ASHEIGH L": {},
+      "JESSICA L": {
+        "incoming": "AMH, THF"
+      }
+    }
+  },
+  {
+    "id": "2021-02",
+    "label": "February 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      },
+      "dar5": {
+        "label": "DAR 5",
+        "entities": [
+          "THD",
+          "FM",
+          "THAL",
+          "THPS"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THWP, THF, THP BC"
+      },
+      "MELISSA S": {},
+      "CLARA M": {
+        "incoming": "SW",
+        "spec": "3 PM Email"
+      },
+      "TRISH M": {},
+      "TERESA W": {
+        "incoming": "THS, THAL"
+      },
+      "CHASITY H": {
+        "incoming": "HEB, THA"
+      },
+      "CECILY R": {
+        "incoming": "AMH"
+      },
+      "ERIKA C": {
+        "spec": "3pm Email Backup"
+      },
+      "GAYLA M": {},
+      "SHAMEKA K": {
+        "incoming": "FTW,THAZ"
+      },
+      "DIETRA T": {
+        "incoming": "THD"
+      },
+      "VENUS C": {
+        "incoming": "THB, THPS, THP Rad"
+      },
+      "CASEY W": {},
+      "AYANA W": {
+        "incoming": "THDN"
+      },
+      "ASHEIGH L": {
+        "incoming": "THK, THC"
+      },
+      "JESSICA L": {}
+    }
+  },
+  {
+    "id": "2021-01",
+    "label": "January 2021",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "incoming": "THS,THWP, THF, THPS"
+      },
+      "MELISSA S": {},
+      "CLARA M": {},
+      "TRISH M": {
+        "incoming": "THP",
+        "spec": "Back up 3pm Email"
+      },
+      "TERESA W": {
+        "incoming": "HEB, THA"
+      },
+      "CHASITY H": {},
+      "CC R": {},
+      "ERIKA C": {},
+      "GAYLA M": {
+        "incoming": "THK, THC, THB",
+        "cross": "DAR"
+      },
+      "SHAMEKA K": {
+        "incoming": "AMH, AL"
+      },
+      "DEITRA T": {
+        "incoming": "SW"
+      },
+      "VENUS C": {
+        "incoming": "DN"
+      },
+      "CASEY W": {
+        "incoming": "THD",
+        "spec": "3pm Email"
+      },
+      "AYANA W": {
+        "incoming": "THFW, THAZ"
+      },
+      "JESSICA L": {
+        "cross": "Training"
+      },
+      "ASHLEIGH L": {
+        "cross": "Training"
+      }
+    }
+  },
+  {
+    "id": "2020-12",
+    "label": "December 2020",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "spec": "Training"
+      },
+      "MELISSA S": {
+        "incoming": "THD",
+        "spec": "3pm Email"
+      },
+      "CLARA M": {
+        "spec": "3pm Emal Backup"
+      },
+      "TRISH M": {},
+      "TERESA W": {
+        "incoming": "THC, THB, THWP, THK"
+      },
+      "CHASITY H": {},
+      "CC R": {
+        "incoming": "HEB, THA"
+      },
+      "ERIKA C": {
+        "incoming": "THP Women's, THS",
+        "spec": "THR Enterprise Sched"
+      },
+      "GAYLA M": {
+        "incoming": "THPS, THP Rad, THAL",
+        "cross": "Training THK DAR"
+      },
+      "SHAMEKA K": {
+        "incoming": "SW"
+      },
+      "DEITRA T": {
+        "incoming": "AMH"
+      },
+      "VENUS C": {
+        "incoming": "THDN"
+      },
+      "CASEY W": {},
+      "AYANA W": {
+        "incoming": "THFW, THAZ, THF"
+      },
+      "JESSICA L": {
+        "spec": "Training"
+      },
+      "ASHLEIGH L": {
+        "spec": "Training"
+      }
+    }
+  },
+  {
+    "id": "2020-11",
+    "label": "November 2020",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      }
+    },
+    "assignments": {
+      "RACQUEL D": {
+        "spec": "Training"
+      },
+      "MELISSA S": {
+        "incoming": "THD",
+        "spec": "3pm Email"
+      },
+      "CLARA M": {
+        "spec": "3pm Emal Backup"
+      },
+      "TRISH M": {},
+      "TERESA W": {
+        "incoming": "THC, THB, THWP, THK"
+      },
+      "CHASITY H": {},
+      "CC R": {
+        "incoming": "HEB, THA"
+      },
+      "ERIKA C": {
+        "incoming": "THP Women's, THS",
+        "spec": "THR Enterprise Sched"
+      },
+      "GAYLA M": {
+        "incoming": "THPS, THP Rad, THAL",
+        "cross": "Training THK DAR"
+      },
+      "SHAMEKA K": {
+        "incoming": "SW"
+      },
+      "DEITRA T": {
+        "incoming": "AMH"
+      },
+      "VENUS C": {
+        "incoming": "THDN"
+      },
+      "CASEY W": {},
+      "AYANA W": {
+        "incoming": "THFW, THAZ, THF"
+      }
+    }
+  },
+  {
+    "id": "2020-10",
+    "label": "October 2020",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      }
+    },
+    "assignments": {
+      "PRISCILLA A": {
+        "spec": "Transitioning to Supervisor"
+      },
+      "MELISSA S": {},
+      "CLARA M": {},
+      "PATRICIA M": {
+        "incoming": "THD",
+        "spec": "3pm Email"
+      },
+      "TERESA W": {
+        "incoming": "THC, THB, THWP, THK"
+      },
+      "CHASITY H": {
+        "incoming": "THPS, THP Rad & Womens"
+      },
+      "CC R": {
+        "cross": "Transcription"
+      },
+      "ERIKA C": {
+        "spec": "3pm Emal Backup"
+      },
+      "GAYLA M": {
+        "incoming": "AMH, THAL, THS",
+        "cross": "Training THK DAR"
+      },
+      "SHAMEKA K": {
+        "incoming": "THDN"
+      },
+      "DEITRA T": {
+        "incoming": "SW"
+      },
+      "VENUS C": {
+        "incoming": "HEB, THA"
+      },
+      "CASEY W": {},
+      "AYANA": {
+        "incoming": "THFW, THAZ, THF"
+      }
+    }
+  },
+  {
+    "id": "2020-09",
+    "label": "September 2020",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      }
+    },
+    "assignments": {
+      "PRISCILLA A": {},
+      "MELISSA S": {
+        "incoming": "SW",
+        "spec": "3pm Emal Backup"
+      },
+      "CLARA M": {},
+      "PATRICIA M": {
+        "incoming": "THFW, THAZ"
+      },
+      "TERESA W": {
+        "incoming": "HEB, THA"
+      },
+      "CHASITY H": {
+        "incoming": "THDN",
+        "spec": "3pm Email"
+      },
+      "CC R": {
+        "cross": "Transcription"
+      },
+      "ERIKA C": {},
+      "GAYLA M": {
+        "incoming": "AMH, THAL",
+        "cross": "Training THK DAR"
+      },
+      "SHAMEKA K": {
+        "incoming": "THD"
+      },
+      "DEITRA T": {
+        "incoming": "THK, THS"
+      },
+      "VENUS C": {
+        "incoming": "THC, THF, THB, THWP"
+      },
+      "CASEY W": {},
+      "COURTNEY": {
+        "incoming": "THPS, THP Womens"
+      },
+      "AYANA": {
+        "incoming": "THP RAD"
+      }
+    }
+  },
+  {
+    "id": "2020-08",
+    "label": "August 2020",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "BACKUP"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      }
+    },
+    "assignments": {
+      "PRISCILLA A": {
+        "incoming": "THFW, THAZ"
+      },
+      "MELISSA S": {},
+      "CLARA M": {
+        "spec": "3pm Emal Backup"
+      },
+      "PATRICIA M": {},
+      "TERESA W": {
+        "incoming": "HEB, THA"
+      },
+      "CHASITY H": {},
+      "CC R": {
+        "cross": "Training"
+      },
+      "ERIKA C": {
+        "spec": "3pm Email"
+      },
+      "GAYLA M": {
+        "incoming": "THD"
+      },
+      "SHAMEKA K": {
+        "incoming": "AMH, THAL"
+      },
+      "DEITRA T": {
+        "incoming": "THDN"
+      },
+      "VENUS C": {
+        "incoming": "THK, THS"
+      },
+      "CASEY W": {
+        "incoming": "SW"
+      },
+      "COURTNEY": {
+        "incoming": "THC, THF, THB, THWP"
+      },
+      "AYANA": {
+        "incoming": "THPS, THP Rad & Womens"
+      }
+    }
+  },
+  {
+    "id": "2020-07",
+    "label": "July 2020",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "THP",
+          "FW",
+          "HEB"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      }
+    },
+    "assignments": {
+      "PRISCILLA A": {
+        "spec": "3pm Emal Backup"
+      },
+      "MELISSA S": {
+        "incoming": "SW",
+        "spec": "3pm Email"
+      },
+      "CLARA M": {},
+      "PATRICIA M": {
+        "incoming": "THFW, THAZ"
+      },
+      "TERESA W": {
+        "incoming": "HEB, THA"
+      },
+      "CHASITY H": {},
+      "CC R": {
+        "cross": "Training"
+      },
+      "ERIKA C": {},
+      "GAYLA M": {
+        "incoming": "THD"
+      },
+      "SHAMEKA K": {
+        "incoming": "AMH, THAL"
+      },
+      "DEITRA T": {
+        "incoming": "THDN"
+      },
+      "VENUS C": {
+        "incoming": "THK, THS"
+      },
+      "CASEY W": {},
+      "COURTNEY": {
+        "incoming": "THPS, THP Rad & Womens"
+      },
+      "AYANA": {
+        "incoming": "THC, THF, THB, THWP"
+      }
+    }
+  },
+  {
+    "id": "2020-06",
+    "label": "June 2020",
+    "status": "published",
+    "clusters": {
+      "dar1": {
+        "label": "DAR 1",
+        "entities": [
+          "BACKUP"
+        ]
+      },
+      "dar2": {
+        "label": "DAR 2",
+        "entities": [
+          "THSW",
+          "THAMH",
+          "THB"
+        ]
+      },
+      "dar3": {
+        "label": "DAR 3",
+        "entities": [
+          "THRW",
+          "THA",
+          "THC"
+        ]
+      },
+      "dar4": {
+        "label": "DAR 4",
+        "entities": [
+          "THDN",
+          "THK",
+          "THAZ"
+        ]
+      }
+    },
+    "assignments": {
+      "PRISCILLA A": {
+        "incoming": "THFW, THAZ"
+      },
+      "MELISSA S": {},
+      "CLARA M": {},
+      "PATRICIA M": {
+        "cross": "CPOE/STAT"
+      },
+      "TERESA W": {
+        "incoming": "HEB, THA"
+      },
+      "CHASITY H": {
+        "cross": "CPOE/STAT"
+      },
+      "CHERYL B": {},
+      "ERIKA C": {
+        "incoming": "THP RAD"
+      },
+      "GAYLA M": {
+        "incoming": "AMH, THAL"
+      },
+      "SHAMEKA K": {
+        "incoming": "THD"
+      },
+      "DEITRA T": {
+        "incoming": "THDN"
+      },
+      "VENUS C": {
+        "incoming": "THK, THS"
+      },
+      "CASEY W": {
+        "incoming": "SW",
+        "cross": "CPOE/STAT"
+      },
+      "COURTNEY": {
+        "incoming": "THPS, THP Womens"
+      },
+      "AYANA": {
+        "incoming": "THC, THF, THB, THWP"
+      }
+    }
+  }
+]
