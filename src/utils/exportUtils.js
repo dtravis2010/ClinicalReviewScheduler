@@ -3,7 +3,6 @@
  * Contains logic for exporting schedules to various formats
  */
 
-import * as XLSX from 'xlsx';
 import { calculateWorkload } from './conflictDetection';
 import { formatEntityList, getEmployeeInitials } from './scheduleUtils';
 
@@ -27,7 +26,7 @@ function canAssignDAR(employee) {
  * @param {Object} params.darEntities - DAR entity assignments
  * @param {number} params.avgWorkload - Average workload score
  */
-export function exportToExcel({
+export async function exportToExcel({
   scheduleName,
   startDate,
   employees,
@@ -36,6 +35,9 @@ export function exportToExcel({
   darEntities,
   avgWorkload
 }) {
+  // Load xlsx on demand so it stays out of the main bundle
+  const XLSX = await import('xlsx');
+
   // Create main schedule data
   const data = employees.filter(e => !e.archived).map(employee => {
     const assignment = assignments[employee.id] || {};

@@ -18,7 +18,7 @@ describe('exportUtils', () => {
   });
 
   describe('exportToExcel', () => {
-    it('should create workbook with schedule data', () => {
+    it('should create workbook with schedule data', async () => {
       const params = {
         scheduleName: 'Test Schedule',
         startDate: '2024-01-01',
@@ -35,7 +35,7 @@ describe('exportUtils', () => {
         avgWorkload: 50.5
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       expect(XLSX.utils.json_to_sheet).toHaveBeenCalledTimes(2);
       expect(XLSX.utils.book_new).toHaveBeenCalled();
@@ -46,7 +46,7 @@ describe('exportUtils', () => {
       );
     });
 
-    it('should filter out archived employees', () => {
+    it('should filter out archived employees', async () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -60,14 +60,14 @@ describe('exportUtils', () => {
         avgWorkload: 0
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
       expect(firstCall).toHaveLength(1);
       expect(firstCall[0]['TEAM MEMBER']).toBe('Active');
     });
 
-    it('should include workload scores', () => {
+    it('should include workload scores', async () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -82,14 +82,14 @@ describe('exportUtils', () => {
         avgWorkload: 50
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
       expect(firstCall[0]).toHaveProperty('Workload Score');
       expect(typeof firstCall[0]['Workload Score']).toBe('number');
     });
 
-    it('should create workload summary sheet', () => {
+    it('should create workload summary sheet', async () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -103,7 +103,7 @@ describe('exportUtils', () => {
         avgWorkload: 25.5
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       const summaryCall = XLSX.utils.json_to_sheet.mock.calls[1][0];
       expect(summaryCall).toEqual([
@@ -113,7 +113,7 @@ describe('exportUtils', () => {
       ]);
     });
 
-    it('should handle empty assignments', () => {
+    it('should handle empty assignments', async () => {
       const params = {
         scheduleName: 'Empty',
         startDate: '2024-01-01',
@@ -126,14 +126,14 @@ describe('exportUtils', () => {
         avgWorkload: 0
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
       expect(firstCall[0]['CPOE']).toBe('');
       expect(firstCall[0]['New Incoming Items']).toBe('');
     });
 
-    it('should use default filename when schedule name is missing', () => {
+    it('should use default filename when schedule name is missing', async () => {
       const params = {
         scheduleName: '',
         startDate: '',
@@ -144,7 +144,7 @@ describe('exportUtils', () => {
         avgWorkload: 0
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       expect(XLSX.writeFile).toHaveBeenCalledWith(
         expect.any(Object),
@@ -152,7 +152,7 @@ describe('exportUtils', () => {
       );
     });
 
-    it('should format DAR columns with entity names in header and X in cells', () => {
+    it('should format DAR columns with entity names in header and X in cells', async () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -167,7 +167,7 @@ describe('exportUtils', () => {
         avgWorkload: 0
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
       const columnName = Object.keys(firstCall[0]).find(key => key.startsWith('DAR 1'));
@@ -176,7 +176,7 @@ describe('exportUtils', () => {
       expect(firstCall[0][columnName]).toBe('X');
     });
 
-    it('should only show X for DAR assignments for trained employees', () => {
+    it('should only show X for DAR assignments for trained employees', async () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -193,7 +193,7 @@ describe('exportUtils', () => {
         avgWorkload: 0
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
       const trainedRow = firstCall.find(row => row['TEAM MEMBER'] === 'Trained');
@@ -204,7 +204,7 @@ describe('exportUtils', () => {
       expect(untrainedRow[columnName]).toBe('');
     });
 
-    it('should show X for CPOE assignments', () => {
+    it('should show X for CPOE assignments', async () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -219,13 +219,13 @@ describe('exportUtils', () => {
         avgWorkload: 0
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
       expect(firstCall[0]['CPOE']).toBe('X');
     });
 
-    it('should show employee initials for New Incoming Items', () => {
+    it('should show employee initials for New Incoming Items', async () => {
       const params = {
         scheduleName: 'Test',
         startDate: '2024-01-01',
@@ -240,7 +240,7 @@ describe('exportUtils', () => {
         avgWorkload: 0
       };
 
-      exportToExcel(params);
+      await exportToExcel(params);
 
       const firstCall = XLSX.utils.json_to_sheet.mock.calls[0][0];
       expect(firstCall[0]['New Incoming Items']).toBe('JD');
