@@ -20,7 +20,10 @@ const ConfigurableHeader = ({
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(customText || '');
 
-  const displayText = customText || getEntityShortCode(entities, []) || '+ Entities';
+  // In read-only mode, never surface the "+ Entities" editing prompt — fall back
+  // to a neutral placeholder so clinicians don't see a control that looks broken.
+  const configuredText = customText || getEntityShortCode(entities, []);
+  const displayText = configuredText || (readOnly ? '—' : '+ Entities');
 
   const handleSave = () => {
     onTextChange(columnKey, text);

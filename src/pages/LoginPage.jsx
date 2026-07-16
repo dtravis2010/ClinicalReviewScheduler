@@ -42,7 +42,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-thr-blue-500 to-thr-green-500 dark:from-thr-blue-800 dark:to-thr-green-800 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-thr-blue-800 via-thr-blue-700 to-thr-blue-500 dark:from-gray-900 dark:via-thr-blue-900 dark:to-thr-blue-800 px-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
@@ -52,8 +52,11 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white dark:bg-gray-800 rounded-full mb-4">
             <Lock className="w-8 h-8 text-thr-blue-500 dark:text-thr-blue-400" />
           </div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-thr-blue-100/80 mb-1">
+            Texas Health Resources &middot; VCC Clinical Review
+          </p>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Clinical Review Scheduler
+            Clinical Review Schedule
           </h1>
           <p className="text-thr-blue-100 dark:text-thr-blue-200">Supervisor Login</p>
         </div>
