@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
 import PropTypes from 'prop-types';
-import { Save, Calendar } from 'lucide-react';
+import { Save, Calendar, Check } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import EmployeeHistoryModal from './EmployeeHistoryModal';
@@ -56,7 +56,8 @@ export default function ScheduleGrid({
   readOnly = false,
   onCreateNewSchedule,
   schedules = [],
-  onScheduleChange
+  onScheduleChange,
+  highlightEmployeeId = null
 }) {
   // Use undo/redo for assignments
   const {
@@ -670,6 +671,7 @@ export default function ScheduleGrid({
               const assignment = assignments[employee.id] || {};
               const isDarTrained = canAssignDAR(employee);
               const colorClass = EMPLOYEE_COLORS[empIdx % EMPLOYEE_COLORS.length];
+              const isHighlighted = highlightEmployeeId === employee.id;
               const darBlocked = isFieldBlockedByExclusiveAssignment(employee.id, 'dars');
               const darBlockMessage = getExclusiveBlockMessage(employee.id, 'dars');
               const cpoeBlocked = isFieldBlockedByExclusiveAssignment(employee.id, 'cpoe');
@@ -698,7 +700,9 @@ export default function ScheduleGrid({
                 <tr
                   key={employee.id}
                   className={`group transition-all duration-200 hover:bg-gradient-to-r hover:from-slate-50 hover:via-white hover:to-slate-50 dark:hover:from-slate-700/40 dark:hover:via-slate-700/20 dark:hover:to-slate-700/40 border-b border-slate-100 dark:border-slate-700/50 ${
-                    empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/30 dark:bg-slate-800/30'
+                    isHighlighted
+                      ? 'bg-thr-blue-50 dark:bg-thr-blue-900/30 shadow-[inset_3px_0_0_0_theme(colors.thr-blue.500)]'
+                      : empIdx % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/30 dark:bg-slate-800/30'
                   }`}
                 >
                   {/* Checkbox for bulk selection */}
@@ -763,7 +767,7 @@ export default function ScheduleGrid({
                           isAssigned ? (
                             <div className="flex items-center justify-center">
                               <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
-                                <span className="text-white text-xs font-bold">X</span>
+                                <Check className="w-4 h-4 text-white" strokeWidth={3} aria-hidden="true" />
                               </div>
                             </div>
                           ) : (
@@ -839,7 +843,7 @@ export default function ScheduleGrid({
                       assignment.cpoe ? (
                         <div className="flex items-center justify-center">
                           <div className="w-6 h-6 rounded-full bg-thr-green-500 dark:bg-thr-green-600 flex items-center justify-center shadow-sm">
-                            <span className="text-white text-xs font-bold">X</span>
+                            <Check className="w-4 h-4 text-white" strokeWidth={3} aria-hidden="true" />
                           </div>
                         </div>
                       ) : (
@@ -1071,5 +1075,6 @@ ScheduleGrid.propTypes = {
   readOnly: PropTypes.bool,
   onCreateNewSchedule: PropTypes.func,
   schedules: PropTypes.array,
-  onScheduleChange: PropTypes.func
+  onScheduleChange: PropTypes.func,
+  highlightEmployeeId: PropTypes.string
 };

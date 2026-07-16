@@ -590,3 +590,29 @@ input[type="date"] {
   opacity: 0.5;
   background-color: rgba(0, 92, 151, 0.1);
 }
+
+/* Print styles: clean landscape output of the published schedule */
+@media print {
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* Let the full grid print instead of scrolling */
+  .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  table {
+    font-size: 10px;
+  }
+}

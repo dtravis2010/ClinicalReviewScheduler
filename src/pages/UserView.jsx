@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { logger } from '../utils/logger';
-import { Calendar, Lock } from 'lucide-react';
+import { Calendar, Lock, Printer } from 'lucide-react';
 import ScheduleGrid from '../components/ScheduleGrid';
+import MyAssignments from '../components/MyAssignments';
 import { ScheduleSkeleton } from '../components/Skeleton';
 import ThemeToggle from '../components/ThemeToggle';
 import { formatDateRange } from '../utils/scheduleUtils';
+
+const MY_EMPLOYEE_STORAGE_KEY = 'crs-my-employee-id';
 
 export default function UserView() {
   const [schedule, setSchedule] = useState(null);
@@ -17,7 +20,27 @@ export default function UserView() {
   const [entities, setEntities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [myEmployeeId, setMyEmployeeId] = useState(() => {
+    try {
+      return localStorage.getItem(MY_EMPLOYEE_STORAGE_KEY) || null;
+    } catch {
+      return null;
+    }
+  });
   const navigate = useNavigate();
+
+  const handleSelectMyEmployee = useCallback((employeeId) => {
+    setMyEmployeeId(employeeId);
+    try {
+      if (employeeId) {
+        localStorage.setItem(MY_EMPLOYEE_STORAGE_KEY, employeeId);
+      } else {
+        localStorage.removeItem(MY_EMPLOYEE_STORAGE_KEY);
+      }
+    } catch {
+      // localStorage unavailable (private browsing) - selection still works for this session
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -179,24 +202,37 @@ export default function UserView() {
         Skip to main content
       </a>
 
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      {/* Header - THR branded */}
+      <header className="bg-gradient-to-r from-thr-blue-800 via-thr-blue-700 to-thr-blue-500 dark:from-gray-900 dark:via-thr-blue-900 dark:to-thr-blue-800 shadow-md print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <Calendar className="w-8 h-8 text-thr-blue-500 dark:text-thr-blue-400" />
+              <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-6 h-6 text-white" aria-hidden="true" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-thr-blue-100/80">
+                  Texas Health Resources &middot; VCC Clinical Review
+                </p>
+                <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">
                   Clinical Review Schedule
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Current Published Schedule</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-colors focus:ring-2 focus:ring-white/60"
+                aria-label="Print schedule"
+                title="Print schedule"
+              >
+                <Printer className="w-4 h-4" aria-hidden="true" />
+                <span className="text-sm font-medium hidden md:inline">Print</span>
+              </button>
               <ThemeToggle />
               <button
                 onClick={() => navigate('/login')}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors dark:text-gray-200 focus:ring-2 focus:ring-offset-2 focus:ring-thr-blue-500 dark:focus:ring-offset-gray-800"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors focus:ring-2 focus:ring-white/60"
                 aria-label="Supervisor login"
               >
                 <Lock className="w-4 h-4" aria-hidden="true" />
@@ -248,6 +284,14 @@ export default function UserView() {
               </div>
             </div>
 
+            <MyAssignments
+              schedule={schedule}
+              employees={employees}
+              entities={entities}
+              selectedEmployeeId={myEmployeeId}
+              onSelectEmployee={handleSelectMyEmployee}
+            />
+
             <ScheduleGrid
               schedule={schedule}
               employees={employees}
@@ -255,6 +299,7 @@ export default function UserView() {
               readOnly={true}
               schedules={publishedSchedules}
               onScheduleChange={handleScheduleChange}
+              highlightEmployeeId={myEmployeeId}
             />
           </div>
         ) : (

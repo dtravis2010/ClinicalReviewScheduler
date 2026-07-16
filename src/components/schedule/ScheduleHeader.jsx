@@ -31,7 +31,9 @@ function ScheduleHeader({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Schedule Builder</h1>
+            <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              {readOnly ? 'Published Schedule' : 'Schedule Builder'}
+            </h1>
           </div>
           {!readOnly && (
             <AutoSaveIndicator
